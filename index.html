@@ -210,6 +210,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       </div>
       <div class="field-hint">GHL → Marketing → Social Planner → Settings → Connected Accounts → LinkedIn</div>
     </div>
+    <button onclick="clearCredentials()" style="width:100%;margin-top:6px;padding:7px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--text-muted);background:transparent;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">🗑 Clear saved credentials</button>
   </div>
 
   <div class="sidebar-block">
@@ -555,16 +556,25 @@ let manualNiche   = 'pm';
 
 window.onload = () => {
   renderCycleInfo();
-  const ak = sessionStorage.getItem('oi360_ak');
-  const gt = sessionStorage.getItem('oi360_gt');
-  const gl = sessionStorage.getItem('oi360_gl');
-  const ga = sessionStorage.getItem('oi360_ga');
+  // localStorage persists across sessions — credentials survive tab/browser close
+  const ak = localStorage.getItem('oi360_ak');
+  const gt = localStorage.getItem('oi360_gt');
+  const gl = localStorage.getItem('oi360_gl');
+  const ga = localStorage.getItem('oi360_ga');
   if (ak) document.getElementById('anthropic-key').value = ak;
   if (gt) document.getElementById('ghl-token').value = gt;
   if (gl) document.getElementById('ghl-location').value = gl;
   if (ga) document.getElementById('ghl-account').value = ga;
   checkReady();
 };
+
+function clearCredentials() {
+  if (!confirm('Clear all saved credentials? You will need to re-enter them.')) return;
+  ['oi360_ak','oi360_gt','oi360_gl','oi360_ga'].forEach(k => localStorage.removeItem(k));
+  ['anthropic-key','ghl-token','ghl-location','ghl-account'].forEach(id => document.getElementById(id).value = '');
+  checkReady();
+  setToast('gen-toast','Credentials cleared.','info');
+}
 
 function renderCycleInfo() {
   const idx  = (currentPos - 1) % 90;
@@ -612,11 +622,11 @@ function checkReady() {
   const ak = document.getElementById('anthropic-key').value.trim();
   const gt = document.getElementById('ghl-token').value.trim();
   const gl = document.getElementById('ghl-location').value.trim();
-  if (ak) sessionStorage.setItem('oi360_ak', ak);
-  if (gt) sessionStorage.setItem('oi360_gt', gt);
-  if (gl) sessionStorage.setItem('oi360_gl', gl);
+  if (ak) localStorage.setItem('oi360_ak', ak);
+  if (gt) localStorage.setItem('oi360_gt', gt);
+  if (gl) localStorage.setItem('oi360_gl', gl);
   const ga = document.getElementById('ghl-account').value.trim();
-  if (ga) sessionStorage.setItem('oi360_ga', ga);
+  if (ga) localStorage.setItem('oi360_ga', ga);
   // Only need 3 required fields — account ID is optional
   const ready = !!(ak && gt && gl);
   document.getElementById('gen-btn').disabled = !ready;
@@ -807,7 +817,7 @@ Output only the post body. Nothing else.`;
         'anthropic-dangerous-direct-browser-access':'true'
       },
       body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-6',
         max_tokens:1000,
         system, messages:[{role:'user',content:user}]
       })
