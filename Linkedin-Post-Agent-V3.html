@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Post Agent — Online Impact 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f0efe9; --surface:#fff; --surface2:#f7f6f2;
+  --border:#e2e0d8; --border-strong:#c8c5bb;
+  --accent:#1a6b3a; --accent-lt:#e8f5ee; --accent-mid:#2d8a50;
+  --text:#1a1916; --text-mid:#4a4843; --text-muted:#8a8780;
+  --danger:#c0392b; --danger-lt:#fdf2f1;
+  --success:#1a6b3a; --success-lt:#e8f5ee;
+  --info:#1a4a7a; --info-lt:#e8f0fa;
+  --warn:#7a4a10; --warn-lt:#fef4e4;
+  --pm:#1a4a7a; --pm-lt:#e8f0fa; --pm-border:#86a8d0;
+  --ins:#6b1a6b; --ins-lt:#f5e8f5; --ins-border:#c086c0;
+  --mtg:#7a4a10; --mtg-lt:#fef4e4; --mtg-border:#e0b860;
+  --radius:10px; --radius-sm:6px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+}
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:13.5px; line-height:1.6; min-height:100vh; }
+.header { background:var(--surface); border-bottom:1.5px solid var(--border); padding:0 28px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; box-shadow:var(--shadow-sm); }
+.logo { font-family:'Instrument Serif',serif; font-size:19px; color:var(--text); display:flex; align-items:center; gap:10px; }
+.logo-accent { color:var(--accent); }
+.logo-divider { color:var(--border-strong); }
+.logo-sub { font-size:13px; font-family:'DM Sans',sans-serif; color:var(--text-muted); font-style:italic; }
+.status-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface2); font-size:12px; color:var(--text-muted); font-weight:500; transition:all .3s; }
+.status-pill.ready { border-color:#86c9a0; background:var(--success-lt); color:var(--success); }
+.status-pill.working { border-color:#f0c060; background:var(--warn-lt); color:var(--warn); }
+.status-dot { width:8px; height:8px; border-radius:50%; background:var(--border-strong); transition:background .3s; flex-shrink:0; }
+.status-pill.ready .status-dot { background:var(--success); box-shadow:0 0 0 3px rgba(26,107,58,.15); }
+.status-pill.working .status-dot { background:#d4a020; animation:pulse 1s infinite; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.main { display:grid; grid-template-columns:320px 1fr; min-height:calc(100vh - 58px); }
+.sidebar { background:var(--surface); border-right:1.5px solid var(--border); overflow-y:auto; }
+.sidebar-block { padding:20px 22px; border-bottom:1.5px solid var(--border); }
+.sidebar-block:last-child { border-bottom:none; }
+.block-title { font-size:10px; font-weight:700; letter-spacing:.10em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.block-title-icon { width:20px; height:20px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:11px; }
+.icon-green{background:var(--accent-lt)} .icon-blue{background:var(--info-lt)} .icon-yellow{background:var(--warn-lt)}
+.field { margin-bottom:14px; }
+.field:last-child { margin-bottom:0; }
+.field label { display:block; font-size:12px; font-weight:600; color:var(--text-mid); margin-bottom:5px; }
+input[type="text"],input[type="password"],input[type="datetime-local"],select,textarea { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; padding:9px 12px; outline:none; transition:border-color .15s,background .15s,box-shadow .15s; appearance:none; }
+input:focus,select:focus,textarea:focus { border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 3px rgba(26,107,58,.1); }
+textarea { resize:vertical; min-height:64px; line-height:1.6; }
+select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8780'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 11px center; padding-right:28px; cursor:pointer; }
+.key-row { display:flex; gap:6px; align-items:flex-end; }
+.key-row input { flex:1; }
+.eye-btn { flex-shrink:0; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-sm); color:var(--text-muted); cursor:pointer; padding:9px 11px; font-size:11px; font-family:'DM Sans',sans-serif; font-weight:500; white-space:nowrap; transition:all .15s; height:38px; }
+.eye-btn:hover { border-color:var(--border-strong); color:var(--text-mid); }
+.field-hint { font-size:11px; color:var(--text-muted); margin-top:5px; line-height:1.5; padding:7px 10px; background:var(--surface2); border-radius:var(--radius-sm); border-left:3px solid var(--border-strong); }
+/* cycle tracker */
+.cycle-tracker { background:var(--accent); border-radius:var(--radius); padding:16px; color:white; }
+.cycle-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.cycle-num { font-family:'Instrument Serif',serif; font-size:42px; line-height:1; color:white; }
+.cycle-label { font-size:11px; color:rgba(255,255,255,.7); margin-top:2px; font-weight:500; }
+.cycle-nav { display:flex; gap:5px; }
+.cycle-nav-btn { width:28px; height:28px; border-radius:6px; border:1.5px solid rgba(255,255,255,.3); background:rgba(255,255,255,.1); color:white; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.cycle-nav-btn:hover { background:rgba(255,255,255,.25); }
+.cycle-progress { height:3px; background:rgba(255,255,255,.25); border-radius:2px; margin:10px 0 8px; }
+.cycle-fill { height:100%; background:white; border-radius:2px; transition:width .4s; }
+.cycle-topic { font-size:12px; color:rgba(255,255,255,.9); font-weight:500; line-height:1.4; }
+.cycle-meta { font-size:11px; color:rgba(255,255,255,.6); margin-top:3px; }
+.niche-indicator { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; margin-top:6px; }
+.niche-pm  { background:rgba(255,255,255,.2); color:white; }
+.niche-ins { background:rgba(255,255,255,.15); color:rgba(255,255,255,.9); }
+.niche-mtg { background:rgba(255,255,255,.1); color:rgba(255,255,255,.8); }
+/* stats row */
+.stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:12px; }
+.stat-box { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; padding:8px 10px; text-align:center; }
+.stat-n { font-size:18px; font-weight:700; color:var(--accent); }
+.stat-l { font-size:10px; color:var(--text-muted); margin-top:1px; }
+/* history */
+.history-item { background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:6px; cursor:pointer; transition:all .15s; }
+.history-item:hover { border-color:var(--accent); background:var(--accent-lt); }
+.hi-meta { font-size:10px; color:var(--text-muted); margin-bottom:3px; display:flex; justify-content:space-between; font-weight:500; }
+.hi-preview { font-size:11.5px; color:var(--text-mid); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.no-history { font-size:12px; color:var(--text-muted); text-align:center; padding:8px 0; font-style:italic; }
+/* content panel */
+.content-panel { padding:24px 28px; overflow-y:auto; background:var(--bg); }
+.panel-section { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; box-shadow:var(--shadow-sm); }
+.panel-header { padding:14px 18px; border-bottom:1.5px solid var(--border); background:var(--surface2); display:flex; align-items:center; justify-content:space-between; }
+.panel-title { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-mid); display:flex; align-items:center; gap:7px; }
+.panel-title-dot { width:8px; height:8px; border-radius:50%; }
+.dot-green{background:var(--accent)} .dot-blue{background:var(--info)} .dot-yellow{background:#d4a020}
+.panel-body { padding:18px; }
+/* mode toggle */
+.mode-toggle { display:flex; gap:0; border:1.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; background:var(--surface2); margin-bottom:16px; }
+.mode-btn { flex:1; padding:9px 14px; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--text-muted); transition:all .15s; text-align:center; }
+.mode-btn.active { background:var(--accent); color:white; font-weight:600; }
+.mode-btn:hover:not(.active) { background:var(--border); color:var(--text-mid); }
+/* niche pills in manual */
+.niche-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-bottom:14px; }
+.niche-btn { padding:9px 10px; font-size:12px; font-family:'DM Sans',sans-serif; font-weight:600; text-align:center; cursor:pointer; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text-mid); transition:all .15s; }
+.niche-btn:hover { border-color:var(--accent); }
+.niche-btn.sel-pm  { border-color:var(--pm);  background:var(--pm-lt);  color:var(--pm); }
+.niche-btn.sel-ins { border-color:var(--ins); background:var(--ins-lt); color:var(--ins); }
+.niche-btn.sel-mtg { border-color:var(--mtg); background:var(--mtg-lt); color:var(--mtg); }
+/* angle grid */
+.angle-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
+.angle-btn { padding:9px 10px; font-size:12px; font-family:'DM Sans',sans-serif; font-weight:500; text-align:left; cursor:pointer; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text-mid); transition:all .15s; line-height:1.3; }
+.angle-btn:hover { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); }
+.angle-btn.selected { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); font-weight:600; }
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px; }
+/* buttons */
+.btn { padding:10px 20px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; border-radius:var(--radius-sm); cursor:pointer; border:none; transition:all .15s; display:inline-flex; align-items:center; gap:7px; }
+.btn:disabled { opacity:.4; cursor:not-allowed; }
+.btn-primary { background:var(--accent); color:white; box-shadow:0 2px 8px rgba(26,107,58,.25); }
+.btn-primary:hover:not(:disabled) { background:var(--accent-mid); transform:translateY(-1px); }
+.btn-secondary { background:var(--surface); color:var(--text-mid); border:1.5px solid var(--border); }
+.btn-secondary:hover:not(:disabled) { border-color:var(--border-strong); color:var(--text); }
+.btn-copy { background:var(--accent-lt); color:var(--accent); border:1.5px solid #86c9a0; font-weight:600; }
+.btn-copy:hover:not(:disabled) { background:var(--accent); color:white; }
+.action-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+/* toasts */
+.toast { padding:10px 14px; border-radius:var(--radius-sm); font-size:12.5px; margin-top:10px; display:none; border-left:3px solid; line-height:1.5; font-weight:500; }
+.toast.show{display:block}
+.toast.info   { background:var(--info-lt);    border-color:var(--info);    color:var(--info); }
+.toast.success{ background:var(--success-lt); border-color:var(--success); color:var(--success); }
+.toast.error  { background:var(--danger-lt);  border-color:var(--danger);  color:var(--danger); }
+/* preview */
+.preview-box { background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:18px; min-height:180px; font-size:13.5px; line-height:1.85; color:var(--text); white-space:pre-wrap; word-break:break-word; }
+.preview-placeholder { color:var(--text-muted); font-style:italic; font-size:13px; }
+.preview-edit { width:100%; background:var(--surface); border:1.5px solid var(--accent); border-radius:var(--radius-sm); padding:18px; min-height:180px; font-family:'DM Sans',sans-serif; font-size:13.5px; line-height:1.85; color:var(--text); resize:vertical; outline:none; display:none; box-shadow:0 0 0 3px rgba(26,107,58,.1); }
+.meta-row { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+.char-count { font-size:11.5px; color:var(--text-muted); font-weight:500; }
+.char-count.warn{color:var(--warn)} .char-count.danger{color:var(--danger)}
+.edit-toggle { font-size:12px; color:var(--accent); cursor:pointer; font-weight:600; display:none; }
+.edit-toggle:hover { text-decoration:underline; }
+/* tags */
+.post-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.tag { font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; }
+.tag-pm  { background:var(--pm-lt);  color:var(--pm); }
+.tag-ins { background:var(--ins-lt); color:var(--ins); }
+.tag-mtg { background:var(--mtg-lt); color:var(--mtg); }
+.tag-format { background:var(--accent-lt); color:var(--accent); }
+.tag-cta    { background:var(--warn-lt);   color:var(--warn); }
+.tag-ghl    { background:#f0ebff;           color:#5b21b6; }
+/* radio */
+.radio-row { display:flex; gap:16px; flex-wrap:wrap; }
+.radio-label { display:flex; align-items:center; gap:7px; font-size:13px; font-weight:500; color:var(--text-mid); cursor:pointer; padding:8px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); transition:all .15s; background:var(--surface2); }
+.radio-label:has(input:checked) { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); }
+.radio-label input { accent-color:var(--accent); }
+/* callout */
+.callout { padding:10px 14px; border-radius:var(--radius-sm); font-size:12px; line-height:1.55; font-weight:500; display:flex; gap:9px; align-items:flex-start; }
+.callout-green { background:var(--accent-lt); color:var(--accent); border:1.5px solid #86c9a0; }
+.callout-blue  { background:var(--info-lt);   color:var(--info);   border:1.5px solid #86a8d0; }
+.callout-icon  { flex-shrink:0; font-size:14px; margin-top:1px; }
+/* spinner */
+.spinner { display:inline-block; width:13px; height:13px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; }
+@keyframes spin{to{transform:rotate(360deg)}}
+.override-panel{display:none} .override-panel.visible{display:block}
+::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
+@media(max-width:860px){.main{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1.5px solid var(--border)}.three-col,.niche-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <span class="logo-accent">OI360</span>
+    <span class="logo-divider">/</span>
+    <span class="logo-sub">LinkedIn Post Agent v3 — Evergreen</span>
+  </div>
+  <div class="status-pill" id="status-pill">
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-label">Enter credentials to begin</span>
+  </div>
+</div>
+
+<div class="main">
+<div class="sidebar">
+
+  <div class="sidebar-block">
+    <div class="block-title"><div class="block-title-icon icon-green">🔑</div>API Credentials</div>
+    <div class="field">
+      <label>Anthropic API Key</label>
+      <div class="key-row">
+        <input type="password" id="anthropic-key" placeholder="sk-ant-api03-…" oninput="checkReady()" autocomplete="off"/>
+        <button class="eye-btn" onclick="toggleVis('anthropic-key',this)">Show</button>
+      </div>
+      <div class="field-hint">console.anthropic.com → API Keys → Create Key</div>
+    </div>
+    <div class="field">
+      <label>GHL Private Integration Token</label>
+      <div class="key-row">
+        <input type="password" id="ghl-token" placeholder="pit-…" oninput="checkReady()" autocomplete="off"/>
+        <button class="eye-btn" onclick="toggleVis('ghl-token',this)">Show</button>
+      </div>
+      <div class="field-hint">GHL → Settings → Integrations → Private Integrations → Create. Scope: <strong>socialplanner/post.write</strong></div>
+    </div>
+    <div class="field">
+      <label>GHL Location ID</label>
+      <div class="key-row">
+        <input type="text" id="ghl-location" placeholder="Paste Location ID…" oninput="checkReady()" autocomplete="off"/>
+        <button class="eye-btn" onclick="toggleVis('ghl-location',this)">Show</button>
+      </div>
+      <div class="field-hint">GHL → Settings → Business Info → scroll to bottom</div>
+    </div>
+    <div class="field">
+      <label>GHL LinkedIn Account ID <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+      <div class="key-row">
+        <input type="text" id="ghl-account" placeholder="Optional — enables direct posting" oninput="checkReady()" autocomplete="off"/>
+        <button class="eye-btn" onclick="toggleVis('ghl-account',this)">Show</button>
+      </div>
+      <div class="field-hint">GHL → Marketing → Social Planner → Settings → Connected Accounts → LinkedIn</div>
+    </div>
+  </div>
+
+  <div class="sidebar-block">
+    <div class="block-title"><div class="block-title-icon icon-yellow">♾️</div>Evergreen Content Cycle</div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-n" id="stat-post">1</div><div class="stat-l">Post #</div></div>
+      <div class="stat-box"><div class="stat-n" id="stat-cycle">1</div><div class="stat-l">Cycle</div></div>
+      <div class="stat-box"><div class="stat-n">90</div><div class="stat-l">Library</div></div>
+    </div>
+    <div class="cycle-tracker">
+      <div class="cycle-top">
+        <div>
+          <div class="cycle-num" id="current-post-display">1</div>
+          <div class="cycle-label">of 90 — then repeats forever</div>
+        </div>
+        <div class="cycle-nav">
+          <button class="cycle-nav-btn" onclick="prevPost()">←</button>
+          <button class="cycle-nav-btn" onclick="nextPost()">→</button>
+        </div>
+      </div>
+      <div class="cycle-progress"><div class="cycle-fill" id="cycle-fill" style="width:1.1%"></div></div>
+      <div class="cycle-topic" id="cycle-topic">—</div>
+      <div class="cycle-meta" id="cycle-meta">—</div>
+      <div id="cycle-niche-pill"></div>
+    </div>
+  </div>
+
+  <div class="sidebar-block">
+    <div class="block-title"><div class="block-title-icon icon-blue">🕐</div>Session History</div>
+    <div id="history-list"><div class="no-history">No posts generated yet</div></div>
+  </div>
+
+</div>
+
+<div class="content-panel">
+
+  <div class="panel-section">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-dot dot-green"></span>Step 1 — Generate Mode</div>
+    </div>
+    <div class="panel-body">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-auto" onclick="setMode('auto')">⚡ Auto — Evergreen Engine</button>
+        <button class="mode-btn" id="mode-manual" onclick="setMode('manual')">✏️ Manual — Override</button>
+      </div>
+
+      <div id="auto-info">
+        <div class="callout callout-green">
+          <span class="callout-icon">✓</span>
+          Evergreen engine active. 90-post library cycles indefinitely across Property Managers, Insurance Agency Owners, and Mortgage Brokers. Topic, niche, hook, format, and CTA are auto-selected. Hit Generate.
+        </div>
+      </div>
+
+      <div class="override-panel" id="override-panel">
+        <div class="field">
+          <label>Target Niche</label>
+          <div class="niche-grid">
+            <button class="niche-btn sel-pm" id="nb-pm" onclick="selectNiche('pm')">🏢 Property Managers</button>
+            <button class="niche-btn" id="nb-ins" onclick="selectNiche('ins')">🛡️ Insurance Agencies</button>
+            <button class="niche-btn" id="nb-mtg" onclick="selectNiche('mtg')">🏠 Mortgage Brokers</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Topic / Hook Idea</label>
+          <textarea id="topic" placeholder="e.g. Why property managers lose qualified tenants to voicemail every weekend…"></textarea>
+        </div>
+        <div class="field">
+          <label>Angle</label>
+          <div class="angle-grid">
+            <button class="angle-btn selected" data-val="missed calls = missed revenue">📵 Missed calls = missed revenue</button>
+            <button class="angle-btn" data-val="first responder wins">⚡ First responder wins</button>
+            <button class="angle-btn" data-val="AI curiosity — demystify">🤖 AI curiosity</button>
+            <button class="angle-btn" data-val="social proof / real client result">⭐ Social proof</button>
+            <button class="angle-btn" data-val="contrarian — you don't have a lead problem">🔄 Contrarian take</button>
+            <button class="angle-btn" data-val="simple business math — real cost">🧮 Business math</button>
+          </div>
+        </div>
+        <div class="three-col">
+          <div class="field" style="margin-bottom:0">
+            <label>Format</label>
+            <select id="format-override">
+              <option value="">Auto</option>
+              <option>Punch post</option><option>Scenario post</option>
+              <option>Math breakdown</option><option>Story post</option><option>Question post</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>CTA Type</label>
+            <select id="cta-override">
+              <option value="">Auto</option>
+              <option value="demo">Demo call</option><option value="comment">Comment CTA</option>
+              <option value="dm">DM CTA</option><option value="none">No CTA</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Length</label>
+            <select id="length-override">
+              <option value="medium" selected>Medium</option>
+              <option value="short">Short</option><option value="long">Long</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row" style="margin-top:16px">
+        <button class="btn btn-primary" id="gen-btn" onclick="generatePost()" disabled>Generate Post</button>
+        <button class="btn btn-secondary" onclick="clearPost()">Clear</button>
+      </div>
+      <div class="toast" id="gen-toast"></div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-dot dot-blue"></span>Step 2 — Preview &amp; Edit</div>
+      <span class="edit-toggle" id="edit-toggle" onclick="toggleEdit()">Edit post</span>
+    </div>
+    <div class="panel-body">
+      <div class="post-tags" id="post-tags" style="display:none"></div>
+      <div class="preview-box" id="preview">
+        <span class="preview-placeholder">Your generated post will appear here. Hit Generate to create niche-targeted content from the evergreen library.</span>
+      </div>
+      <textarea class="preview-edit" id="edit-area" oninput="syncEdit()"></textarea>
+      <div class="meta-row">
+        <span style="font-size:11.5px;color:var(--text-muted)">LinkedIn max: 3,000 characters</span>
+        <span class="char-count" id="char-count"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-dot dot-yellow"></span>Step 3 — Publish to LinkedIn via GHL</div>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#5b21b6;background:#f0ebff;padding:3px 9px;border-radius:20px;">⚡ GO HIGH LEVEL</span>
+    </div>
+    <div class="panel-body">
+      <div class="field" style="margin-bottom:16px">
+        <label style="margin-bottom:10px">When to publish</label>
+        <div class="radio-row">
+          <label class="radio-label"><input type="radio" name="sched" value="now" checked onchange="toggleSched(this)">Post now</label>
+          <label class="radio-label"><input type="radio" name="sched" value="scheduled" onchange="toggleSched(this)">Schedule for later</label>
+        </div>
+      </div>
+      <div id="sched-block" style="display:none" class="field">
+        <label>Date &amp; Time</label>
+        <input type="datetime-local" id="sched-dt" style="max-width:260px"/>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-primary" id="post-btn" onclick="postToGHL()" disabled>Send to GHL Social Planner</button>
+        <button class="btn btn-copy" id="copy-btn" onclick="copyPost()" disabled>📋 Copy Text</button>
+      </div>
+      <div class="toast" id="post-toast"></div>
+      <div class="callout callout-blue" style="margin-top:14px">
+        <span class="callout-icon">💡</span>
+        <span><strong>First comment rule:</strong> After posting, go to LinkedIn and add the demo number <strong>1-888-708-7367</strong> as the first comment — not in the post body. Protects reach while keeping the CTA visible.</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ── NICHE DEFINITIONS ──────────────────────────────────────────
+const NICHES = {
+  pm:  { label:'Property Managers',       tag:'tag-pm',  color:'pm',
+         desc:'property managers and real estate operators',
+         pain:'missed tenant inquiries, unanswered calls from prospective tenants, vacancies caused by slow response, unmanaged Google reviews costing occupancy rates',
+         value:'$1,200–$3,500/month average tenant value',
+         scenario:'managing multiple properties, handling maintenance calls, showing units' },
+  ins: { label:'Insurance Agency Owners', tag:'tag-ins', color:'ins',
+         desc:'insurance agency owners and independent brokers',
+         pain:'missed quote requests, slow response losing policies to competitors, inbound calls going to voicemail while agents are with clients',
+         value:'$800–$4,000 average policy commission',
+         scenario:'meeting with clients, writing policies, in appointments when new leads call' },
+  mtg: { label:'Mortgage Brokers',        tag:'tag-mtg', color:'mtg',
+         desc:'mortgage brokers and loan officers',
+         pain:'missed pre-approval inquiries, rate-sensitive buyers calling multiple brokers simultaneously, first-responder advantage in a competitive market',
+         value:'$2,000–$8,000 average loan origination fee',
+         scenario:'in closings, reviewing loan files, with clients when new buyer inquiries come in' }
+};
+
+// ── 90-POST EVERGREEN LIBRARY ──────────────────────────────────
+// 30 posts per niche × 3 niches = 90 total
+// Rotation: 3 PM, 1 INS, 1 MTG per 5-post week (roughly)
+// Sequence: PM,PM,INS,PM,MTG — repeating gives ~60% PM, 20% INS, 20% MTG
+function buildPlan() {
+  const pillars = [
+    'Missed calls = missed revenue',
+    'First responder wins',
+    'Real scenarios — vivid and specific',
+    'You don\'t have a lead problem — contrarian',
+    'AI curiosity / demystify',
+    'Simple business math',
+    'Social proof moments'
+  ];
+  const formats = ['Punch post','Scenario post','Math breakdown','Story post','Question post','Punch post','Story post'];
+  const ctas    = ['comment','demo','dm','comment','comment','demo','dm'];
+
+  const pmTopics = [
+    {t:'Every missed tenant call is a vacancy you funded',        h:'Every [action] is [consequence]'},
+    {t:'It\'s Saturday. A tenant calls about an emergency repair', h:'It\'s [time]. You\'re [location]. Your phone rings'},
+    {t:'The math behind unanswered tenant calls',                  h:'[Number] x [number] = [painful result]'},
+    {t:'The management company that responds first gets the lease', h:'The business that responds first gets the job'},
+    {t:'You don\'t have a vacancy problem. You have a response problem', h:'You don\'t have a [assumed problem]'},
+    {t:'3 prospective tenants called on Sunday. Nobody answered.',  h:'It\'s [time]. You\'re [location].'},
+    {t:'How fast does your property management company respond?',   h:'What happens when [trigger]?'},
+    {t:'How many tenant inquiries did you miss this week?',         h:'Most [niche] owners don\'t know this'},
+    {t:'A property manager told me something surprising last week', h:'A [niche] owner said: [quote]'},
+    {t:'The voicemail prospective tenants never leave',             h:'Every [action] is [consequence]'},
+    {t:'3 missed tenant calls x $18,000 annual rent = do the math',h:'[Number] x [number] = [result]'},
+    {t:'It\'s not AI. It\'s just your phone — but smarter.',       h:'[Simple bold claim]'},
+    {t:'Your competitor just answered. You didn\'t.',              h:'The business that responds first'},
+    {t:'Weekend property showing, 4 calls, no answer',             h:'It\'s [time]. You\'re [location].'},
+    {t:'Most property managers don\'t know this is happening',     h:'Most [niche] owners don\'t know'},
+    {t:'If a prospective tenant called your office right now...',  h:'What happens when [trigger]?'},
+    {t:'The inquiry that disappeared before you saw it',           h:'Every [action] is [consequence]'},
+    {t:'Instant response isn\'t a luxury for property managers',   h:'[Simple bold claim]'},
+    {t:'What a property manager said after the first week',        h:'A [niche] owner said: [quote]'},
+    {t:'How much is one filled unit worth to your portfolio?',     h:'[Number] x [number] = [result]'},
+    {t:'It\'s not about being available 24/7 — it\'s about this', h:'You don\'t have a [assumed problem]'},
+    {t:'Speed to lease: the scenario most PMs never consider',     h:'The business that responds first'},
+    {t:'Where tenant inquiries leak in property management',       h:'Most [niche] owners don\'t know'},
+    {t:'What AI actually does for a property management office',   h:'[Simple bold claim]'},
+    {t:'A question property managers keep asking me',              h:'What happens when [trigger]?'},
+    {t:'The tenant you didn\'t know you lost',                     h:'Every [action] is [consequence]'},
+    {t:'Why the second call from a tenant rarely happens',         h:'[Simple bold claim]'},
+    {t:'From missed inquiry to signed lease — the path',           h:'What happens when [trigger]?'},
+    {t:'One thing I\'d tell every property management company',    h:'[Simple bold claim]'},
+    {t:'The 30-second thing most property managers skip',          h:'It\'s [time]. You\'re [location].'}
+  ];
+
+  const insTopics = [
+    {t:'Every missed quote request is a policy your competitor wrote',h:'Every [action] is [consequence]'},
+    {t:'It\'s Tuesday. You\'re with a client. Your phone rings.',     h:'It\'s [time]. You\'re [location].'},
+    {t:'The math behind missed inbound calls at an insurance agency', h:'[Number] x [number] = [result]'},
+    {t:'The agency that responds first writes the policy',            h:'The business that responds first'},
+    {t:'You don\'t have a lead problem. You have a speed problem.',   h:'You don\'t have a [assumed problem]'},
+    {t:'A prospect called 4 agencies. One answered. Guess who they went with.', h:'It\'s [time]. You\'re [location].'},
+    {t:'How fast does your agency respond to a new quote request?',   h:'What happens when [trigger]?'},
+    {t:'How many inbound quote requests did your agency miss this week?',h:'Most [niche] owners don\'t know'},
+    {t:'An agency owner told me something that stuck with me',        h:'A [niche] owner said: [quote]'},
+    {t:'The voicemail that goes straight to your competitor',         h:'Every [action] is [consequence]'},
+    {t:'3 missed quote calls x $2,400 policy commission = the number that hurts',h:'[Number] x [number]'},
+    {t:'It\'s not AI. It\'s just a receptionist that never misses a call.',h:'[Simple bold claim]'},
+    {t:'Your competitor just picked up. You went to voicemail.',      h:'The business that responds first'},
+    {t:'Middle of a renewal meeting. 3 new quote calls come in.',     h:'It\'s [time]. You\'re [location].'},
+    {t:'Most insurance agency owners don\'t realize this is happening',h:'Most [niche] owners don\'t know'},
+    {t:'If a prospect called your agency right now at 5:30pm...',     h:'What happens when [trigger]?'},
+    {t:'The quote request that evaporated before you saw it',         h:'Every [action] is [consequence]'},
+    {t:'Response speed is the unfair advantage most agencies ignore', h:'[Simple bold claim]'},
+    {t:'What an agency owner said after the first week running this', h:'A [niche] owner said: [quote]'},
+    {t:'What\'s one missed policy worth to your agency annually?',    h:'[Number] x [number] = [result]'},
+    {t:'It\'s not about hiring more staff — it\'s about this',       h:'You don\'t have a [assumed problem]'},
+    {t:'Speed to quote: the scenario most agency owners never run',   h:'The business that responds first'},
+    {t:'Where inbound revenue leaks in an insurance agency',          h:'Most [niche] owners don\'t know'},
+    {t:'What an AI receptionist actually does for an insurance office',h:'[Simple bold claim]'},
+    {t:'The question insurance agency owners keep asking me',         h:'What happens when [trigger]?'},
+    {t:'The policy you didn\'t know you lost',                        h:'Every [action] is [consequence]'},
+    {t:'Why prospects rarely call an insurance agency twice',         h:'[Simple bold claim]'},
+    {t:'From missed call to written policy — the path',              h:'What happens when [trigger]?'},
+    {t:'One thing I\'d tell every independent insurance agency',      h:'[Simple bold claim]'},
+    {t:'The 30-second thing most agencies skip',                      h:'It\'s [time]. You\'re [location].'}
+  ];
+
+  const mtgTopics = [
+    {t:'Every missed buyer inquiry is a loan your competitor closed', h:'Every [action] is [consequence]'},
+    {t:'It\'s Friday at 4pm. A buyer calls about pre-approval.',      h:'It\'s [time]. You\'re [location].'},
+    {t:'The math behind missed calls at a mortgage brokerage',        h:'[Number] x [number] = [result]'},
+    {t:'The loan officer who responds first gets the application',    h:'The business that responds first'},
+    {t:'You don\'t have a pipeline problem. You have a response problem.',h:'You don\'t have a [assumed problem]'},
+    {t:'A buyer called 5 loan officers. One responded in 5 minutes.', h:'It\'s [time]. You\'re [location].'},
+    {t:'How fast does your brokerage respond to a new buyer inquiry?',h:'What happens when [trigger]?'},
+    {t:'How many pre-approval calls did you miss this week?',         h:'Most [niche] owners don\'t know'},
+    {t:'A mortgage broker told me something that changed how I think about this',h:'A [niche] owner said: [quote]'},
+    {t:'The voicemail a rate-sensitive buyer never leaves twice',      h:'Every [action] is [consequence]'},
+    {t:'3 missed buyer inquiries x $4,500 origination = the real cost',h:'[Number] x [number]'},
+    {t:'It\'s not AI. It\'s just your office — always open.',         h:'[Simple bold claim]'},
+    {t:'Your competitor responded in 4 minutes. You called back in 3 hours.',h:'The business that responds first'},
+    {t:'In a closing. 4 buyer calls come in. Nobody answers.',        h:'It\'s [time]. You\'re [location].'},
+    {t:'Most mortgage brokers don\'t realize how many buyers they\'re losing',h:'Most [niche] owners don\'t know'},
+    {t:'If a buyer called your office right now after hours...',      h:'What happens when [trigger]?'},
+    {t:'The pre-approval request that went to someone else',          h:'Every [action] is [consequence]'},
+    {t:'In a market this competitive, speed is the only edge that matters',h:'[Simple bold claim]'},
+    {t:'What a loan officer said after week one',                     h:'A [niche] owner said: [quote]'},
+    {t:'What\'s one missed closing worth to your brokerage?',         h:'[Number] x [number] = [result]'},
+    {t:'It\'s not about being available 24/7',                        h:'You don\'t have a [assumed problem]'},
+    {t:'Speed to application: what most brokers never calculate',     h:'The business that responds first'},
+    {t:'Where loan pipeline leaks without anyone noticing',           h:'Most [niche] owners don\'t know'},
+    {t:'What an AI receptionist actually does for a mortgage office', h:'[Simple bold claim]'},
+    {t:'The question mortgage brokers keep asking me',                h:'What happens when [trigger]?'},
+    {t:'The buyer you didn\'t know you lost',                         h:'Every [action] is [consequence]'},
+    {t:'Why buyers rarely call a mortgage broker a second time',      h:'[Simple bold claim]'},
+    {t:'From missed call to closed loan — the path',                  h:'What happens when [trigger]?'},
+    {t:'One thing I\'d tell every independent mortgage broker',       h:'[Simple bold claim]'},
+    {t:'The 30-second thing most loan officers skip',                 h:'It\'s [time]. You\'re [location].'}
+  ];
+
+  const plan = [];
+  // Interleave: PM(1),PM(2),INS(1),PM(3),MTG(1) repeating — gives ~60% PM, 20% INS, 20% MTG
+  const sequence = ['pm','pm','ins','pm','mtg'];
+  const counters  = {pm:0,ins:0,mtg:0};
+  const topicMap  = {pm:pmTopics,ins:insTopics,mtg:mtgTopics};
+
+  for (let i = 0; i < 90; i++) {
+    const niche = sequence[i % 5];
+    const idx   = counters[niche] % 30;
+    const p     = pillars[idx % 7];
+    const f     = formats[idx % 7];
+    const c     = ctas[idx % 7];
+    const tp    = topicMap[niche][idx];
+    plan.push({ pos: i+1, niche, topic: tp.t, hook: tp.h, pillar: p, format: f, cta: c });
+    counters[niche]++;
+  }
+  return plan;
+}
+
+const PLAN = buildPlan();
+
+const CTA_LINES = {
+  demo:    '\n\nWant to hear it yourself?\n\nCall 1-888-708-7367 and ask it how it would handle your calls.',
+  comment: '\n\nDrop "curious" in the comments — I\'ll send you a quick example.',
+  dm:      '\n\nDM me "demo" and I\'ll show you how it works for your business.',
+  none:    ''
+};
+
+const LENGTH_MAP = { short:'150-250 characters', medium:'400-600 characters', long:'800-1300 characters' };
+
+const FORMAT_INSTRUCTIONS = {
+  'Punch post':     'Write a short punchy declarative post. Strong bold claim up front. 2-3 tight paragraphs. No fluff. Every line earns its place.',
+  'Scenario post':  'Put the reader inside a real moment. Use time, place, and action specific to their industry. Show exactly what happens when a call gets missed. First line drops them into the scene.',
+  'Math breakdown': 'Walk through a simple business math scenario using dollar amounts realistic for this niche. Make the loss tangible. Format each step on its own line. End with the total loss.',
+  'Story post':     'Tell a short grounded story about a real business owner in this niche. Specific moment, specific outcome. Keep it human. End with the one insight that changes how they see the problem.',
+  'Question post':  'Open with a direct honest question this type of business owner avoids asking themselves. Follow with 2-3 lines of real-world context specific to their industry. Close with a sharper question.'
+};
+
+let currentPos    = parseInt(localStorage.getItem('oi360_pos') || '1');
+let generatedPost = '';
+let isEditing     = false;
+let sessionHistory= [];
+let mode          = 'auto';
+let manualNiche   = 'pm';
+
+window.onload = () => {
+  renderCycleInfo();
+  const ak = sessionStorage.getItem('oi360_ak');
+  const gt = sessionStorage.getItem('oi360_gt');
+  const gl = sessionStorage.getItem('oi360_gl');
+  const ga = sessionStorage.getItem('oi360_ga');
+  if (ak) document.getElementById('anthropic-key').value = ak;
+  if (gt) document.getElementById('ghl-token').value = gt;
+  if (gl) document.getElementById('ghl-location').value = gl;
+  if (ga) document.getElementById('ghl-account').value = ga;
+  checkReady();
+};
+
+function renderCycleInfo() {
+  const idx  = (currentPos - 1) % 90;
+  const d    = PLAN[idx];
+  const cycle= Math.floor((currentPos - 1) / 90) + 1;
+  const pct  = ((idx + 1) / 90 * 100).toFixed(1);
+  document.getElementById('current-post-display').textContent = currentPos;
+  document.getElementById('stat-post').textContent  = currentPos;
+  document.getElementById('stat-cycle').textContent = cycle;
+  document.getElementById('cycle-fill').style.width = pct + '%';
+  document.getElementById('cycle-topic').textContent = d.topic;
+  document.getElementById('cycle-meta').textContent  = d.pillar + ' · ' + d.format;
+  const n = NICHES[d.niche];
+  document.getElementById('cycle-niche-pill').innerHTML =
+    `<span class="niche-indicator niche-${d.niche}">${n.label}</span>`;
+  localStorage.setItem('oi360_pos', currentPos);
+}
+
+function prevPost() { if (currentPos > 1) { currentPos--; renderCycleInfo(); } }
+function nextPost() { currentPos++; renderCycleInfo(); }
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('mode-auto').classList.toggle('active', m === 'auto');
+  document.getElementById('mode-manual').classList.toggle('active', m === 'manual');
+  document.getElementById('override-panel').classList.toggle('visible', m === 'manual');
+  document.getElementById('auto-info').style.display = m === 'auto' ? 'block' : 'none';
+}
+
+function selectNiche(n) {
+  manualNiche = n;
+  ['pm','ins','mtg'].forEach(k => {
+    const btn = document.getElementById('nb-' + k);
+    btn.className = 'niche-btn' + (k === n ? ' sel-' + k : '');
+  });
+}
+
+function toggleVis(id, btn) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'password' ? 'Show' : 'Hide';
+}
+
+function checkReady() {
+  const ak = document.getElementById('anthropic-key').value.trim();
+  const gt = document.getElementById('ghl-token').value.trim();
+  const gl = document.getElementById('ghl-location').value.trim();
+  if (ak) sessionStorage.setItem('oi360_ak', ak);
+  if (gt) sessionStorage.setItem('oi360_gt', gt);
+  if (gl) sessionStorage.setItem('oi360_gl', gl);
+  const ga = document.getElementById('ghl-account').value.trim();
+  if (ga) sessionStorage.setItem('oi360_ga', ga);
+  // Only need 3 required fields — account ID is optional
+  const ready = !!(ak && gt && gl);
+  document.getElementById('gen-btn').disabled = !ready;
+  const pill = document.getElementById('status-pill');
+  const lbl  = document.getElementById('status-label');
+  pill.className = 'status-pill' + (ready ? ' ready' : '');
+  lbl.textContent = ready ? 'Ready to generate' : 'Enter credentials to begin';
+}
+
+function setStatus(working) {
+  document.getElementById('status-pill').className = 'status-pill' + (working ? ' working' : ' ready');
+  document.getElementById('status-label').textContent = working ? 'Working…' : 'Ready to generate';
+}
+
+function setToast(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = 'toast show ' + type;
+}
+function clearToast(id) { document.getElementById(id).className = 'toast'; }
+function toggleSched(r) {
+  document.getElementById('sched-block').style.display = r.value === 'scheduled' ? 'block' : 'none';
+}
+
+function toggleEdit() {
+  isEditing = !isEditing;
+  const preview  = document.getElementById('preview');
+  const editArea = document.getElementById('edit-area');
+  const toggle   = document.getElementById('edit-toggle');
+  if (isEditing) {
+    editArea.value = generatedPost;
+    editArea.style.display = 'block';
+    preview.style.display = 'none';
+    toggle.textContent = 'Back to preview';
+  } else {
+    generatedPost = editArea.value;
+    preview.textContent = generatedPost;
+    editArea.style.display = 'none';
+    preview.style.display = 'block';
+    toggle.textContent = 'Edit post';
+    updateCharCount();
+  }
+}
+
+function syncEdit() { generatedPost = document.getElementById('edit-area').value; updateCharCount(); }
+
+function updateCharCount() {
+  const len = generatedPost.length;
+  const el  = document.getElementById('char-count');
+  el.textContent = len + ' / 3,000 chars';
+  el.className = 'char-count' + (len > 2800 ? ' danger' : len > 2400 ? ' warn' : '');
+}
+
+function clearPost() {
+  generatedPost = ''; isEditing = false;
+  document.getElementById('preview').innerHTML = '<span class="preview-placeholder">Your generated post will appear here. Hit Generate to create niche-targeted content from the evergreen library.</span>';
+  document.getElementById('preview').style.display = 'block';
+  document.getElementById('edit-area').style.display = 'none';
+  document.getElementById('edit-toggle').style.display = 'none';
+  document.getElementById('post-btn').disabled = true;
+  document.getElementById('copy-btn').disabled = true;
+  document.getElementById('char-count').textContent = '';
+  document.getElementById('post-tags').style.display = 'none';
+  clearToast('gen-toast'); clearToast('post-toast');
+}
+
+function showTags(niche, pillar, format, cta) {
+  const el = document.getElementById('post-tags');
+  el.style.display = 'flex';
+  const n = NICHES[niche];
+  el.innerHTML =
+    `<span class="tag tag-${niche}">${n.label}</span>` +
+    `<span class="tag tag-format">${format}</span>` +
+    `<span class="tag tag-cta">${cta} CTA</span>` +
+    `<span class="tag tag-ghl">→ GHL Social Planner</span>`;
+}
+
+function addHistory(post, pos, niche) {
+  const n = NICHES[niche];
+  sessionHistory.unshift({ post, pos, niche, label: n.label, time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) });
+  if (sessionHistory.length > 8) sessionHistory.pop();
+  document.getElementById('history-list').innerHTML = sessionHistory.map((h,i) =>
+    `<div class="history-item" onclick="loadFromHistory(${i})">` +
+    `<div class="hi-meta"><span>#${h.pos} · ${h.label}</span><span>${h.time}</span></div>` +
+    `<div class="hi-preview">${h.post.substring(0,72)}…</div></div>`
+  ).join('');
+}
+
+function loadFromHistory(i) {
+  const h = sessionHistory[i];
+  generatedPost = h.post;
+  document.getElementById('preview').textContent = generatedPost;
+  document.getElementById('preview').style.display = 'block';
+  document.getElementById('edit-area').style.display = 'none';
+  isEditing = false;
+  document.getElementById('edit-toggle').style.display = 'inline';
+  document.getElementById('edit-toggle').textContent = 'Edit post';
+  document.getElementById('post-btn').disabled = false;
+  document.getElementById('copy-btn').disabled = false;
+  updateCharCount();
+}
+
+document.querySelectorAll('.angle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.angle-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+});
+
+async function generatePost() {
+  const anthropicKey = document.getElementById('anthropic-key').value.trim();
+  const btn = document.getElementById('gen-btn');
+  let topic, pillar, format, ctaType, length, niche, hook, nicheKey;
+
+  if (mode === 'auto') {
+    const idx = (currentPos - 1) % 90;
+    const d   = PLAN[idx];
+    nicheKey  = d.niche;
+    topic     = d.topic;
+    pillar    = d.pillar;
+    format    = d.format;
+    ctaType   = d.cta;
+    hook      = d.hook;
+    length    = 'medium';
+    niche     = NICHES[d.niche].desc;
+  } else {
+    nicheKey  = manualNiche;
+    topic     = document.getElementById('topic').value.trim();
+    if (!topic) { setToast('gen-toast','Enter a topic first.','error'); return; }
+    pillar    = document.querySelector('.angle-btn.selected')?.dataset.val || 'missed calls = missed revenue';
+    format    = document.getElementById('format-override').value || 'Punch post';
+    ctaType   = document.getElementById('cta-override').value || 'comment';
+    length    = document.getElementById('length-override').value || 'medium';
+    niche     = NICHES[nicheKey].desc;
+    hook      = '';
+  }
+
+  const nicheData = NICHES[nicheKey];
+  const ctaLine   = CTA_LINES[ctaType] || CTA_LINES['comment'];
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+  clearToast('gen-toast');
+  setStatus(true);
+
+  const system = `You are a LinkedIn content writer for Online Impact 360, a digital marketing agency that installs AI receptionist systems for local service and professional businesses.
+
+The product is Smart Website 360: an AI receptionist that answers inbound calls, captures leads, and books appointments automatically — 24/7. The core promise: "We make sure you never miss a customer again."
+
+TARGET AUDIENCE FOR THIS POST: ${nicheData.desc}
+KEY PAIN POINTS FOR THIS NICHE: ${nicheData.pain}
+AVERAGE VALUE OF A MISSED OPPORTUNITY: ${nicheData.value}
+TYPICAL SCENARIO WHERE CALLS ARE MISSED: ${nicheData.scenario}
+
+WRITING RULES — non-negotiable:
+- One idea per post. Never drift.
+- Strong first line — the hook. Make it impossible to scroll past.
+- Short paragraphs. Single sentences are fine. Blank lines between paragraphs.
+- Speak like a business owner talking to another business owner in this specific industry. Zero marketing voice.
+- Use dollar values realistic for this niche when relevant.
+- Name the specific type of business owner — not generic "business owner."
+- Use real scenarios specific to this industry — time of day, what they're doing, who's calling.
+- Business math should feel natural and undeniable, not like a sales pitch.
+- No jargon. No buzzwords. No tech speak.
+- No hashtags. No emojis unless genuinely natural.
+- Never mention pricing, product names, or onboarding.
+- Output ONLY the final post body. No title. No explanation. No preamble. Nothing extra.
+- Do not write a CTA — it will be appended after.
+- Target length: ${LENGTH_MAP[length]}`;
+
+  const user = `Write a LinkedIn post using the following brief.
+
+Topic: ${topic}
+Content pillar: ${pillar}
+Post format: ${format}
+Format instructions: ${FORMAT_INSTRUCTIONS[format] || FORMAT_INSTRUCTIONS['Punch post']}
+Target audience: ${niche}
+${hook ? 'Hook framework (use as inspiration, not literally): ' + hook : ''}
+
+Output only the post body. Nothing else.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system, messages:[{role:'user',content:user}]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const body = data.content?.[0]?.text?.trim() || '';
+    generatedPost = body + ctaLine;
+
+    document.getElementById('preview').textContent = generatedPost;
+    document.getElementById('preview').style.display = 'block';
+    document.getElementById('edit-area').style.display = 'none';
+    isEditing = false;
+    document.getElementById('edit-toggle').style.display = 'inline';
+    document.getElementById('edit-toggle').textContent = 'Edit post';
+    document.getElementById('post-btn').disabled = false;
+    document.getElementById('copy-btn').disabled = false;
+    updateCharCount();
+    showTags(nicheKey, pillar, format, ctaType);
+    addHistory(generatedPost, currentPos, nicheKey);
+    setToast('gen-toast', `✓ Post #${currentPos} generated — ${nicheData.label} · ${format}`, 'success');
+    setStatus(false);
+  } catch(e) {
+    setToast('gen-toast','✗ ' + e.message,'error');
+    setStatus(false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate Post';
+  }
+}
+
+async function postToGHL() {
+  const ghlToken   = document.getElementById('ghl-token').value.trim();
+  const locationId = document.getElementById('ghl-location').value.trim();
+  const accountId  = document.getElementById('ghl-account').value.trim();
+  if (!generatedPost) { setToast('post-toast','Generate a post first.','error'); return; }
+  if (!accountId)     { setToast('post-toast','LinkedIn Account ID required to post directly. Use Copy Text instead.','error'); return; }
+
+  const schedType = document.querySelector('input[name="sched"]:checked').value;
+  let publishDate = null;
+  if (schedType === 'scheduled') {
+    const dtVal = document.getElementById('sched-dt').value;
+    if (!dtVal) { setToast('post-toast','Pick a date and time.','error'); return; }
+    publishDate = new Date(dtVal).toISOString();
+  }
+
+  const btn = document.getElementById('post-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending to GHL…';
+  clearToast('post-toast');
+  setStatus(true);
+
+  try {
+    const payload = { accountIds:[accountId], summary:generatedPost, status: schedType === 'scheduled' ? 'scheduled' : 'published' };
+    if (publishDate) payload.publishedAt = publishDate;
+
+    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locationId}/posts`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ghlToken,'Version':'2021-07-28'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.error || 'GHL API error ' + res.status);
+    const msg = schedType === 'scheduled'
+      ? '✓ Scheduled in GHL for ' + new Date(publishDate).toLocaleString()
+      : '✓ Posted to LinkedIn via GHL Social Planner';
+    setToast('post-toast', msg, 'success');
+    currentPos++;
+    renderCycleInfo();
+    setStatus(false);
+  } catch(e) {
+    setToast('post-toast','✗ ' + e.message + ' — Use Copy Text to paste manually into GHL.','error');
+    setStatus(false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send to GHL Social Planner';
+  }
+}
+
+// ── FIXED COPY BUTTON ──────────────────────────────────────────
+// Works for both hosted (clipboard API) and local file (fallback)
+async function copyPost() {
+  if (!generatedPost) return;
+  const btn = document.getElementById('copy-btn');
+
+  // Method 1: Modern clipboard API (works when hosted online)
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(generatedPost);
+      showCopySuccess(btn);
+      return;
+    } catch(e) { /* fall through to method 2 */ }
+  }
+
+  // Method 2: execCommand fallback (works for local file:// )
+  const ta = document.createElement('textarea');
+  ta.value = generatedPost;
+  ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    const ok = document.execCommand('copy');
+    if (ok) { showCopySuccess(btn); }
+    else    { setToast('post-toast','Could not copy — please select text manually and press Cmd+C.','error'); }
+  } catch(e) {
+    setToast('post-toast','Could not copy — please select text manually and press Cmd+C.','error');
+  }
+  document.body.removeChild(ta);
+}
+
+function showCopySuccess(btn) {
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✓ Copied!';
+  btn.style.background = 'var(--accent)';
+  btn.style.color = 'white';
+  setToast('post-toast','✓ Copied to clipboard — paste into GHL Social Planner.','success');
+  setTimeout(() => {
+    btn.innerHTML = orig;
+    btn.style.background = '';
+    btn.style.color = '';
+  }, 2000);
+  // Advance counter after successful copy
+  currentPos++;
+  renderCycleInfo();
+}
+</script>
+</body>
+</html>
