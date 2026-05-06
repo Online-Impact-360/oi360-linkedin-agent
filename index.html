@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinkedIn Post Agent v4 — Online Impact 360</title>
+<title>LinkedIn Post Agent v5 — Online Impact 360</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -157,6 +157,15 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .override-panel{display:none} .override-panel.visible{display:block}
 ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
 @media(max-width:860px){.main{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1.5px solid var(--border)}.three-col,.niche-grid{grid-template-columns:1fr 1fr}}
+
+/* image section */
+.img-preview-box { width:100%; border-radius:var(--radius-sm); overflow:hidden; border:1.5px solid var(--border); background:var(--surface2); min-height:120px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+.img-preview-box img { width:100%; display:block; border-radius:var(--radius-sm); }
+.img-placeholder { color:var(--text-muted); font-size:12px; font-style:italic; text-align:center; padding:20px; }
+.btn-img { background:#0d1117; color:#58a6ff; border:1.5px solid #30363d; font-weight:600; }
+.btn-img:hover:not(:disabled) { background:#161b22; border-color:#58a6ff; }
+.btn-download { background:var(--info-lt); color:var(--info); border:1.5px solid #86a8d0; font-weight:600; }
+.btn-download:hover:not(:disabled) { background:var(--info); color:white; }
 </style>
 </head>
 <body>
@@ -165,7 +174,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <div class="logo">
     <span class="logo-accent">OI360</span>
     <span class="logo-divider">/</span>
-    <span class="logo-sub">LinkedIn Post Agent v4 — Evergreen</span>
+    <span class="logo-sub">LinkedIn Post Agent v5 — Evergreen</span>
   </div>
   <div class="status-pill" id="status-pill">
     <span class="status-dot" id="status-dot"></span>
@@ -185,6 +194,14 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
         <button class="eye-btn" onclick="toggleVis('anthropic-key',this)">Show</button>
       </div>
       <div class="field-hint">console.anthropic.com → API Keys → Create Key</div>
+    </div>
+    <div class="field">
+      <label>OpenAI API Key <span style="font-weight:400;color:var(--text-muted)">(for image generation)</span></label>
+      <div class="key-row">
+        <input type="password" id="openai-key" placeholder="sk-…" oninput="saveOpenAI()" autocomplete="off"/>
+        <button class="eye-btn" onclick="toggleVis('openai-key',this)">Show</button>
+      </div>
+      <div class="field-hint">platform.openai.com → API Keys → Create key. Powers gpt-image-2 (latest). Generates scroll-stopping LinkedIn graphics.</div>
     </div>
     <div class="field">
       <label>GHL Private Integration Token</label>
@@ -326,6 +343,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       <div class="action-row" style="margin-top:16px">
         <button class="btn btn-primary" id="gen-btn" onclick="generatePost()" disabled>Generate Post</button>
         <button class="btn btn-secondary" onclick="clearPost()">Clear</button>
+        <button class="btn btn-secondary" id="export-btn" onclick="exportCSV()" disabled>Export CSV</button>
       </div>
       <div class="toast" id="gen-toast"></div>
     </div>
@@ -346,6 +364,43 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
         <span style="font-size:11.5px;color:var(--text-muted)">LinkedIn max: 3,000 characters</span>
         <span class="char-count" id="char-count"></span>
       </div>
+    </div>
+  </div>
+
+
+  <div class="panel-section">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-dot" style="background:#0d1117"></span>Step 2.5 — Generate Image <span style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#fff;background:#0d1117;padding:3px 9px;border-radius:20px;margin-left:6px;">⚡ GPT-IMAGE-2</span></div>
+      <span id="img-toggle-wrap" style="display:none"><label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);cursor:pointer;"><input type="checkbox" id="include-img" checked style="accent-color:var(--accent)"> Include image in GHL draft</label></span>
+    </div>
+    <div class="panel-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div class="field" style="margin-bottom:0">
+          <label style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:5px;display:block;">Quality</label>
+          <select id="img-quality">
+            <option value="low">Low — fast draft (~$0.005)</option>
+            <option value="medium" selected>Medium — recommended (~$0.041)</option>
+            <option value="high">High — hero posts (~$0.165)</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:5px;display:block;">Format</label>
+          <select id="img-size">
+            <option value="1024x1536" selected>Portrait 4:5 (LinkedIn feed)</option>
+            <option value="1024x1024">Square 1:1 (feed / story)</option>
+            <option value="1536x1024">Landscape 3:2 (article cover)</option>
+          </select>
+        </div>
+      </div>
+      <div class="img-preview-box" id="img-preview-box">
+        <span class="img-placeholder">Generate a post first, then click Generate Image to create a matching graphic using OpenAI's image model.</span>
+      </div>
+      <div class="action-row" style="margin-top:0">
+        <button class="btn btn-img" id="img-btn" onclick="generateImage()" disabled>Generate Image</button>
+        <button class="btn btn-download" id="download-btn" onclick="downloadImage()" disabled style="display:none">⬇ Download Image</button>
+        <button class="btn btn-secondary" onclick="clearImage()" style="display:none" id="clear-img-btn">Clear</button>
+      </div>
+      <div class="toast" id="img-toast"></div>
     </div>
   </div>
 
@@ -570,11 +625,13 @@ window.onload = () => {
   const gl = localStorage.getItem('oi360_gl');
   const ga = localStorage.getItem('oi360_ga');
   const uid = localStorage.getItem('oi360_uid');
+  const oai = localStorage.getItem('oi360_oai');
   if (ak) document.getElementById('anthropic-key').value = ak;
   if (gt) document.getElementById('ghl-token').value = gt;
   if (gl) document.getElementById('ghl-location').value = gl;
   if (ga) document.getElementById('ghl-account').value = ga;
   if (uid) document.getElementById('ghl-user-id').value = uid;
+  if (oai) document.getElementById('openai-key').value = oai;
   checkReady();
 };
 
@@ -851,6 +908,9 @@ Output only the post body. Nothing else.`;
     document.getElementById('edit-toggle').textContent = 'Edit post';
     document.getElementById('post-btn').disabled = false;
     document.getElementById('copy-btn').disabled = false;
+    document.getElementById('img-btn').disabled = false;
+    document.getElementById('export-btn').disabled = false;
+    exportBatch.push({pos:currentPos, niche:nicheKey, pillar, format, cta:ctaType, caption:generatedPost});
     updateCharCount();
     showTags(nicheKey, pillar, format, ctaType);
     addHistory(generatedPost, currentPos, nicheKey);
@@ -968,6 +1028,229 @@ function showCopySuccess(btn) {
   currentPos++;
   renderCycleInfo();
 }
+
+// ── IMAGE GENERATION ──────────────────────────────────────────
+let generatedImageB64 = '';
+let generatedImageUrl = '';
+
+function saveOpenAI() {
+  const key = document.getElementById('openai-key').value.trim();
+  if (key) localStorage.setItem('oi360_oai', key);
+}
+
+// Load OpenAI key on startup — patch into window.onload
+const _origOnload = window.onload;
+window.onload = () => {
+  if (_origOnload) _origOnload();
+  const oai = localStorage.getItem('oi360_oai');
+  if (oai) document.getElementById('openai-key').value = oai;
+};
+
+function buildImagePrompt(post, niche, pillar) {
+  const nicheLabel = NICHES[niche] ? NICHES[niche].label : 'local service businesses';
+  const lines = post.split('\n').filter(l => l.trim().length > 0);
+  const headline = lines[0].trim().replace(/['"]/g, '');
+
+  // Extract CTA from the post (last non-empty line or drop/call/dm line)
+  const ctaLine = lines.slice(-2).find(l =>
+    /drop|call|dm|curious|comment/i.test(l)
+  ) || 'Drop "curious" in the comments';
+
+  // ── PILLAR-SPECIFIC VISUAL DIRECTION ──
+  const visualDirections = {
+    'Missed calls = missed revenue': {
+      scene: `A split-second dramatic moment: a business owner mid-conversation with a client, their phone screen visible showing a ringing call from "New Inquiry". In the soft background, a competitor at their desk answering a phone, a subtle "NEW CLIENT WON" indicator glowing on their monitor. The contrast between the two is immediate and visceral.`,
+      mood: `Urgent. Real. The cost of one moment made visible. Not dark — bright office lighting that makes the scene feel painfully relatable.`,
+      color: `Clean whites and warm office tones with a sharp red or amber accent on the missed call notification. Bold typography in deep charcoal or black, not white-on-dark.`,
+      style: `Editorial photography feel. Like a still from a business documentary. High resolution, not staged or stock.`
+    },
+    'First responder wins': {
+      scene: `Two phones side by side. One showing an unanswered call going to voicemail — muted, fading. The other showing a connected call, green, active, a person's hand answering confidently. Between them, bold text making the race explicit. Simple, graphic, immediately readable.`,
+      mood: `Competitive. Fast. The visual equivalent of a starting gun. Energetic without being aggressive.`,
+      color: `High contrast split — one side muted gray and red, other side vibrant green and white. Clean, bold, graphic design approach rather than photography.`,
+      style: `Graphic design / bold infographic style. Think campaign poster, not corporate slide.`
+    },
+    'Simple business math': {
+      scene: `A close-up of a calculator or phone screen showing a running total of lost revenue — $1,200, $2,400, $3,600 stacking up. Or a bold typographic layout where the math IS the image. Numbers big enough to be read in the feed without stopping.`,
+      mood: `Blunt. Confrontational with data. The math speaks, the design amplifies it.`,
+      color: `Clean white or off-white background. Numbers in bold black with one accent color (red for the loss figure, green for the solution). Newspaper-editorial clarity.`,
+      style: `Typographic-first design. The numbers are the visual. Clean sans-serif, bold weights, intentional whitespace. Nothing decorative — just the math.`
+    },
+    'Real scenarios — vivid and specific': {
+      scene: `A hyper-specific real-world moment: a ${nicheLabel.toLowerCase()} professional physically occupied — on a roof, under a sink, in a meeting room — while their phone buzzes on a surface nearby with multiple missed calls piling up. The phone is in focus. The person is slightly blurred but recognizable by their work context.`,
+      mood: `Immediate. Relatable. "That's exactly what happens to me." The specificity is what stops the scroll.`,
+      color: `Natural, realistic lighting. Authentic environment colors — no artificial filtering. Bold headline in white with a dark drop shadow for readability over any background.`,
+      style: `Photorealistic and candid-feeling. The opposite of a staged stock photo. High production value that still feels real.`
+    },
+    "You don't have a lead problem — contrarian": {
+      scene: `A visual contradiction: a business owner surrounded by multiple phones all ringing at once — leads clearly arriving — while they look overwhelmed or unaware. Or a graphic showing a full funnel at the top, a massive leak in the middle, and almost nothing coming out the bottom. The demand is there. The system is broken.`,
+      mood: `Pattern interrupt. Provocative. Makes the viewer stop because they expected one thing and got another.`,
+      color: `Unexpected palette — bright, almost optimistic colors that contrast with the problem being shown. The irony of a bright visual depicting a broken system creates cognitive dissonance that stops scrolling.`,
+      style: `Slightly surreal or conceptual. Not documentary — more like an editorial illustration that's been made photorealistic.`
+    },
+    'AI curiosity / demystify': {
+      scene: `A warm, human moment: a real person having a natural phone conversation, unaware it's AI-assisted. Not a robot. Not a server room. Just a professional on their phone, the screen subtly showing an AI waveform or assistant indicator. Make AI feel like a helpful colleague, not a science fiction concept.`,
+      mood: `Approachable. Reassuring. "This is simpler than you think." Curiosity without intimidation.`,
+      color: `Warm neutrals — cream, soft gray, warm white. A single accent color (soft blue or green) to indicate the AI element without making it feel cold or technical.`,
+      style: `Clean lifestyle photography. The kind of image that makes technology feel human. No HUDs, no holograms, no blue glow.`
+    },
+    'Social proof moments': {
+      scene: `A genuine human reaction moment — a business owner reading a notification or message on their phone, expression showing genuine surprise or relief. Or a before/after split: missed call notification versus "New Lead Captured" notification. Real reactions, not posed satisfaction.`,
+      mood: `Authentic. Warm. Credible. The visual equivalent of a real testimonial.`,
+      color: `Natural, warm tones. Feels like a candid photo, not a brand campaign. Headline typography in clean black on white or light backgrounds.`,
+      style: `Candid documentary style. High resolution but feels unposed. The authenticity is what makes it credible.`
+    }
+  };
+
+  // Match pillar to direction, fallback to missed calls
+  const matchKey = Object.keys(visualDirections).find(k =>
+    pillar && pillar && pillar.toLowerCase().includes(k.toLowerCase().split(' ')[0])
+  ) || 'Missed calls = missed revenue';
+
+  const direction = visualDirections[matchKey] || visualDirections['Missed calls = missed revenue'];
+
+  return `Create a scroll-stopping LinkedIn social media graphic for ${nicheLabel}.
+
+GOAL: Make someone stop mid-scroll on LinkedIn. Not because it's shocking — because it's visually unexpected, immediately relatable, and impossible to ignore. Professional audience but that does NOT mean boring.
+
+SCENE TO VISUALIZE:
+${direction.scene}
+
+MOOD & ENERGY:
+${direction.mood}
+
+COLOR DIRECTION:
+${direction.color}
+
+VISUAL STYLE:
+${direction.style}
+
+HEADLINE TEXT (display prominently, large, readable in feed):
+"${headline}"
+
+CTA BAR (clean bar at the bottom of the image):
+${ctaLine}
+
+STRICT RULES:
+- No logos, no phone numbers, no URLs
+- No dark-for-the-sake-of-dark — let the composition determine the lighting
+- No generic stock photo corporate handshake energy
+- No clip art, no icons, no flat illustrations unless the pillar specifically calls for it
+- Typography must be bold enough to read as a thumbnail
+- The image should make someone FEEL something before they read a word
+
+FORMAT: Portrait 4:5 ratio (1080x1350px equivalent) for LinkedIn feed.`;
+}
+
+async function generateImage() {
+  const openaiKey = document.getElementById('openai-key').value.trim();
+  if (!openaiKey) { setToast('img-toast', 'Add your OpenAI API key in the sidebar first.', 'error'); return; }
+  if (!generatedPost) { setToast('img-toast', 'Generate a post first.', 'error'); return; }
+
+  const btn = document.getElementById('img-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating image…';
+  setToast('img-toast', '', 'info');
+
+  const idx = (currentPos - 1) % 90;
+  const nicheKey = mode === 'auto' ? PLAN[idx].niche : manualNiche;
+  const currentPillar = mode === "auto" ? PLAN[(currentPos-1)%90].pillar : (document.querySelector(".angle-btn.selected")?.dataset.val || "");
+  const prompt = buildImagePrompt(generatedPost, nicheKey, currentPillar);
+  const imgQuality = document.getElementById('img-quality').value || 'medium';
+  const imgSize = document.getElementById('img-size').value || '1024x1536';
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + openaiKey
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-2',
+        prompt: prompt,
+        n: 1,
+        size: imgSize,
+        quality: imgQuality,
+        output_format: 'jpeg',
+        response_format: 'b64_json'
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    generatedImageB64 = data.data[0].b64_json;
+    generatedImageUrl = 'data:image/jpeg;base64,' + generatedImageB64;
+
+    const box = document.getElementById('img-preview-box');
+    box.innerHTML = '<img src="' + generatedImageUrl + '" alt="Generated social media image" />';
+
+    document.getElementById('download-btn').style.display = 'inline-flex';
+    document.getElementById('clear-img-btn').style.display = 'inline-flex';
+    document.getElementById('img-toggle-wrap').style.display = 'block';
+
+    setToast('img-toast', '✓ Image generated — preview above. Download or include it when sending to GHL.', 'success');
+  } catch(e) {
+    setToast('img-toast', '✗ ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Regenerate Image';
+    btn.innerHTML = '↻ Regenerate Image';
+  }
+}
+
+function downloadImage() {
+  if (!generatedImageB64) return;
+  const a = document.createElement('a');
+  a.href = generatedImageUrl;
+  a.download = 'linkedin-post-' + currentPos + '.jpg';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setToast('img-toast', '✓ Image downloaded — upload it to GHL Social Planner when publishing.', 'info');
+}
+
+function clearImage() {
+  generatedImageB64 = '';
+  generatedImageUrl = '';
+  document.getElementById('img-preview-box').innerHTML = '<span class="img-placeholder">Generate a post first, then click Generate Image to create a matching graphic using OpenAI image model.</span>';
+  document.getElementById('download-btn').style.display = 'none';
+  document.getElementById('clear-img-btn').style.display = 'none';
+  document.getElementById('img-toggle-wrap').style.display = 'none';
+  setToast('img-toast', '', 'info');
+}
+
+// ── CSV EXPORT ──────────────────────────────────────────
+let exportBatch = [];
+
+function exportCSV() {
+  if (exportBatch.length === 0) {
+    setToast('gen-toast', 'No posts to export yet. Generate some posts first.', 'error');
+    return;
+  }
+  const headers = ['Post #', 'Niche', 'Pillar', 'Format', 'CTA Type', 'Caption'];
+  const rows = exportBatch.map(p => [
+    p.pos,
+    p.niche,
+    p.pillar,
+    p.format,
+    p.cta,
+    '"' + p.caption.replace(/"/g, '""') + '"'
+  ]);
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'linkedin-posts-batch.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setToast('gen-toast', '✓ CSV exported with ' + exportBatch.length + ' posts — open in Excel or Google Sheets.', 'success');
+}
+
 </script>
 </body>
 </html>
