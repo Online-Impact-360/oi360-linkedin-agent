@@ -159,8 +159,8 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 @media(max-width:860px){.main{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1.5px solid var(--border)}.three-col,.niche-grid{grid-template-columns:1fr 1fr}}
 
 /* image section */
-.img-preview-box { width:100%; border-radius:var(--radius-sm); overflow:hidden; border:1.5px solid var(--border); background:var(--surface2); min-height:120px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
-.img-preview-box img { width:100%; display:block; border-radius:var(--radius-sm); }
+.img-preview-box { width:100%; border-radius:var(--radius-sm); overflow:hidden; border:1.5px solid var(--border); background:var(--surface2); min-height:120px; max-height:320px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+.img-preview-box img { width:100%; height:100%; max-height:320px; object-fit:cover; display:block; border-radius:var(--radius-sm); }
 .img-placeholder { color:var(--text-muted); font-size:12px; font-style:italic; text-align:center; padding:20px; }
 .btn-img { background:#0d1117; color:#58a6ff; border:1.5px solid #30363d; font-weight:600; }
 .btn-img:hover:not(:disabled) { background:#161b22; border-color:#58a6ff; }
@@ -948,12 +948,45 @@ async function postToGHL() {
 
   try {
     const userId = localStorage.getItem('oi360_uid') || '';
+
+    // Build media array — upload image to GHL if checkbox checked and image exists
+    let mediaArray = [];
+    const includeImg = document.getElementById('include-img');
+    if (includeImg && includeImg.checked && generatedImageB64) {
+      try {
+        // Convert base64 to blob and upload to GHL media library
+        const byteChars = atob(generatedImageB64);
+        const byteArr = new Uint8Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+        const imgBlob = new Blob([byteArr], {type: 'image/jpeg'});
+        const formData = new FormData();
+        formData.append('file', imgBlob, 'linkedin-post-' + currentPos + '.jpg');
+        formData.append('name', 'linkedin-post-' + currentPos);
+
+        const uploadRes = await fetch('https://services.leadconnectorhq.com/medias/upload-file', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + ghlToken,
+            'Version': '2021-07-28'
+          },
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        if (uploadRes.ok && (uploadData.url || uploadData.fileUrl || uploadData.data?.url)) {
+          const imgUrl = uploadData.url || uploadData.fileUrl || uploadData.data?.url;
+          mediaArray = [{ url: imgUrl, type: 'image' }];
+        }
+      } catch(imgErr) {
+        console.warn('Image upload skipped:', imgErr.message);
+      }
+    }
+
     const payload = {
       accountIds: [accountId],
       summary: generatedPost,
       status: schedType === 'scheduled' ? 'scheduled' : 'draft',
       type: 'post',
-      media: [],
+      media: mediaArray,
       userId: userId
     };
     if (publishDate) payload.publishedAt = publishDate;
@@ -1186,6 +1219,7 @@ async function generateImage() {
     box.innerHTML = '<img src="' + generatedImageUrl + '" alt="Generated social media image" />';
 
     document.getElementById('download-btn').style.display = 'inline-flex';
+    document.getElementById('download-btn').disabled = false;
     document.getElementById('clear-img-btn').style.display = 'inline-flex';
     document.getElementById('img-toggle-wrap').style.display = 'block';
 
