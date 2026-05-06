@@ -351,14 +351,14 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 
   <div class="panel-section">
     <div class="panel-header">
-      <div class="panel-title"><span class="panel-title-dot dot-yellow"></span>Step 3 — Publish to LinkedIn via GHL</div>
+      <div class="panel-title"><span class="panel-title-dot dot-yellow"></span>Step 3 — Send to GHL Social Planner</div>
       <span style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#5b21b6;background:#f0ebff;padding:3px 9px;border-radius:20px;">⚡ GO HIGH LEVEL</span>
     </div>
     <div class="panel-body">
       <div class="field" style="margin-bottom:16px">
         <label style="margin-bottom:10px">When to publish</label>
         <div class="radio-row">
-          <label class="radio-label"><input type="radio" name="sched" value="now" checked onchange="toggleSched(this)">Post now</label>
+          <label class="radio-label"><input type="radio" name="sched" value="now" checked onchange="toggleSched(this)">Save as draft</label>
           <label class="radio-label"><input type="radio" name="sched" value="scheduled" onchange="toggleSched(this)">Schedule for later</label>
         </div>
       </div>
@@ -367,13 +367,13 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
         <input type="datetime-local" id="sched-dt" style="max-width:260px"/>
       </div>
       <div class="action-row">
-        <button class="btn btn-primary" id="post-btn" onclick="postToGHL()" disabled>Send to GHL Social Planner</button>
+        <button class="btn btn-primary" id="post-btn" onclick="postToGHL()" disabled>Send to GHL as Draft</button>
         <button class="btn btn-copy" id="copy-btn" onclick="copyPost()" disabled>📋 Copy Text</button>
       </div>
       <div class="toast" id="post-toast"></div>
       <div class="callout callout-blue" style="margin-top:14px">
         <span class="callout-icon">💡</span>
-        <span><strong>First comment rule:</strong> After posting, go to LinkedIn and add the demo number <strong>1-888-708-7367</strong> as the first comment — not in the post body. Protects reach while keeping the CTA visible.</span>
+        <span><strong>Workflow:</strong> Post is saved as a draft in GHL Social Planner. Open GHL → Marketing → Social Planner to add an image, review the copy, then publish. Add <strong>1-888-708-7367</strong> as the first comment on LinkedIn after publishing — not in the post body.</span>
       </div>
     </div>
   </div>
@@ -891,7 +891,7 @@ async function postToGHL() {
     const payload = {
       accountIds: [accountId],
       summary: generatedPost,
-      status: schedType === 'scheduled' ? 'scheduled' : 'published',
+      status: schedType === 'scheduled' ? 'scheduled' : 'draft',
       type: 'post',
       media: [],
       userId: userId
@@ -907,7 +907,7 @@ async function postToGHL() {
     if (!res.ok) throw new Error(data.message || data.error || 'GHL API error ' + res.status);
     const msg = schedType === 'scheduled'
       ? '✓ Scheduled in GHL for ' + new Date(publishDate).toLocaleString()
-      : '✓ Posted to LinkedIn via GHL Social Planner';
+      : '✓ Saved as draft in GHL Social Planner — open GHL to add image and publish';
     setToast('post-toast', msg, 'success');
     currentPos++;
     renderCycleInfo();
@@ -917,7 +917,7 @@ async function postToGHL() {
     setStatus(false);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Send to GHL Social Planner';
+    btn.textContent = 'Send to GHL as Draft';
   }
 }
 
