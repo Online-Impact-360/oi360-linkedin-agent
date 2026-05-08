@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinkedIn Post Agent v5 — Online Impact 360</title>
+<title>LinkedIn Post Agent v7 — Online Impact 360</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,9 +16,11 @@
   --success:#1a6b3a; --success-lt:#e8f5ee;
   --info:#1a4a7a; --info-lt:#e8f0fa;
   --warn:#7a4a10; --warn-lt:#fef4e4;
-  --pm:#1a4a7a; --pm-lt:#e8f0fa; --pm-border:#86a8d0;
-  --ins:#6b1a6b; --ins-lt:#f5e8f5; --ins-border:#c086c0;
-  --mtg:#7a4a10; --mtg-lt:#fef4e4; --mtg-border:#e0b860;
+  --pm:#1a4a7a; --pm-lt:#e8f0fa;
+  --ins:#6b1a6b; --ins-lt:#f5e8f5;
+  --mtg:#7a4a10; --mtg-lt:#fef4e4;
+  --dnt:#0e5c4a; --dnt-lt:#e4f5f0;
+  --con:#6b3a1a; --con-lt:#f5ede6;
   --radius:10px; --radius-sm:6px;
   --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
 }
@@ -54,7 +56,6 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .eye-btn { flex-shrink:0; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-sm); color:var(--text-muted); cursor:pointer; padding:9px 11px; font-size:11px; font-family:'DM Sans',sans-serif; font-weight:500; white-space:nowrap; transition:all .15s; height:38px; }
 .eye-btn:hover { border-color:var(--border-strong); color:var(--text-mid); }
 .field-hint { font-size:11px; color:var(--text-muted); margin-top:5px; line-height:1.5; padding:7px 10px; background:var(--surface2); border-radius:var(--radius-sm); border-left:3px solid var(--border-strong); }
-/* cycle tracker */
 .cycle-tracker { background:var(--accent); border-radius:var(--radius); padding:16px; color:white; }
 .cycle-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
 .cycle-num { font-family:'Instrument Serif',serif; font-size:42px; line-height:1; color:white; }
@@ -67,21 +68,18 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .cycle-topic { font-size:12px; color:rgba(255,255,255,.9); font-weight:500; line-height:1.4; }
 .cycle-meta { font-size:11px; color:rgba(255,255,255,.6); margin-top:3px; }
 .niche-indicator { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; margin-top:6px; }
-.niche-pm  { background:rgba(255,255,255,.2); color:white; }
-.niche-ins { background:rgba(255,255,255,.15); color:rgba(255,255,255,.9); }
-.niche-mtg { background:rgba(255,255,255,.1); color:rgba(255,255,255,.8); }
-/* stats row */
+.niche-pm,.niche-dnt { background:rgba(255,255,255,.2); color:white; }
+.niche-ins,.niche-con { background:rgba(255,255,255,.15); color:rgba(255,255,255,.9); }
+.niche-mtg { background:rgba(255,255,255,.12); color:rgba(255,255,255,.8); }
 .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:12px; }
 .stat-box { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; padding:8px 10px; text-align:center; }
 .stat-n { font-size:18px; font-weight:700; color:var(--accent); }
 .stat-l { font-size:10px; color:var(--text-muted); margin-top:1px; }
-/* history */
 .history-item { background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:6px; cursor:pointer; transition:all .15s; }
 .history-item:hover { border-color:var(--accent); background:var(--accent-lt); }
 .hi-meta { font-size:10px; color:var(--text-muted); margin-bottom:3px; display:flex; justify-content:space-between; font-weight:500; }
 .hi-preview { font-size:11.5px; color:var(--text-mid); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .no-history { font-size:12px; color:var(--text-muted); text-align:center; padding:8px 0; font-style:italic; }
-/* content panel */
 .content-panel { padding:24px 28px; overflow-y:auto; background:var(--bg); }
 .panel-section { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; box-shadow:var(--shadow-sm); }
 .panel-header { padding:14px 18px; border-bottom:1.5px solid var(--border); background:var(--surface2); display:flex; align-items:center; justify-content:space-between; }
@@ -89,25 +87,23 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .panel-title-dot { width:8px; height:8px; border-radius:50%; }
 .dot-green{background:var(--accent)} .dot-blue{background:var(--info)} .dot-yellow{background:#d4a020}
 .panel-body { padding:18px; }
-/* mode toggle */
 .mode-toggle { display:flex; gap:0; border:1.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; background:var(--surface2); margin-bottom:16px; }
 .mode-btn { flex:1; padding:9px 14px; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--text-muted); transition:all .15s; text-align:center; }
 .mode-btn.active { background:var(--accent); color:white; font-weight:600; }
 .mode-btn:hover:not(.active) { background:var(--border); color:var(--text-mid); }
-/* niche pills in manual */
 .niche-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-bottom:14px; }
 .niche-btn { padding:9px 10px; font-size:12px; font-family:'DM Sans',sans-serif; font-weight:600; text-align:center; cursor:pointer; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text-mid); transition:all .15s; }
 .niche-btn:hover { border-color:var(--accent); }
 .niche-btn.sel-pm  { border-color:var(--pm);  background:var(--pm-lt);  color:var(--pm); }
 .niche-btn.sel-ins { border-color:var(--ins); background:var(--ins-lt); color:var(--ins); }
 .niche-btn.sel-mtg { border-color:var(--mtg); background:var(--mtg-lt); color:var(--mtg); }
-/* angle grid */
+.niche-btn.sel-dnt { border-color:var(--dnt); background:var(--dnt-lt); color:var(--dnt); }
+.niche-btn.sel-con { border-color:var(--con); background:var(--con-lt); color:var(--con); }
 .angle-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
 .angle-btn { padding:9px 10px; font-size:12px; font-family:'DM Sans',sans-serif; font-weight:500; text-align:left; cursor:pointer; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text-mid); transition:all .15s; line-height:1.3; }
 .angle-btn:hover { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); }
 .angle-btn.selected { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); font-weight:600; }
 .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px; }
-/* buttons */
 .btn { padding:10px 20px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; border-radius:var(--radius-sm); cursor:pointer; border:none; transition:all .15s; display:inline-flex; align-items:center; gap:7px; }
 .btn:disabled { opacity:.4; cursor:not-allowed; }
 .btn-primary { background:var(--accent); color:white; box-shadow:0 2px 8px rgba(26,107,58,.25); }
@@ -117,13 +113,11 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .btn-copy { background:var(--accent-lt); color:var(--accent); border:1.5px solid #86c9a0; font-weight:600; }
 .btn-copy:hover:not(:disabled) { background:var(--accent); color:white; }
 .action-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:14px; }
-/* toasts */
 .toast { padding:10px 14px; border-radius:var(--radius-sm); font-size:12.5px; margin-top:10px; display:none; border-left:3px solid; line-height:1.5; font-weight:500; }
 .toast.show{display:block}
 .toast.info   { background:var(--info-lt);    border-color:var(--info);    color:var(--info); }
 .toast.success{ background:var(--success-lt); border-color:var(--success); color:var(--success); }
 .toast.error  { background:var(--danger-lt);  border-color:var(--danger);  color:var(--danger); }
-/* preview */
 .preview-box { background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:18px; min-height:180px; font-size:13.5px; line-height:1.85; color:var(--text); white-space:pre-wrap; word-break:break-word; }
 .preview-placeholder { color:var(--text-muted); font-style:italic; font-size:13px; }
 .preview-edit { width:100%; background:var(--surface); border:1.5px solid var(--accent); border-radius:var(--radius-sm); padding:18px; min-height:180px; font-family:'DM Sans',sans-serif; font-size:13.5px; line-height:1.85; color:var(--text); resize:vertical; outline:none; display:none; box-shadow:0 0 0 3px rgba(26,107,58,.1); }
@@ -132,33 +126,29 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 .char-count.warn{color:var(--warn)} .char-count.danger{color:var(--danger)}
 .edit-toggle { font-size:12px; color:var(--accent); cursor:pointer; font-weight:600; display:none; }
 .edit-toggle:hover { text-decoration:underline; }
-/* tags */
 .post-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
 .tag { font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; }
 .tag-pm  { background:var(--pm-lt);  color:var(--pm); }
 .tag-ins { background:var(--ins-lt); color:var(--ins); }
 .tag-mtg { background:var(--mtg-lt); color:var(--mtg); }
+.tag-dnt { background:var(--dnt-lt); color:var(--dnt); }
+.tag-con { background:var(--con-lt); color:var(--con); }
 .tag-format { background:var(--accent-lt); color:var(--accent); }
 .tag-cta    { background:var(--warn-lt);   color:var(--warn); }
 .tag-ghl    { background:#f0ebff;           color:#5b21b6; }
-/* radio */
 .radio-row { display:flex; gap:16px; flex-wrap:wrap; }
 .radio-label { display:flex; align-items:center; gap:7px; font-size:13px; font-weight:500; color:var(--text-mid); cursor:pointer; padding:8px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); transition:all .15s; background:var(--surface2); }
 .radio-label:has(input:checked) { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); }
 .radio-label input { accent-color:var(--accent); }
-/* callout */
 .callout { padding:10px 14px; border-radius:var(--radius-sm); font-size:12px; line-height:1.55; font-weight:500; display:flex; gap:9px; align-items:flex-start; }
 .callout-green { background:var(--accent-lt); color:var(--accent); border:1.5px solid #86c9a0; }
 .callout-blue  { background:var(--info-lt);   color:var(--info);   border:1.5px solid #86a8d0; }
 .callout-icon  { flex-shrink:0; font-size:14px; margin-top:1px; }
-/* spinner */
 .spinner { display:inline-block; width:13px; height:13px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; }
 @keyframes spin{to{transform:rotate(360deg)}}
 .override-panel{display:none} .override-panel.visible{display:block}
 ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
 @media(max-width:860px){.main{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1.5px solid var(--border)}.three-col,.niche-grid{grid-template-columns:1fr 1fr}}
-
-/* image section */
 .img-preview-box { width:100%; border-radius:var(--radius-sm); overflow:hidden; border:1.5px solid var(--border); background:var(--surface2); min-height:80px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
 .img-preview-box img { width:100%; max-height:300px; object-fit:contain; display:block; border-radius:var(--radius-sm); background:#000; }
 .img-placeholder { color:var(--text-muted); font-size:12px; font-style:italic; text-align:center; padding:20px; }
@@ -169,22 +159,20 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 </style>
 </head>
 <body>
-
 <div class="header">
   <div class="logo">
     <span class="logo-accent">OI360</span>
     <span class="logo-divider">/</span>
-    <span class="logo-sub">LinkedIn Post Agent v5 — Evergreen</span>
+    <span class="logo-sub">LinkedIn Post Agent v7 — Evergreen</span>
   </div>
   <div class="status-pill" id="status-pill">
-    <span class="status-dot" id="status-dot"></span>
+    <span class="status-dot"></span>
     <span id="status-label">Enter credentials to begin</span>
   </div>
 </div>
 
 <div class="main">
 <div class="sidebar">
-
   <div class="sidebar-block">
     <div class="block-title"><div class="block-title-icon icon-green">🔑</div>API Credentials</div>
     <div class="field">
@@ -196,12 +184,12 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       <div class="field-hint">console.anthropic.com → API Keys → Create Key</div>
     </div>
     <div class="field">
-      <label>OpenAI API Key <span style="font-weight:400;color:var(--text-muted)">(for image generation)</span></label>
+      <label>OpenAI API Key <span style="font-weight:400;color:var(--text-muted)">(images)</span></label>
       <div class="key-row">
         <input type="password" id="openai-key" placeholder="sk-…" oninput="saveOpenAI()" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('openai-key',this)">Show</button>
       </div>
-      <div class="field-hint">platform.openai.com → API Keys → Create key. Powers gpt-image-2 (latest). Generates scroll-stopping LinkedIn graphics.</div>
+      <div class="field-hint">platform.openai.com → API Keys. Powers gpt-image-2.</div>
     </div>
     <div class="field">
       <label>GHL Private Integration Token</label>
@@ -209,7 +197,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
         <input type="password" id="ghl-token" placeholder="pit-…" oninput="checkReady()" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('ghl-token',this)">Show</button>
       </div>
-      <div class="field-hint">GHL → Settings → Integrations → Private Integrations → Create. Scope: <strong>socialplanner/post.write</strong></div>
+      <div class="field-hint">GHL → Settings → Integrations → Private Integrations. Scope: <strong>socialplanner/post.write</strong></div>
     </div>
     <div class="field">
       <label>GHL Location ID</label>
@@ -233,7 +221,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
         <input type="text" id="ghl-user-id" placeholder="Paste User ID…" oninput="saveUserId()" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('ghl-user-id',this)">Show</button>
       </div>
-      <div class="field-hint">GHL → Settings → My Profile → scroll to bottom → copy User ID</div>
+      <div class="field-hint">GHL → Settings → My Profile → scroll to bottom</div>
     </div>
     <button onclick="clearCredentials()" style="width:100%;margin-top:6px;padding:7px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--text-muted);background:transparent;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">🗑 Clear saved credentials</button>
   </div>
@@ -243,20 +231,20 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="stats-row">
       <div class="stat-box"><div class="stat-n" id="stat-post">1</div><div class="stat-l">Post #</div></div>
       <div class="stat-box"><div class="stat-n" id="stat-cycle">1</div><div class="stat-l">Cycle</div></div>
-      <div class="stat-box"><div class="stat-n">90</div><div class="stat-l">Library</div></div>
+      <div class="stat-box"><div class="stat-n" id="stat-library">—</div><div class="stat-l">Library</div></div>
     </div>
     <div class="cycle-tracker">
       <div class="cycle-top">
         <div>
           <div class="cycle-num" id="current-post-display">1</div>
-          <div class="cycle-label">of 90 — then repeats forever</div>
+          <div class="cycle-label" id="cycle-label-text">of … — then repeats forever</div>
         </div>
         <div class="cycle-nav">
           <button class="cycle-nav-btn" onclick="prevPost()">←</button>
           <button class="cycle-nav-btn" onclick="nextPost()">→</button>
         </div>
       </div>
-      <div class="cycle-progress"><div class="cycle-fill" id="cycle-fill" style="width:1.1%"></div></div>
+      <div class="cycle-progress"><div class="cycle-fill" id="cycle-fill" style="width:.7%"></div></div>
       <div class="cycle-topic" id="cycle-topic">—</div>
       <div class="cycle-meta" id="cycle-meta">—</div>
       <div id="cycle-niche-pill"></div>
@@ -267,7 +255,6 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="block-title"><div class="block-title-icon icon-blue">🕐</div>Session History</div>
     <div id="history-list"><div class="no-history">No posts generated yet</div></div>
   </div>
-
 </div>
 
 <div class="content-panel">
@@ -281,29 +268,29 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
         <button class="mode-btn active" id="mode-auto" onclick="setMode('auto')">⚡ Auto — Evergreen Engine</button>
         <button class="mode-btn" id="mode-manual" onclick="setMode('manual')">✏️ Manual — Override</button>
       </div>
-
       <div id="auto-info">
         <div class="callout callout-green">
           <span class="callout-icon">✓</span>
-          Evergreen engine active. 90-post library cycles indefinitely across Property Managers, Insurance Agency Owners, and Mortgage Brokers. Topic, niche, hook, format, and CTA are auto-selected. Hit Generate.
+          Evergreen engine active. 140-post library cycling across 5 niches and 14 content pillars — full Smart Website 360 feature coverage: missed calls, text-back, reviews, form inquiries, after-hours, follow-up, and the daily value anchor. PM 30% · Dental 30% · Construction 20% · Insurance 15% · Mortgage 5%.
         </div>
       </div>
-
       <div class="override-panel" id="override-panel">
         <div class="field">
           <label>Target Niche</label>
           <div class="niche-grid">
             <button class="niche-btn sel-pm" id="nb-pm" onclick="selectNiche('pm')">🏢 Property Managers</button>
+            <button class="niche-btn" id="nb-dnt" onclick="selectNiche('dnt')">🦷 Dental Practices</button>
+            <button class="niche-btn" id="nb-con" onclick="selectNiche('con')">🔨 Construction</button>
             <button class="niche-btn" id="nb-ins" onclick="selectNiche('ins')">🛡️ Insurance Agencies</button>
             <button class="niche-btn" id="nb-mtg" onclick="selectNiche('mtg')">🏠 Mortgage Brokers</button>
           </div>
         </div>
         <div class="field">
           <label>Topic / Hook Idea</label>
-          <textarea id="topic" placeholder="e.g. Why property managers lose qualified tenants to voicemail every weekend…"></textarea>
+          <textarea id="topic" placeholder="e.g. What happens in the 60 seconds after a missed call when the system texts back automatically…"></textarea>
         </div>
         <div class="field">
-          <label>Angle</label>
+          <label>Angle / Content Pillar</label>
           <div class="angle-grid">
             <button class="angle-btn selected" data-val="missed calls = missed revenue">📵 Missed calls = missed revenue</button>
             <button class="angle-btn" data-val="first responder wins">⚡ First responder wins</button>
@@ -311,6 +298,14 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
             <button class="angle-btn" data-val="social proof / real client result">⭐ Social proof</button>
             <button class="angle-btn" data-val="contrarian — you don't have a lead problem">🔄 Contrarian take</button>
             <button class="angle-btn" data-val="simple business math — real cost">🧮 Business math</button>
+            <button class="angle-btn" data-val="unanswered reviews = silent revenue leak">📋 Unanswered reviews</button>
+            <button class="angle-btn" data-val="48-hour silence = lost client">🔕 Response silence</button>
+            <button class="angle-btn" data-val="after-hours gap = lost trust">🌙 After-hours gap</button>
+            <button class="angle-btn" data-val="missed call text-back — 60 seconds changes everything">📲 Text-back window</button>
+            <button class="angle-btn" data-val="online form gone cold — the inquiry that disappeared">📋 Form gone cold</button>
+            <button class="angle-btn" data-val="follow-up nobody sends — the lead that slipped away">🔁 Follow-up gap</button>
+            <button class="angle-btn" data-val="review generation — the count your competitor has that you don't">🌟 Review count gap</button>
+            <button class="angle-btn" data-val="daily value anchor — less than what you already spend">☕ Daily value anchor</button>
           </div>
         </div>
         <div class="three-col">
@@ -318,28 +313,36 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
             <label>Format</label>
             <select id="format-override">
               <option value="">Auto</option>
-              <option>Punch post</option><option>Scenario post</option>
-              <option>Math breakdown</option><option>Story post</option><option>Question post</option>
+              <option>Punch post</option>
+              <option>Scenario post</option>
+              <option>Math breakdown</option>
+              <option>Story post</option>
+              <option>Question post</option>
+              <option>Data post</option>
+              <option>Before/After post</option>
             </select>
           </div>
           <div class="field" style="margin-bottom:0">
             <label>CTA Type</label>
             <select id="cta-override">
               <option value="">Auto</option>
-              <option value="demo">Demo call</option><option value="comment">Comment CTA</option>
-              <option value="dm">DM CTA</option><option value="none">No CTA</option>
+              <option value="demo">Demo call</option>
+              <option value="comment">Comment CTA</option>
+              <option value="dm">DM CTA</option>
+              <option value="ebook">Ebook / free report</option>
+              <option value="none">No CTA</option>
             </select>
           </div>
           <div class="field" style="margin-bottom:0">
             <label>Length</label>
             <select id="length-override">
               <option value="medium" selected>Medium</option>
-              <option value="short">Short</option><option value="long">Long</option>
+              <option value="short">Short</option>
+              <option value="long">Long</option>
             </select>
           </div>
         </div>
       </div>
-
       <div class="action-row" style="margin-top:16px">
         <button class="btn btn-primary" id="gen-btn" onclick="generatePost()" disabled>Generate Post</button>
         <button class="btn btn-secondary" onclick="clearPost()">Clear</button>
@@ -366,7 +369,6 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       </div>
     </div>
   </div>
-
 
   <div class="panel-section">
     <div class="panel-header">
@@ -428,7 +430,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       <div class="toast" id="post-toast"></div>
       <div class="callout callout-blue" style="margin-top:14px">
         <span class="callout-icon">💡</span>
-        <span><strong>Workflow:</strong> Post is saved as a draft in GHL Social Planner. Open GHL → Marketing → Social Planner to add an image, review the copy, then publish. Add <strong>1-888-708-7367</strong> as the first comment on LinkedIn after publishing — not in the post body.</span>
+        <span><strong>Workflow:</strong> Post saved as draft in GHL Social Planner. Open GHL → Marketing → Social Planner, add image, review copy, then publish. Add <strong>1-888-708-7367</strong> as first comment on LinkedIn after publishing — not in the post body.</span>
       </div>
     </div>
   </div>
@@ -439,204 +441,304 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 <script>
 // ── NICHE DEFINITIONS ──────────────────────────────────────────
 const NICHES = {
-  pm:  { label:'Property Managers',       tag:'tag-pm',  color:'pm',
-         desc:'property managers and real estate operators',
-         pain:'missed tenant inquiries, unanswered calls from prospective tenants, vacancies caused by slow response, unmanaged Google reviews costing occupancy rates',
-         value:'$1,200–$3,500/month average tenant value',
-         scenario:'managing multiple properties, handling maintenance calls, showing units' },
-  ins: { label:'Insurance Agency Owners', tag:'tag-ins', color:'ins',
-         desc:'insurance agency owners and independent brokers',
-         pain:'missed quote requests, slow response losing policies to competitors, inbound calls going to voicemail while agents are with clients',
-         value:'$800–$4,000 average policy commission',
-         scenario:'meeting with clients, writing policies, in appointments when new leads call' },
-  mtg: { label:'Mortgage Brokers',        tag:'tag-mtg', color:'mtg',
-         desc:'mortgage brokers and loan officers',
-         pain:'missed pre-approval inquiries, rate-sensitive buyers calling multiple brokers simultaneously, first-responder advantage in a competitive market',
-         value:'$2,000–$8,000 average loan origination fee',
-         scenario:'in closings, reviewing loan files, with clients when new buyer inquiries come in' }
+  pm: {
+    label:'Property Managers', tag:'tag-pm', color:'pm',
+    desc:'property managers and real estate operators',
+    pain:'missed tenant inquiries, unanswered calls from prospective tenants, vacancies caused by slow response, unanswered Google reviews costing occupancy, maintenance requests going silent causing turnover, after-hours tenant emergencies reaching no one, contact form inquiries going cold overnight, no follow-up system after first contact, no proactive review generation system',
+    value:'$1,200–$3,500/month average tenant value, $1,000–$3,000 cost per tenant turnover',
+    scenario:'managing multiple properties, coordinating maintenance, mid-showing when a prospective tenant calls, handling an emergency at one building while inquiry calls come in about a vacancy at another'
+  },
+  dnt: {
+    label:'Dental Practices', tag:'tag-dnt', color:'dnt',
+    desc:'dental practice owners and managing dentists',
+    pain:'missed new patient calls when front desk is chair-side, unanswered Google reviews destroying trust, after-hours dental emergencies reaching voicemail, appointment request forms going cold overnight, no automatic follow-up when a patient inquiry goes quiet, low review count versus competitors who ask every patient',
+    value:'$800–$2,500 average new patient first-visit value, $3,000–$8,000+ lifetime patient value',
+    scenario:'front desk occupied at the chair, dentist mid-procedure when the office line rings, after-hours emergency calls, new patient calling while the hygienist is with someone'
+  },
+  con: {
+    label:'Contractors / Trades', tag:'tag-con', color:'con',
+    desc:'general contractors, builders, and trade business owners',
+    pain:'missed inbound job calls while on a job site, estimate requests going to voicemail, weekend inquiry forms that go cold by Monday, no text-back after a missed call, no follow-up system after sending an estimate, homeowners calling 3 contractors and booking whoever responds first',
+    value:'$3,000–$50,000+ average project value depending on trade',
+    scenario:'hands dirty on a job site, on a roof, under a sink, meeting with a subcontractor when a new homeowner calls about an estimate'
+  },
+  ins: {
+    label:'Insurance Agency Owners', tag:'tag-ins', color:'ins',
+    desc:'insurance agency owners and independent brokers',
+    pain:'missed quote requests while with clients, slow response losing policies to competitors, inbound calls going to voicemail during renewals, no automatic text-back when a call slips through, no follow-up when a quote goes unanswered',
+    value:'$800–$4,000 average policy commission',
+    scenario:'meeting with clients, writing policies, in renewal appointments when new leads call'
+  },
+  mtg: {
+    label:'Mortgage Brokers', tag:'tag-mtg', color:'mtg',
+    desc:'mortgage brokers and loan officers',
+    pain:'missed pre-approval inquiries, rate-sensitive buyers calling multiple brokers simultaneously, no text-back in the window after a missed call, no follow-up system when a buyer goes quiet after first contact',
+    value:'$2,000–$8,000 average loan origination fee',
+    scenario:'in closings, reviewing loan files, with clients when new buyer inquiries come in'
+  }
 };
 
-// ── 90-POST EVERGREEN LIBRARY ──────────────────────────────────
-// 30 posts per niche × 3 niches = 90 total
-// Rotation: 3 PM, 1 INS, 1 MTG per 5-post week (roughly)
-// Sequence: PM,PM,INS,PM,MTG — repeating gives ~60% PM, 20% INS, 20% MTG
+// ── CONTENT LIBRARY ────────────────────────────────────────────
 function buildPlan() {
   const pillars = [
     'Missed calls = missed revenue',
     'First responder wins',
     'Real scenarios — vivid and specific',
-    'You don\'t have a lead problem — contrarian',
+    "You don't have a lead problem — contrarian",
     'AI curiosity / demystify',
     'Simple business math',
-    'Social proof moments'
+    'Social proof moments',
+    'Unanswered reviews = silent revenue leak',
+    '48-hour silence = lost client',
+    'After-hours gap = lost trust',
+    'Missed call text-back — 60 seconds changes everything',
+    'Online form gone cold — the inquiry that disappeared',
+    'Follow-up nobody sends — the lead that slipped away',
+    'Daily value anchor — less than what you already spend'
   ];
-  const formats = ['Punch post','Scenario post','Math breakdown','Story post','Question post','Punch post','Story post'];
-  const ctas    = ['comment','demo','dm','comment','comment','demo','dm'];
+  const formats = ['Punch post','Scenario post','Math breakdown','Story post','Question post','Data post','Before/After post'];
+  const ctas    = ['comment','demo','dm','ebook','comment','demo','dm'];
 
   const pmTopics = [
-    {t:'Every missed tenant call is a vacancy you funded',        h:'Every [action] is [consequence]'},
-    {t:'It\'s Saturday. A tenant calls about an emergency repair', h:'It\'s [time]. You\'re [location]. Your phone rings'},
-    {t:'The math behind unanswered tenant calls',                  h:'[Number] x [number] = [painful result]'},
-    {t:'The management company that responds first gets the lease', h:'The business that responds first gets the job'},
-    {t:'You don\'t have a vacancy problem. You have a response problem', h:'You don\'t have a [assumed problem]'},
-    {t:'3 prospective tenants called on Sunday. Nobody answered.',  h:'It\'s [time]. You\'re [location].'},
-    {t:'How fast does your property management company respond?',   h:'What happens when [trigger]?'},
-    {t:'How many tenant inquiries did you miss this week?',         h:'Most [niche] owners don\'t know this'},
-    {t:'A property manager told me something surprising last week', h:'A [niche] owner said: [quote]'},
-    {t:'The voicemail prospective tenants never leave',             h:'Every [action] is [consequence]'},
-    {t:'3 missed tenant calls x $18,000 annual rent = do the math',h:'[Number] x [number] = [result]'},
-    {t:'It\'s not AI. It\'s just your phone — but smarter.',       h:'[Simple bold claim]'},
-    {t:'Your competitor just answered. You didn\'t.',              h:'The business that responds first'},
-    {t:'Weekend property showing, 4 calls, no answer',             h:'It\'s [time]. You\'re [location].'},
-    {t:'Most property managers don\'t know this is happening',     h:'Most [niche] owners don\'t know'},
-    {t:'If a prospective tenant called your office right now...',  h:'What happens when [trigger]?'},
-    {t:'The inquiry that disappeared before you saw it',           h:'Every [action] is [consequence]'},
-    {t:'Instant response isn\'t a luxury for property managers',   h:'[Simple bold claim]'},
-    {t:'What a property manager said after the first week',        h:'A [niche] owner said: [quote]'},
-    {t:'How much is one filled unit worth to your portfolio?',     h:'[Number] x [number] = [result]'},
-    {t:'It\'s not about being available 24/7 — it\'s about this', h:'You don\'t have a [assumed problem]'},
-    {t:'Speed to lease: the scenario most PMs never consider',     h:'The business that responds first'},
-    {t:'Where tenant inquiries leak in property management',       h:'Most [niche] owners don\'t know'},
-    {t:'What AI actually does for a property management office',   h:'[Simple bold claim]'},
-    {t:'A question property managers keep asking me',              h:'What happens when [trigger]?'},
-    {t:'The tenant you didn\'t know you lost',                     h:'Every [action] is [consequence]'},
-    {t:'Why the second call from a tenant rarely happens',         h:'[Simple bold claim]'},
-    {t:'From missed inquiry to signed lease — the path',           h:'What happens when [trigger]?'},
-    {t:'One thing I\'d tell every property management company',    h:'[Simple bold claim]'},
-    {t:'The 30-second thing most property managers skip',          h:'It\'s [time]. You\'re [location].'}
+    {t:'Every missed tenant call is a vacancy you funded',h:'Every [action] is [consequence]'},
+    {t:"It's Saturday morning. A prospective tenant calls about your 2-bedroom.",h:"It's [time]. You're [location]."},
+    {t:"You have 50 Google reviews. You've replied to zero.",h:"Most [niche] owners don't know this"},
+    {t:'The management company that responds first gets the lease',h:'The business that responds first'},
+    {t:"You don't have a vacancy problem. You have a response problem.",h:"You don't have a [assumed problem]"},
+    {t:'3 prospective tenants called on Sunday. Nobody answered.',h:"It's [time]. You're [location]."},
+    {t:'How fast does your property management company respond?',h:'What happens when [trigger]?'},
+    {t:'How many tenant inquiries did you miss this week?',h:"Most [niche] owners don't know"},
+    {t:'A property manager told me something surprising last week',h:'A [niche] owner said: [quote]'},
+    {t:'The voicemail prospective tenants never leave',h:'Every [action] is [consequence]'},
+    {t:'3 missed tenant calls x $21,600 annual rent = do the math',h:'[Number] x [number] = [result]'},
+    {t:"It's not AI. It's just your phone — but smarter.",h:'[Simple bold claim]'},
+    {t:"Your competitor just answered. You didn't.",h:'The business that responds first'},
+    {t:'Friday evening showing. 4 calls. No answer.',h:"It's [time]. You're [location]."},
+    {t:"Most property managers don't know this is happening",h:"Most [niche] owners don't know"},
+    {t:'If a prospective tenant called your office right now...',h:'What happens when [trigger]?'},
+    {t:'48 hours of silence after a maintenance request is all it takes to lose a good tenant',h:'Every [action] is [consequence]'},
+    {t:'The maintenance request that started the move-out',h:'A [niche] owner said: [quote]'},
+    {t:'Where tenant inquiries leak in property management',h:"Most [niche] owners don't know"},
+    {t:'What AI actually does for a property management office',h:'[Simple bold claim]'},
+    {t:"The tenant you didn't know you lost",h:'Every [action] is [consequence]'},
+    {t:'Why the second call from a tenant rarely happens',h:'[Simple bold claim]'},
+    {t:'From missed inquiry to signed lease — the path',h:'What happens when [trigger]?'},
+    {t:"One thing I'd tell every property management company",h:'[Simple bold claim]'},
+    {t:"It's 10pm. A tenant's heat just went out. What does your system do?",h:"It's [time]. You're [location]."},
+    {t:"Your competitor has 200 Google reviews. You have 19. You've both been managing properties for the same number of years.",h:"Most [niche] owners don't know"},
+    {t:'The inquiry that disappeared before you saw it',h:'Every [action] is [consequence]'},
+    {t:'A question property managers keep asking me',h:'What happens when [trigger]?'},
+    {t:"They called at 6:47pm. You missed it. Did they get a text back in 60 seconds?",h:'What happens when [trigger]?'},
+    {t:'The 60-second window between a missed tenant call and a lease that went elsewhere',h:'[Simple bold claim]'},
+    {t:'4 contact form inquiries came in over the weekend. You saw them Tuesday morning.',h:"It's [time]. You're [location]."},
+    {t:'The online rental inquiry that went cold while you slept',h:'Every [action] is [consequence]'},
+    {t:"They replied to your showing inquiry. Didn't book. You moved on. They signed with someone else who followed up on day 3.",h:'Every [action] is [consequence]'},
+    {t:'The property manager who followed up on day 4 got the signed lease',h:'The business that responds first'},
+    {t:"Your competitor has 200 Google reviews. You have 19. The difference is one automated text after every move-in.",h:"Most [niche] owners don't know"},
+    {t:'Less than what most property managers spend on lunch before the first showing. One filled unit covers it for the year.',h:'[Simple bold claim]'}
+  ];
+
+  const dntTopics = [
+    {t:'Every missed call from a new patient is a lifetime of revenue you never got',h:'Every [action] is [consequence]'},
+    {t:"It's 2:15pm. The front desk is chair-side. Your phone rings.",h:"It's [time]. You're [location]."},
+    {t:'The math behind one missed new patient call at a dental practice',h:'[Number] x [number] = [result]'},
+    {t:'The dental practice that picks up first gets the appointment',h:'The business that responds first'},
+    {t:"You don't have a slow season problem. You have a response problem.",h:"You don't have a [assumed problem]"},
+    {t:'A new patient called 3 dental offices. One picked up. Guess who they booked with.',h:"It's [time]. You're [location]."},
+    {t:'How fast does your practice respond to a new patient inquiry?',h:'What happens when [trigger]?'},
+    {t:'How many new patient calls did your practice miss this week?',h:"Most [niche] owners don't know"},
+    {t:'A practice owner told me something about her front desk that surprised me',h:'A [niche] owner said: [quote]'},
+    {t:'The voicemail a new patient never leaves twice',h:'Every [action] is [consequence]'},
+    {t:"3 missed new patient calls x $2,000 first-visit value = the number you're ignoring",h:'[Number] x [number] = [result]'},
+    {t:"It's not AI. It's just your front desk — always available.",h:'[Simple bold claim]'},
+    {t:'Your competitor answered on the first ring. You went to voicemail.',h:'The business that responds first'},
+    {t:'Mid-procedure. 3 new patient calls. Nobody answered.',h:"It's [time]. You're [location]."},
+    {t:"Most dental practices don't track how many new patient calls go unanswered",h:"Most [niche] owners don't know"},
+    {t:"If a new patient called your practice right now at 6pm...",h:'What happens when [trigger]?'},
+    {t:'The appointment request that went to the practice down the street',h:'Every [action] is [consequence]'},
+    {t:"Speed to appointment: the scenario most practice owners never calculate",h:'[Simple bold claim]'},
+    {t:'What a practice owner said after the first week of never missing a call',h:'A [niche] owner said: [quote]'},
+    {t:"What's one new patient worth to your practice over their lifetime?",h:'[Number] x [number] = [result]'},
+    {t:"It's not about hiring another front desk person — it's about this",h:"You don't have a [assumed problem]"},
+    {t:"You have 80 Google reviews. You've responded to zero.",h:"Most [niche] owners don't know"},
+    {t:'A patient had a dental emergency at 9pm. What did your practice do?',h:'What happens when [trigger]?'},
+    {t:'Your after-hours voicemail is sending new patients to your competitor',h:'[Simple bold claim]'},
+    {t:'Where new patient revenue leaks in a dental practice',h:"Most [niche] owners don't know"},
+    {t:'What an AI receptionist actually does for a dental practice',h:'[Simple bold claim]'},
+    {t:'Why new patients rarely call a dental practice twice',h:'[Simple bold claim]'},
+    {t:'The 30-second thing most dental practices skip that costs them patients',h:"It's [time]. You're [location]."},
+    {t:'A new patient called during a procedure. You missed it. Did they get a text back within 60 seconds?',h:'What happens when [trigger]?'},
+    {t:'The 60-second window between a missed new patient call and a lost appointment',h:'[Simple bold claim]'},
+    {t:'3 appointment request forms came in after hours. You saw them Wednesday morning.',h:"It's [time]. You're [location]."},
+    {t:'The new patient inquiry that went cold before you saw it',h:'Every [action] is [consequence]'},
+    {t:"They asked about a consultation. You replied. They went quiet. The practice down the street followed up on day 4.",h:'Every [action] is [consequence]'},
+    {t:"Most dental practices follow up once and assume the patient isn't interested",h:"Most [niche] owners don't know"},
+    {t:'Your competitor has 340 Google reviews. You have 31. You opened the same year. The difference is one automated text after every appointment.',h:"Most [niche] owners don't know"},
+    {t:'Less than what your front desk spends on coffee before the first patient arrives. One new patient covers it for the year.',h:'[Simple bold claim]'}
+  ];
+
+  const conTopics = [
+    {t:'Every missed job call is a project your competitor just priced',h:'Every [action] is [consequence]'},
+    {t:"It's 3pm. You're on a roof. Your phone rings.",h:"It's [time]. You're [location]."},
+    {t:'The math behind missed estimate requests at a contracting business',h:'[Number] x [number] = [result]'},
+    {t:'The contractor who calls back first gets the job',h:'The business that responds first'},
+    {t:"You don't have a slow pipeline problem. You have a response problem.",h:"You don't have a [assumed problem]"},
+    {t:'A homeowner called 4 contractors. One called back same day.',h:"It's [time]. You're [location]."},
+    {t:'How fast does your contracting business respond to new job requests?',h:'What happens when [trigger]?'},
+    {t:'How many estimate calls did you miss on the job site this week?',h:"Most [niche] owners don't know"},
+    {t:'A general contractor told me something about job site calls',h:'A [niche] owner said: [quote]'},
+    {t:'The estimate request that went to the other guy while you were on site',h:'Every [action] is [consequence]'},
+    {t:'3 missed job calls x $8,000 average project = do the math',h:'[Number] x [number] = [result]'},
+    {t:"It's not AI. It's just your office — answering while you work.",h:'[Simple bold claim]'},
+    {t:'Your competitor answered. You were cutting tile.',h:'The business that responds first'},
+    {t:'Hands full on a job site. 2 estimate calls. Nobody answered.',h:"It's [time]. You're [location]."},
+    {t:"Most contractors don't realize how many jobs they're losing to voicemail",h:"Most [niche] owners don't know"},
+    {t:"If a homeowner called your business right now at 7pm...",h:'What happens when [trigger]?'},
+    {t:"The job that paid for someone else's new truck — not yours",h:'Every [action] is [consequence]'},
+    {t:'What an AI receptionist actually does for a contracting business',h:'[Simple bold claim]'},
+    {t:'The question contractors keep asking me about missed calls',h:'What happens when [trigger]?'},
+    {t:'The 30-second thing most contractors skip that costs them thousands',h:"It's [time]. You're [location]."},
+    {t:'A homeowner called while you were on a roof. Did they get a text back in 60 seconds?',h:'What happens when [trigger]?'},
+    {t:'The 60 seconds between a missed job call and losing the estimate to a faster contractor',h:'[Simple bold claim]'},
+    {t:"An estimate request came in Saturday night. You saw it Monday at noon. They'd already hired someone.",h:"It's [time]. You're [location]."},
+    {t:'The job request that went cold over the weekend while your competitors were texting back',h:'Every [action] is [consequence]'},
+    {t:'They asked for an estimate. You sent it. They went quiet. Another contractor followed up on day 3 and got the job.',h:'Every [action] is [consequence]'},
+    {t:'Most contractors send one estimate and wait. The contractor who wins follows up.',h:'The business that responds first'},
+    {t:'Less than the fuel you burn before lunch on Monday. One signed job covers it for more than the year.',h:'[Simple bold claim]'}
   ];
 
   const insTopics = [
     {t:'Every missed quote request is a policy your competitor wrote',h:'Every [action] is [consequence]'},
-    {t:'It\'s Tuesday. You\'re with a client. Your phone rings.',     h:'It\'s [time]. You\'re [location].'},
-    {t:'The math behind missed inbound calls at an insurance agency', h:'[Number] x [number] = [result]'},
-    {t:'The agency that responds first writes the policy',            h:'The business that responds first'},
-    {t:'You don\'t have a lead problem. You have a speed problem.',   h:'You don\'t have a [assumed problem]'},
-    {t:'A prospect called 4 agencies. One answered. Guess who they went with.', h:'It\'s [time]. You\'re [location].'},
-    {t:'How fast does your agency respond to a new quote request?',   h:'What happens when [trigger]?'},
-    {t:'How many inbound quote requests did your agency miss this week?',h:'Most [niche] owners don\'t know'},
-    {t:'An agency owner told me something that stuck with me',        h:'A [niche] owner said: [quote]'},
-    {t:'The voicemail that goes straight to your competitor',         h:'Every [action] is [consequence]'},
+    {t:"It's Thursday afternoon. You're with a client. Your phone rings.",h:"It's [time]. You're [location]."},
+    {t:'The math behind missed inbound calls at an insurance agency',h:'[Number] x [number] = [result]'},
+    {t:'The agency that responds first writes the policy',h:'The business that responds first'},
+    {t:"You don't have a lead problem. You have a speed problem.",h:"You don't have a [assumed problem]"},
+    {t:'A prospect called 4 agencies. One answered. Guess who they went with.',h:"It's [time]. You're [location]."},
+    {t:'How fast does your agency respond to a new quote request?',h:'What happens when [trigger]?'},
+    {t:'An agency owner told me something that stuck with me',h:'A [niche] owner said: [quote]'},
     {t:'3 missed quote calls x $2,400 policy commission = the number that hurts',h:'[Number] x [number]'},
-    {t:'It\'s not AI. It\'s just a receptionist that never misses a call.',h:'[Simple bold claim]'},
-    {t:'Your competitor just picked up. You went to voicemail.',      h:'The business that responds first'},
-    {t:'Middle of a renewal meeting. 3 new quote calls come in.',     h:'It\'s [time]. You\'re [location].'},
-    {t:'Most insurance agency owners don\'t realize this is happening',h:'Most [niche] owners don\'t know'},
-    {t:'If a prospect called your agency right now at 5:30pm...',     h:'What happens when [trigger]?'},
-    {t:'The quote request that evaporated before you saw it',         h:'Every [action] is [consequence]'},
-    {t:'Response speed is the unfair advantage most agencies ignore', h:'[Simple bold claim]'},
-    {t:'What an agency owner said after the first week running this', h:'A [niche] owner said: [quote]'},
-    {t:'What\'s one missed policy worth to your agency annually?',    h:'[Number] x [number] = [result]'},
-    {t:'It\'s not about hiring more staff — it\'s about this',       h:'You don\'t have a [assumed problem]'},
-    {t:'Speed to quote: the scenario most agency owners never run',   h:'The business that responds first'},
-    {t:'Where inbound revenue leaks in an insurance agency',          h:'Most [niche] owners don\'t know'},
+    {t:"It's not AI. It's just a receptionist that never misses a call.",h:'[Simple bold claim]'},
+    {t:'Your competitor just picked up. You went to voicemail.',h:'The business that responds first'},
+    {t:"Most insurance agency owners don't realize this is happening",h:"Most [niche] owners don't know"},
+    {t:'The quote request that evaporated before you saw it',h:'Every [action] is [consequence]'},
     {t:'What an AI receptionist actually does for an insurance office',h:'[Simple bold claim]'},
-    {t:'The question insurance agency owners keep asking me',         h:'What happens when [trigger]?'},
-    {t:'The policy you didn\'t know you lost',                        h:'Every [action] is [consequence]'},
-    {t:'Why prospects rarely call an insurance agency twice',         h:'[Simple bold claim]'},
-    {t:'From missed call to written policy — the path',              h:'What happens when [trigger]?'},
-    {t:'One thing I\'d tell every independent insurance agency',      h:'[Simple bold claim]'},
-    {t:'The 30-second thing most agencies skip',                      h:'It\'s [time]. You\'re [location].'}
+    {t:"The policy you didn't know you lost",h:'Every [action] is [consequence]'},
+    {t:'A prospect called during a renewal meeting. You missed it. Did your system text them back within 60 seconds?',h:'What happens when [trigger]?'},
+    {t:'The 60 seconds between a missed quote call and a written policy for your competitor',h:'[Simple bold claim]'},
+    {t:"They requested a quote. You sent it. They went quiet. Most agencies assume they found another provider. Most are wrong.",h:"Most [niche] owners don't know"},
+    {t:'The prospect who didn\'t respond to your quote was waiting to see who followed up first',h:'The business that responds first'},
+    {t:'Less than what most agents spend on parking near their office each month. One written policy covers it for the year.',h:'[Simple bold claim]'}
   ];
 
   const mtgTopics = [
-    {t:'Every missed buyer inquiry is a loan your competitor closed', h:'Every [action] is [consequence]'},
-    {t:'It\'s Friday at 4pm. A buyer calls about pre-approval.',      h:'It\'s [time]. You\'re [location].'},
-    {t:'The math behind missed calls at a mortgage brokerage',        h:'[Number] x [number] = [result]'},
-    {t:'The loan officer who responds first gets the application',    h:'The business that responds first'},
-    {t:'You don\'t have a pipeline problem. You have a response problem.',h:'You don\'t have a [assumed problem]'},
-    {t:'A buyer called 5 loan officers. One responded in 5 minutes.', h:'It\'s [time]. You\'re [location].'},
-    {t:'How fast does your brokerage respond to a new buyer inquiry?',h:'What happens when [trigger]?'},
-    {t:'How many pre-approval calls did you miss this week?',         h:'Most [niche] owners don\'t know'},
-    {t:'A mortgage broker told me something that changed how I think about this',h:'A [niche] owner said: [quote]'},
-    {t:'The voicemail a rate-sensitive buyer never leaves twice',      h:'Every [action] is [consequence]'},
+    {t:'Every missed buyer inquiry is a loan your competitor closed',h:'Every [action] is [consequence]'},
+    {t:"It's Friday at 4:45pm. A buyer calls about pre-approval.",h:"It's [time]. You're [location]."},
+    {t:'The loan officer who responds first gets the application',h:'The business that responds first'},
     {t:'3 missed buyer inquiries x $4,500 origination = the real cost',h:'[Number] x [number]'},
-    {t:'It\'s not AI. It\'s just your office — always open.',         h:'[Simple bold claim]'},
-    {t:'Your competitor responded in 4 minutes. You called back in 3 hours.',h:'The business that responds first'},
-    {t:'In a closing. 4 buyer calls come in. Nobody answers.',        h:'It\'s [time]. You\'re [location].'},
-    {t:'Most mortgage brokers don\'t realize how many buyers they\'re losing',h:'Most [niche] owners don\'t know'},
-    {t:'If a buyer called your office right now after hours...',      h:'What happens when [trigger]?'},
-    {t:'The pre-approval request that went to someone else',          h:'Every [action] is [consequence]'},
-    {t:'In a market this competitive, speed is the only edge that matters',h:'[Simple bold claim]'},
-    {t:'What a loan officer said after week one',                     h:'A [niche] owner said: [quote]'},
-    {t:'What\'s one missed closing worth to your brokerage?',         h:'[Number] x [number] = [result]'},
-    {t:'It\'s not about being available 24/7',                        h:'You don\'t have a [assumed problem]'},
-    {t:'Speed to application: what most brokers never calculate',     h:'The business that responds first'},
-    {t:'Where loan pipeline leaks without anyone noticing',           h:'Most [niche] owners don\'t know'},
-    {t:'What an AI receptionist actually does for a mortgage office', h:'[Simple bold claim]'},
-    {t:'The question mortgage brokers keep asking me',                h:'What happens when [trigger]?'},
-    {t:'The buyer you didn\'t know you lost',                         h:'Every [action] is [consequence]'},
-    {t:'Why buyers rarely call a mortgage broker a second time',      h:'[Simple bold claim]'},
-    {t:'From missed call to closed loan — the path',                  h:'What happens when [trigger]?'},
-    {t:'One thing I\'d tell every independent mortgage broker',       h:'[Simple bold claim]'},
-    {t:'The 30-second thing most loan officers skip',                 h:'It\'s [time]. You\'re [location].'}
+    {t:'From missed call to closed loan — the path',h:'What happens when [trigger]?'},
+    {t:'A buyer called during a closing. You missed it. A 60-second text back could have saved the application.',h:'What happens when [trigger]?'},
+    {t:'The 60-second window between a missed buyer call and a loan your competitor just closed',h:'[Simple bold claim]'},
+    {t:"They asked about pre-approval. You replied. They went quiet. Another broker followed up on day 2 and got the file.",h:'Every [action] is [consequence]'},
+    {t:"Rate-sensitive buyers don't wait. Most brokers follow up once. The brokers who close follow up three times.",h:'The business that responds first'},
+    {t:'Less than what most brokers spend on coffee before their first call. One closed loan covers it for more than the year.',h:'[Simple bold claim]'}
   ];
 
-  const plan = [];
-  // Interleave: PM(1),PM(2),INS(1),PM(3),MTG(1) repeating — gives ~60% PM, 20% INS, 20% MTG
-  const sequence = ['pm','pm','ins','pm','mtg'];
-  const counters  = {pm:0,ins:0,mtg:0};
-  const topicMap  = {pm:pmTopics,ins:insTopics,mtg:mtgTopics};
+  const topicMap = { pm:pmTopics, dnt:dntTopics, con:conTopics, ins:insTopics, mtg:mtgTopics };
 
-  for (let i = 0; i < 90; i++) {
-    const niche = sequence[i % 5];
-    const idx   = counters[niche] % 30;
-    const p     = pillars[idx % 7];
-    const f     = formats[idx % 7];
-    const c     = ctas[idx % 7];
-    const tp    = topicMap[niche][idx];
-    plan.push({ pos: i+1, niche, topic: tp.t, hook: tp.h, pillar: p, format: f, cta: c });
+  // ── BUG FIX: derive sizes from actual arrays, never hardcode ──
+  const libSizes = {
+    pm:  pmTopics.length,
+    dnt: dntTopics.length,
+    con: conTopics.length,
+    ins: insTopics.length,
+    mtg: mtgTopics.length
+  };
+
+  // 20-post repeating block × 7 cycles = 140 posts
+  // PM=6, DNT=6, CON=4, INS=3, MTG=1 per block → 30/30/20/15/5%
+  const sequence = ['pm','dnt','con','pm','dnt','ins','con','pm','dnt','pm','dnt','con','ins','pm','dnt','con','pm','dnt','ins','mtg'];
+  const counters  = {pm:0,dnt:0,con:0,ins:0,mtg:0};
+  const PLAN_SIZE = 140;
+
+  const plan = [];
+  for (let i = 0; i < PLAN_SIZE; i++) {
+    const niche = sequence[i % sequence.length];
+    const idx   = counters[niche] % libSizes[niche];
+    const pIdx  = idx % pillars.length;
+    const fIdx  = idx % formats.length;
+    const cIdx  = idx % ctas.length;
+    plan.push({
+      pos: i+1, niche,
+      topic: topicMap[niche][idx].t,
+      hook:  topicMap[niche][idx].h,
+      pillar: pillars[pIdx],
+      format: formats[fIdx],
+      cta:    ctas[cIdx]
+    });
     counters[niche]++;
   }
   return plan;
 }
 
 const PLAN = buildPlan();
+const PLAN_SIZE = PLAN.length;
 
+// ── CTA LINES ──────────────────────────────────────────────────
 const CTA_LINES = {
   demo:    '\n\nWant to hear it yourself?\n\nCall 1-888-708-7367 and ask it how it would handle your calls.',
   comment: '\n\nDrop "curious" in the comments — I\'ll send you a quick example.',
   dm:      '\n\nDM me "demo" and I\'ll show you how it works for your business.',
   none:    ''
 };
+const EBOOK_CTA = {
+  pm:  "\n\nI put together a free report on the 5 places property managers lose rent every month without realizing it. Reply and I'll send it over.",
+  dnt: "\n\nI put together a free report on the 5 places dental practices lose new patients before they ever book. Reply and I'll send it over.",
+  con: "\n\nI put together a free report on the 5 ways contractors lose job opportunities to voicemail every week. Reply and I'll send it over.",
+  ins: "\n\nI put together a free report on the 5 ways insurance agencies lose policies to faster competitors. Reply and I'll send it over.",
+  mtg: "\n\nI put together a free report on the 5 places mortgage brokers lose qualified buyers without knowing it. Reply and I'll send it over."
+};
+function getCtaLine(ctaType, nicheKey) {
+  if (ctaType === 'ebook') return EBOOK_CTA[nicheKey] || EBOOK_CTA['pm'];
+  return CTA_LINES[ctaType] || CTA_LINES['comment'];
+}
 
-const LENGTH_MAP = { short:'150-250 characters', medium:'400-600 characters', long:'800-1300 characters' };
-
+const LENGTH_MAP = { short:'150–250 words', medium:'300–500 words', long:'600–900 words' };
 const FORMAT_INSTRUCTIONS = {
-  'Punch post':     'Write a short punchy declarative post. Strong bold claim up front. 2-3 tight paragraphs. No fluff. Every line earns its place.',
-  'Scenario post':  'Put the reader inside a real moment. Use time, place, and action specific to their industry. Show exactly what happens when a call gets missed. First line drops them into the scene.',
-  'Math breakdown': 'Walk through a simple business math scenario using dollar amounts realistic for this niche. Make the loss tangible. Format each step on its own line. End with the total loss.',
-  'Story post':     'Tell a short grounded story about a real business owner in this niche. Specific moment, specific outcome. Keep it human. End with the one insight that changes how they see the problem.',
-  'Question post':  'Open with a direct honest question this type of business owner avoids asking themselves. Follow with 2-3 lines of real-world context specific to their industry. Close with a sharper question.'
+  'Punch post':      'Short and declarative. Strong claim up front. 2–3 tight paragraphs. No fluff. Every line earns its place.',
+  'Scenario post':   'Drop the reader into a specific real moment. Lead with time, place, action. Show exactly what happens when the call goes unanswered or the text never arrives. First line must put them inside the scene.',
+  'Math breakdown':  'Walk through a simple business math scenario with dollar amounts realistic for this niche. Format each step on its own line. Make the total loss feel undeniable.',
+  'Story post':      'A short grounded story about a real type of business owner in this niche. Specific moment, specific outcome. End on the one insight that reframes how they see the problem.',
+  'Question post':   'Open with a direct honest question this business owner avoids asking. 2–3 lines of real context. Close with a sharper second question that makes them stop.',
+  'Data post':       'State one industry stat. No narrative. One or two lines of context to ground it. The number does all the work.',
+  'Before/After post':'Two states contrasted — no story, just before and after side by side. Let the delta speak.'
 };
 
-let currentPos    = parseInt(localStorage.getItem('oi360_pos') || '1');
-let generatedPost = '';
-let isEditing     = false;
-let sessionHistory= [];
-let mode          = 'auto';
-let manualNiche   = 'pm';
+let currentPos     = parseInt(localStorage.getItem('oi360_pos') || '1');
+let generatedPost  = '';
+let isEditing      = false;
+let sessionHistory = [];
+let mode           = 'auto';
+let manualNiche    = 'pm';
+let generatedImageB64 = '';
+let generatedImageUrl = '';
+let exportBatch    = [];
 
 window.onload = () => {
+  // Update library display once PLAN is ready
+  document.getElementById('stat-library').textContent = PLAN_SIZE;
+  document.getElementById('cycle-label-text').textContent = 'of ' + PLAN_SIZE + ' — then repeats forever';
+
   renderCycleInfo();
-  // localStorage persists across sessions — credentials survive tab/browser close
-  const ak = localStorage.getItem('oi360_ak');
-  const gt = localStorage.getItem('oi360_gt');
-  const gl = localStorage.getItem('oi360_gl');
-  const ga = localStorage.getItem('oi360_ga');
-  const uid = localStorage.getItem('oi360_uid');
-  const oai = localStorage.getItem('oi360_oai');
-  if (ak) document.getElementById('anthropic-key').value = ak;
-  if (gt) document.getElementById('ghl-token').value = gt;
-  if (gl) document.getElementById('ghl-location').value = gl;
-  if (ga) document.getElementById('ghl-account').value = ga;
-  if (uid) document.getElementById('ghl-user-id').value = uid;
-  if (oai) document.getElementById('openai-key').value = oai;
+  const fields = [
+    ['oi360_ak','anthropic-key'],['oi360_gt','ghl-token'],['oi360_gl','ghl-location'],
+    ['oi360_ga','ghl-account'],['oi360_uid','ghl-user-id'],['oi360_oai','openai-key']
+  ];
+  fields.forEach(([key,id]) => { const v = localStorage.getItem(key); if (v) document.getElementById(id).value = v; });
   checkReady();
 };
 
 function clearCredentials() {
-  if (!confirm('Clear all saved credentials? You will need to re-enter them.')) return;
+  if (!confirm('Clear all saved credentials?')) return;
   ['oi360_ak','oi360_gt','oi360_gl','oi360_ga'].forEach(k => localStorage.removeItem(k));
   ['anthropic-key','ghl-token','ghl-location','ghl-account'].forEach(id => document.getElementById(id).value = '');
   checkReady();
@@ -644,19 +746,18 @@ function clearCredentials() {
 }
 
 function renderCycleInfo() {
-  const idx  = (currentPos - 1) % 90;
-  const d    = PLAN[idx];
-  const cycle= Math.floor((currentPos - 1) / 90) + 1;
-  const pct  = ((idx + 1) / 90 * 100).toFixed(1);
+  const idx   = (currentPos - 1) % PLAN_SIZE;
+  const d     = PLAN[idx];
+  const cycle = Math.floor((currentPos - 1) / PLAN_SIZE) + 1;
+  const pct   = ((idx + 1) / PLAN_SIZE * 100).toFixed(1);
   document.getElementById('current-post-display').textContent = currentPos;
   document.getElementById('stat-post').textContent  = currentPos;
   document.getElementById('stat-cycle').textContent = cycle;
   document.getElementById('cycle-fill').style.width = pct + '%';
   document.getElementById('cycle-topic').textContent = d.topic;
   document.getElementById('cycle-meta').textContent  = d.pillar + ' · ' + d.format;
-  const n = NICHES[d.niche];
   document.getElementById('cycle-niche-pill').innerHTML =
-    `<span class="niche-indicator niche-${d.niche}">${n.label}</span>`;
+    `<span class="niche-indicator niche-${d.niche}">${NICHES[d.niche].label}</span>`;
   localStorage.setItem('oi360_pos', currentPos);
 }
 
@@ -673,9 +774,9 @@ function setMode(m) {
 
 function selectNiche(n) {
   manualNiche = n;
-  ['pm','ins','mtg'].forEach(k => {
+  ['pm','ins','mtg','dnt','con'].forEach(k => {
     const btn = document.getElementById('nb-' + k);
-    btn.className = 'niche-btn' + (k === n ? ' sel-' + k : '');
+    if (btn) btn.className = 'niche-btn' + (k === n ? ' sel-' + k : '');
   });
 }
 
@@ -684,11 +785,8 @@ function toggleVis(id, btn) {
   el.type = el.type === 'password' ? 'text' : 'password';
   btn.textContent = el.type === 'password' ? 'Show' : 'Hide';
 }
-
-function saveUserId() {
-  const uid = document.getElementById('ghl-user-id').value.trim();
-  if (uid) localStorage.setItem('oi360_uid', uid);
-}
+function saveUserId() { const v = document.getElementById('ghl-user-id').value.trim(); if (v) localStorage.setItem('oi360_uid', v); }
+function saveOpenAI() { const v = document.getElementById('openai-key').value.trim(); if (v) localStorage.setItem('oi360_oai', v); }
 
 function checkReady() {
   const ak = document.getElementById('anthropic-key').value.trim();
@@ -699,58 +797,35 @@ function checkReady() {
   if (gl) localStorage.setItem('oi360_gl', gl);
   const ga = document.getElementById('ghl-account').value.trim();
   if (ga) localStorage.setItem('oi360_ga', ga);
-  // Only need 3 required fields — account ID is optional
   const ready = !!(ak && gt && gl);
   document.getElementById('gen-btn').disabled = !ready;
   const pill = document.getElementById('status-pill');
-  const lbl  = document.getElementById('status-label');
   pill.className = 'status-pill' + (ready ? ' ready' : '');
-  lbl.textContent = ready ? 'Ready to generate' : 'Enter credentials to begin';
+  document.getElementById('status-label').textContent = ready ? 'Ready to generate' : 'Enter credentials to begin';
 }
-
-function setStatus(working) {
-  document.getElementById('status-pill').className = 'status-pill' + (working ? ' working' : ' ready');
-  document.getElementById('status-label').textContent = working ? 'Working…' : 'Ready to generate';
+function setStatus(w) {
+  document.getElementById('status-pill').className = 'status-pill' + (w ? ' working' : ' ready');
+  document.getElementById('status-label').textContent = w ? 'Working…' : 'Ready to generate';
 }
-
-function setToast(id, msg, type) {
-  const el = document.getElementById(id);
-  el.textContent = msg; el.className = 'toast show ' + type;
-}
+function setToast(id, msg, type) { const el = document.getElementById(id); el.textContent = msg; el.className = 'toast show ' + type; }
 function clearToast(id) { document.getElementById(id).className = 'toast'; }
-function toggleSched(r) {
-  document.getElementById('sched-block').style.display = r.value === 'scheduled' ? 'block' : 'none';
-}
+function toggleSched(r) { document.getElementById('sched-block').style.display = r.value === 'scheduled' ? 'block' : 'none'; }
 
 function toggleEdit() {
   isEditing = !isEditing;
-  const preview  = document.getElementById('preview');
-  const editArea = document.getElementById('edit-area');
-  const toggle   = document.getElementById('edit-toggle');
+  const preview = document.getElementById('preview'), editArea = document.getElementById('edit-area'), toggle = document.getElementById('edit-toggle');
   if (isEditing) {
-    editArea.value = generatedPost;
-    editArea.style.display = 'block';
-    preview.style.display = 'none';
-    toggle.textContent = 'Back to preview';
+    editArea.value = generatedPost; editArea.style.display = 'block'; preview.style.display = 'none'; toggle.textContent = 'Back to preview';
   } else {
-    generatedPost = editArea.value;
-    preview.textContent = generatedPost;
-    editArea.style.display = 'none';
-    preview.style.display = 'block';
-    toggle.textContent = 'Edit post';
-    updateCharCount();
+    generatedPost = editArea.value; preview.textContent = generatedPost; editArea.style.display = 'none'; preview.style.display = 'block'; toggle.textContent = 'Edit post'; updateCharCount();
   }
 }
-
 function syncEdit() { generatedPost = document.getElementById('edit-area').value; updateCharCount(); }
-
 function updateCharCount() {
-  const len = generatedPost.length;
-  const el  = document.getElementById('char-count');
+  const len = generatedPost.length, el = document.getElementById('char-count');
   el.textContent = len + ' / 3,000 chars';
   el.className = 'char-count' + (len > 2800 ? ' danger' : len > 2400 ? ' warn' : '');
 }
-
 function clearPost() {
   generatedPost = ''; isEditing = false;
   document.getElementById('preview').innerHTML = '<span class="preview-placeholder">Your generated post will appear here. Hit Generate to create niche-targeted content from the evergreen library.</span>';
@@ -763,43 +838,24 @@ function clearPost() {
   document.getElementById('post-tags').style.display = 'none';
   clearToast('gen-toast'); clearToast('post-toast');
 }
-
 function showTags(niche, pillar, format, cta) {
-  const el = document.getElementById('post-tags');
-  el.style.display = 'flex';
-  const n = NICHES[niche];
-  el.innerHTML =
-    `<span class="tag tag-${niche}">${n.label}</span>` +
-    `<span class="tag tag-format">${format}</span>` +
-    `<span class="tag tag-cta">${cta} CTA</span>` +
-    `<span class="tag tag-ghl">→ GHL Social Planner</span>`;
+  const el = document.getElementById('post-tags'); el.style.display = 'flex';
+  el.innerHTML = `<span class="tag tag-${niche}">${NICHES[niche].label}</span><span class="tag tag-format">${format}</span><span class="tag tag-cta">${cta} CTA</span><span class="tag tag-ghl">→ GHL Social Planner</span>`;
 }
-
 function addHistory(post, pos, niche) {
-  const n = NICHES[niche];
-  sessionHistory.unshift({ post, pos, niche, label: n.label, time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) });
+  sessionHistory.unshift({ post, pos, niche, label:NICHES[niche].label, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) });
   if (sessionHistory.length > 8) sessionHistory.pop();
   document.getElementById('history-list').innerHTML = sessionHistory.map((h,i) =>
-    `<div class="history-item" onclick="loadFromHistory(${i})">` +
-    `<div class="hi-meta"><span>#${h.pos} · ${h.label}</span><span>${h.time}</span></div>` +
-    `<div class="hi-preview">${h.post.substring(0,72)}…</div></div>`
+    `<div class="history-item" onclick="loadFromHistory(${i})"><div class="hi-meta"><span>#${h.pos} · ${h.label}</span><span>${h.time}</span></div><div class="hi-preview">${h.post.substring(0,72)}…</div></div>`
   ).join('');
 }
-
 function loadFromHistory(i) {
-  const h = sessionHistory[i];
-  generatedPost = h.post;
-  document.getElementById('preview').textContent = generatedPost;
-  document.getElementById('preview').style.display = 'block';
-  document.getElementById('edit-area').style.display = 'none';
-  isEditing = false;
-  document.getElementById('edit-toggle').style.display = 'inline';
-  document.getElementById('edit-toggle').textContent = 'Edit post';
-  document.getElementById('post-btn').disabled = false;
-  document.getElementById('copy-btn').disabled = false;
-  updateCharCount();
+  const h = sessionHistory[i]; generatedPost = h.post;
+  document.getElementById('preview').textContent = generatedPost; document.getElementById('preview').style.display = 'block';
+  document.getElementById('edit-area').style.display = 'none'; isEditing = false;
+  document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
+  document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false; updateCharCount();
 }
-
 document.querySelectorAll('.angle-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.angle-btn').forEach(b => b.classList.remove('selected'));
@@ -813,60 +869,63 @@ async function generatePost() {
   let topic, pillar, format, ctaType, length, niche, hook, nicheKey;
 
   if (mode === 'auto') {
-    const idx = (currentPos - 1) % 90;
-    const d   = PLAN[idx];
-    nicheKey  = d.niche;
-    topic     = d.topic;
-    pillar    = d.pillar;
-    format    = d.format;
-    ctaType   = d.cta;
-    hook      = d.hook;
-    length    = 'medium';
-    niche     = NICHES[d.niche].desc;
+    const d = PLAN[(currentPos - 1) % PLAN_SIZE];
+    nicheKey = d.niche; topic = d.topic; pillar = d.pillar;
+    format = d.format; ctaType = d.cta; hook = d.hook;
+    length = 'medium'; niche = NICHES[d.niche].desc;
   } else {
-    nicheKey  = manualNiche;
-    topic     = document.getElementById('topic').value.trim();
+    nicheKey = manualNiche;
+    topic = document.getElementById('topic').value.trim();
     if (!topic) { setToast('gen-toast','Enter a topic first.','error'); return; }
-    pillar    = document.querySelector('.angle-btn.selected')?.dataset.val || 'missed calls = missed revenue';
-    format    = document.getElementById('format-override').value || 'Punch post';
-    ctaType   = document.getElementById('cta-override').value || 'comment';
-    length    = document.getElementById('length-override').value || 'medium';
-    niche     = NICHES[nicheKey].desc;
-    hook      = '';
+    pillar  = document.querySelector('.angle-btn.selected')?.dataset.val || 'missed calls = missed revenue';
+    format  = document.getElementById('format-override').value || 'Punch post';
+    ctaType = document.getElementById('cta-override').value || 'comment';
+    length  = document.getElementById('length-override').value || 'medium';
+    niche   = NICHES[nicheKey].desc; hook = '';
   }
 
   const nicheData = NICHES[nicheKey];
-  const ctaLine   = CTA_LINES[ctaType] || CTA_LINES['comment'];
+  const ctaLine   = getCtaLine(ctaType, nicheKey);
+  const isDailyAnchor = pillar.toLowerCase().includes('daily value anchor') || pillar.toLowerCase().includes('less than what');
 
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Generating…';
-  clearToast('gen-toast');
-  setStatus(true);
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating…';
+  clearToast('gen-toast'); setStatus(true);
 
   const system = `You are a LinkedIn content writer for Online Impact 360, a digital marketing agency that installs AI receptionist systems for local service and professional businesses.
 
-The product is Smart Website 360: an AI receptionist that answers inbound calls, captures leads, and books appointments automatically — 24/7. The core promise: "We make sure you never miss a customer again."
+The product is Smart Website 360: a complete AI business system that answers inbound calls 24/7, sends an automatic text back within 60 seconds of any missed call, responds instantly to website contact form submissions, follows up automatically with leads who don't respond after first contact, replies to every Google review automatically, texts every customer after a job to generate new reviews, and tracks every lead in a CRM pipeline. The core promise: "We make sure nothing that touches a customer or prospect ever goes unanswered again."
 
-TARGET AUDIENCE FOR THIS POST: ${nicheData.desc}
-KEY PAIN POINTS FOR THIS NICHE: ${nicheData.pain}
+TARGET AUDIENCE: ${nicheData.desc}
+KEY PAIN POINTS: ${nicheData.pain}
 AVERAGE VALUE OF A MISSED OPPORTUNITY: ${nicheData.value}
-TYPICAL SCENARIO WHERE CALLS ARE MISSED: ${nicheData.scenario}
+TYPICAL SCENARIO WHERE OPPORTUNITIES ARE MISSED: ${nicheData.scenario}
 
 WRITING RULES — non-negotiable:
 - One idea per post. Never drift.
 - Strong first line — the hook. Make it impossible to scroll past.
 - Short paragraphs. Single sentences are fine. Blank lines between paragraphs.
-- Speak like a business owner talking to another business owner in this specific industry. Zero marketing voice.
+- Speak like a business owner talking to another business owner. Zero marketing voice.
 - Use dollar values realistic for this niche when relevant.
-- Name the specific type of business owner — not generic "business owner."
-- Use real scenarios specific to this industry — time of day, what they're doing, who's calling.
+- Name the specific type of business owner — not a generic label.
+- Use real scenarios specific to this industry — time of day, what they're doing, what's happening.
+- VARY TIME REFERENCES: Use a wide range — early morning, mid-morning, noon, afternoon, evening, after-hours, weekends. Never repeat the same time of day.
 - Business math should feel natural and undeniable, not like a sales pitch.
 - No jargon. No buzzwords. No tech speak.
 - No hashtags. No emojis unless genuinely natural.
 - Never mention pricing, product names, or onboarding.
 - Output ONLY the final post body. No title. No explanation. No preamble. Nothing extra.
 - Do not write a CTA — it will be appended after.
-- Target length: ${LENGTH_MAP[length]}`;
+- Target length: ${LENGTH_MAP[length]}
+${isDailyAnchor ? `
+DAILY VALUE ANCHOR RULE — THIS POST ONLY:
+- NEVER mention the price ($297, $9.90, or any dollar amount for the product)
+- NEVER give the reader math that calculates a monthly or annual cost for the product
+- Choose ONE daily small-spend item that THIS specific type of business owner already spends money on reflexively — something they buy without thinking: coffee before the first patient, fuel before the first job, parking near the office, lunch between showings, supplies at the counter — whatever feels most natural and specific to their daily world
+- The anchor must be something they spend on automatically, not something they decide on
+- After the anchor, pivot IMMEDIATELY to the value of ONE captured customer using the realistic dollar figures above
+- All math stays on the ROI side — what does one new patient, one filled unit, one signed policy, one closed loan mean in dollars?
+- End on the ROI number, never on the product cost
+- The product disappears as an expense and becomes a lever` : ''}`;
 
   const user = `Write a LinkedIn post using the following brief.
 
@@ -875,62 +934,43 @@ Content pillar: ${pillar}
 Post format: ${format}
 Format instructions: ${FORMAT_INSTRUCTIONS[format] || FORMAT_INSTRUCTIONS['Punch post']}
 Target audience: ${niche}
-${hook ? 'Hook framework (use as inspiration, not literally): ' + hook : ''}
+${hook ? 'Hook framework (inspiration only, not literal): ' + hook : ''}
 
 Output only the post body. Nothing else.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': anthropicKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body: JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        system, messages:[{role:'user',content:user}]
-      })
+      headers:{'Content-Type':'application/json','x-api-key':anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1000, system, messages:[{role:'user',content:user}]})
     });
-
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
-    const body = data.content?.[0]?.text?.trim() || '';
-    generatedPost = body + ctaLine;
+    generatedPost = (data.content?.[0]?.text?.trim() || '') + ctaLine;
 
-    document.getElementById('preview').textContent = generatedPost;
-    document.getElementById('preview').style.display = 'block';
-    document.getElementById('edit-area').style.display = 'none';
-    isEditing = false;
-    document.getElementById('edit-toggle').style.display = 'inline';
-    document.getElementById('edit-toggle').textContent = 'Edit post';
-    document.getElementById('post-btn').disabled = false;
-    document.getElementById('copy-btn').disabled = false;
-    document.getElementById('img-btn').disabled = false;
-    document.getElementById('export-btn').disabled = false;
+    document.getElementById('preview').textContent = generatedPost; document.getElementById('preview').style.display = 'block';
+    document.getElementById('edit-area').style.display = 'none'; isEditing = false;
+    document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
+    document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false;
+    document.getElementById('img-btn').disabled = false; document.getElementById('export-btn').disabled = false;
     exportBatch.push({pos:currentPos, niche:nicheKey, pillar, format, cta:ctaType, caption:generatedPost});
-    updateCharCount();
-    showTags(nicheKey, pillar, format, ctaType);
+    updateCharCount(); showTags(nicheKey, pillar, format, ctaType);
     addHistory(generatedPost, currentPos, nicheKey);
     setToast('gen-toast', `✓ Post #${currentPos} generated — ${nicheData.label} · ${format}`, 'success');
     setStatus(false);
   } catch(e) {
-    setToast('gen-toast','✗ ' + e.message,'error');
-    setStatus(false);
+    setToast('gen-toast','✗ ' + e.message,'error'); setStatus(false);
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Generate Post';
+    btn.disabled = false; btn.textContent = 'Generate Post';
   }
 }
 
 async function postToGHL() {
-  const ghlToken   = document.getElementById('ghl-token').value.trim();
+  const ghlToken = document.getElementById('ghl-token').value.trim();
   const locationId = document.getElementById('ghl-location').value.trim();
   const accountId  = document.getElementById('ghl-account').value.trim();
   if (!generatedPost) { setToast('post-toast','Generate a post first.','error'); return; }
-  if (!accountId)     { setToast('post-toast','LinkedIn Account ID required to post directly. Use Copy Text instead.','error'); return; }
+  if (!accountId) { setToast('post-toast','LinkedIn Account ID required. Use Copy Text instead.','error'); return; }
 
   const schedType = document.querySelector('input[name="sched"]:checked').value;
   let publishDate = null;
@@ -941,361 +981,200 @@ async function postToGHL() {
   }
 
   const btn = document.getElementById('post-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Sending to GHL…';
-  clearToast('post-toast');
-  setStatus(true);
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending to GHL…';
+  clearToast('post-toast'); setStatus(true);
 
   try {
     const userId = localStorage.getItem('oi360_uid') || '';
-
-    // Build media array — upload image to GHL if checkbox checked and image exists
     let mediaArray = [];
     const includeImg = document.getElementById('include-img');
     if (includeImg && includeImg.checked && generatedImageB64) {
       try {
-        // Convert base64 to blob and upload to GHL media library
-        const byteChars = atob(generatedImageB64);
-        const byteArr = new Uint8Array(byteChars.length);
+        const byteChars = atob(generatedImageB64), byteArr = new Uint8Array(byteChars.length);
         for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
-        const imgBlob = new Blob([byteArr], {type: 'image/jpeg'});
         const formData = new FormData();
-        formData.append('file', imgBlob, 'linkedin-post-' + currentPos + '.jpg');
+        formData.append('file', new Blob([byteArr], {type:'image/jpeg'}), 'linkedin-post-' + currentPos + '.jpg');
         formData.append('name', 'linkedin-post-' + currentPos);
-
-        // Try GHL media upload with locationId in URL
-        const uploadRes = await fetch(`https://services.leadconnectorhq.com/medias/upload-file`, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + ghlToken,
-            'Version': '2021-07-28',
-            'location-id': locationId
-          },
-          body: formData
+        const uploadRes = await fetch('https://services.leadconnectorhq.com/medias/upload-file', {
+          method:'POST', headers:{'Authorization':'Bearer '+ghlToken,'Version':'2021-07-28','location-id':locationId}, body:formData
         });
         const uploadData = await uploadRes.json();
-        console.log('GHL media upload response:', uploadData);
-        // Try all possible URL field names GHL might return
-        const imgUrl = uploadData?.url
-          || uploadData?.fileUrl
-          || uploadData?.data?.url
-          || uploadData?.mediaUrl
-          || uploadData?.file?.url
-          || uploadData?.result?.url;
-        if (uploadRes.ok && imgUrl) {
-          mediaArray = [{ url: imgUrl, type: 'image' }];
-          console.log('Image URL for GHL post:', imgUrl);
-        } else {
-          console.warn('GHL media upload failed or no URL returned:', JSON.stringify(uploadData));
-        }
-      } catch(imgErr) {
-        console.warn('Image upload skipped:', imgErr.message);
-      }
+        const imgUrl = uploadData?.url || uploadData?.fileUrl || uploadData?.data?.url || uploadData?.mediaUrl;
+        if (uploadRes.ok && imgUrl) mediaArray = [{url:imgUrl, type:'image'}];
+      } catch(imgErr) { console.warn('Image upload skipped:', imgErr.message); }
     }
-
-    const payload = {
-      accountIds: [accountId],
-      summary: generatedPost,
-      status: schedType === 'scheduled' ? 'scheduled' : 'draft',
-      type: 'post',
-      media: mediaArray,
-      userId: userId
-    };
+    const payload = {accountIds:[accountId], summary:generatedPost, status:schedType==='scheduled'?'scheduled':'draft', type:'post', media:mediaArray, userId};
     if (publishDate) payload.publishedAt = publishDate;
-
-    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locationId}/posts`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ghlToken,'Version':'2021-07-28'},
-      body: JSON.stringify(payload)
+    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locationId}/posts`, {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+ghlToken,'Version':'2021-07-28'}, body:JSON.stringify(payload)
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || data.error || 'GHL API error ' + res.status);
-    const msg = schedType === 'scheduled'
-      ? '✓ Scheduled in GHL for ' + new Date(publishDate).toLocaleString()
-      : mediaArray.length > 0 ? '✓ Saved as draft in GHL with image attached — open GHL to review and publish' : '✓ Saved as draft in GHL Social Planner — open GHL to add image and publish';
+    if (!res.ok) throw new Error(data.message || 'GHL API error ' + res.status);
+    const msg = schedType==='scheduled' ? '✓ Scheduled in GHL for ' + new Date(publishDate).toLocaleString()
+      : mediaArray.length > 0 ? '✓ Draft saved in GHL with image — open GHL to review and publish' : '✓ Saved as draft in GHL Social Planner';
     setToast('post-toast', msg, 'success');
-    currentPos++;
-    renderCycleInfo();
-    setStatus(false);
+    currentPos++; renderCycleInfo(); setStatus(false);
   } catch(e) {
-    setToast('post-toast','✗ ' + e.message + ' — Use Copy Text to paste manually into GHL.','error');
-    setStatus(false);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Send to GHL as Draft';
-  }
+    setToast('post-toast','✗ ' + e.message + ' — Use Copy Text instead.','error'); setStatus(false);
+  } finally { btn.disabled = false; btn.textContent = 'Send to GHL as Draft'; }
 }
 
-// ── FIXED COPY BUTTON ──────────────────────────────────────────
-// Works for both hosted (clipboard API) and local file (fallback)
 async function copyPost() {
   if (!generatedPost) return;
   const btn = document.getElementById('copy-btn');
-
-  // Method 1: Modern clipboard API (works when hosted online)
   if (navigator.clipboard && window.isSecureContext) {
-    try {
-      await navigator.clipboard.writeText(generatedPost);
-      showCopySuccess(btn);
-      return;
-    } catch(e) { /* fall through to method 2 */ }
+    try { await navigator.clipboard.writeText(generatedPost); showCopySuccess(btn); return; } catch(e) {}
   }
-
-  // Method 2: execCommand fallback (works for local file:// )
   const ta = document.createElement('textarea');
-  ta.value = generatedPost;
-  ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
-  document.body.appendChild(ta);
-  ta.focus();
-  ta.select();
-  try {
-    const ok = document.execCommand('copy');
-    if (ok) { showCopySuccess(btn); }
-    else    { setToast('post-toast','Could not copy — please select text manually and press Cmd+C.','error'); }
-  } catch(e) {
-    setToast('post-toast','Could not copy — please select text manually and press Cmd+C.','error');
-  }
+  ta.value = generatedPost; ta.style.cssText = 'position:fixed;left:-9999px;opacity:0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { if (document.execCommand('copy')) showCopySuccess(btn); else setToast('post-toast','Select text manually and press Cmd+C.','error'); } catch(e) {}
   document.body.removeChild(ta);
 }
-
 function showCopySuccess(btn) {
   const orig = btn.innerHTML;
-  btn.innerHTML = '✓ Copied!';
-  btn.style.background = 'var(--accent)';
-  btn.style.color = 'white';
-  setToast('post-toast','✓ Copied to clipboard — paste into GHL Social Planner.','success');
-  setTimeout(() => {
-    btn.innerHTML = orig;
-    btn.style.background = '';
-    btn.style.color = '';
-  }, 2000);
-  // Advance counter after successful copy
-  currentPos++;
-  renderCycleInfo();
+  btn.innerHTML = '✓ Copied!'; btn.style.background = 'var(--accent)'; btn.style.color = 'white';
+  setToast('post-toast','✓ Copied to clipboard.','success');
+  setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
+  currentPos++; renderCycleInfo();
 }
 
 // ── IMAGE GENERATION ──────────────────────────────────────────
-let generatedImageB64 = '';
-let generatedImageUrl = '';
-
-function saveOpenAI() {
-  const key = document.getElementById('openai-key').value.trim();
-  if (key) localStorage.setItem('oi360_oai', key);
-}
-
-// Load OpenAI key on startup — patch into window.onload
-const _origOnload = window.onload;
-window.onload = () => {
-  if (_origOnload) _origOnload();
-  const oai = localStorage.getItem('oi360_oai');
-  if (oai) document.getElementById('openai-key').value = oai;
-};
-
 function buildImagePrompt(post, niche, pillar) {
   const nicheLabel = NICHES[niche] ? NICHES[niche].label : 'local service businesses';
   const lines = post.split('\n').filter(l => l.trim().length > 0);
   const headline = lines[0].trim().replace(/['"]/g, '');
+  const ctaLine = lines.slice(-2).find(l => /drop|call|dm|curious|comment|report|reply/i.test(l)) || 'See how it works — call 1-888-708-7367';
 
-  // Extract CTA from the post (last non-empty line or drop/call/dm line)
-  const ctaLine = lines.slice(-2).find(l =>
-    /drop|call|dm|curious|comment/i.test(l)
-  ) || 'Drop "curious" in the comments';
-
-  // ── PILLAR-SPECIFIC VISUAL DIRECTION ──
   const visualDirections = {
-    'Missed calls = missed revenue': {
-      scene: `A split-second dramatic moment: a business owner mid-conversation with a client, their phone screen visible showing a ringing call from "New Inquiry". In the soft background, a competitor at their desk answering a phone, a subtle "NEW CLIENT WON" indicator glowing on their monitor. The contrast between the two is immediate and visceral.`,
-      mood: `Urgent. Real. The cost of one moment made visible. Not dark — bright office lighting that makes the scene feel painfully relatable.`,
-      color: `Clean whites and warm office tones with a sharp red or amber accent on the missed call notification. Bold typography in deep charcoal or black, not white-on-dark.`,
-      style: `Editorial photography feel. Like a still from a business documentary. High resolution, not staged or stock.`
-    },
-    'First responder wins': {
-      scene: `Two phones side by side. One showing an unanswered call going to voicemail — muted, fading. The other showing a connected call, green, active, a person's hand answering confidently. Between them, bold text making the race explicit. Simple, graphic, immediately readable.`,
-      mood: `Competitive. Fast. The visual equivalent of a starting gun. Energetic without being aggressive.`,
-      color: `High contrast split — one side muted gray and red, other side vibrant green and white. Clean, bold, graphic design approach rather than photography.`,
-      style: `Graphic design / bold infographic style. Think campaign poster, not corporate slide.`
-    },
-    'Simple business math': {
-      scene: `A close-up of a calculator or phone screen showing a running total of lost revenue — $1,200, $2,400, $3,600 stacking up. Or a bold typographic layout where the math IS the image. Numbers big enough to be read in the feed without stopping.`,
-      mood: `Blunt. Confrontational with data. The math speaks, the design amplifies it.`,
-      color: `Clean white or off-white background. Numbers in bold black with one accent color (red for the loss figure, green for the solution). Newspaper-editorial clarity.`,
-      style: `Typographic-first design. The numbers are the visual. Clean sans-serif, bold weights, intentional whitespace. Nothing decorative — just the math.`
-    },
-    'Real scenarios — vivid and specific': {
-      scene: `A hyper-specific real-world moment: a ${nicheLabel.toLowerCase()} professional physically occupied — on a roof, under a sink, in a meeting room — while their phone buzzes on a surface nearby with multiple missed calls piling up. The phone is in focus. The person is slightly blurred but recognizable by their work context.`,
-      mood: `Immediate. Relatable. "That's exactly what happens to me." The specificity is what stops the scroll.`,
-      color: `Natural, realistic lighting. Authentic environment colors — no artificial filtering. Bold headline in white with a dark drop shadow for readability over any background.`,
-      style: `Photorealistic and candid-feeling. The opposite of a staged stock photo. High production value that still feels real.`
-    },
-    "You don't have a lead problem — contrarian": {
-      scene: `A visual contradiction: a business owner surrounded by multiple phones all ringing at once — leads clearly arriving — while they look overwhelmed or unaware. Or a graphic showing a full funnel at the top, a massive leak in the middle, and almost nothing coming out the bottom. The demand is there. The system is broken.`,
-      mood: `Pattern interrupt. Provocative. Makes the viewer stop because they expected one thing and got another.`,
-      color: `Unexpected palette — bright, almost optimistic colors that contrast with the problem being shown. The irony of a bright visual depicting a broken system creates cognitive dissonance that stops scrolling.`,
-      style: `Slightly surreal or conceptual. Not documentary — more like an editorial illustration that's been made photorealistic.`
-    },
-    'AI curiosity / demystify': {
-      scene: `A warm, human moment: a real person having a natural phone conversation, unaware it's AI-assisted. Not a robot. Not a server room. Just a professional on their phone, the screen subtly showing an AI waveform or assistant indicator. Make AI feel like a helpful colleague, not a science fiction concept.`,
-      mood: `Approachable. Reassuring. "This is simpler than you think." Curiosity without intimidation.`,
-      color: `Warm neutrals — cream, soft gray, warm white. A single accent color (soft blue or green) to indicate the AI element without making it feel cold or technical.`,
-      style: `Clean lifestyle photography. The kind of image that makes technology feel human. No HUDs, no holograms, no blue glow.`
-    },
-    'Social proof moments': {
-      scene: `A genuine human reaction moment — a business owner reading a notification or message on their phone, expression showing genuine surprise or relief. Or a before/after split: missed call notification versus "New Lead Captured" notification. Real reactions, not posed satisfaction.`,
-      mood: `Authentic. Warm. Credible. The visual equivalent of a real testimonial.`,
-      color: `Natural, warm tones. Feels like a candid photo, not a brand campaign. Headline typography in clean black on white or light backgrounds.`,
-      style: `Candid documentary style. High resolution but feels unposed. The authenticity is what makes it credible.`
-    }
+    'missed calls': {scene:`A split-second dramatic moment: a ${nicheLabel.toLowerCase()} professional mid-task — treating a patient, on a job site, in a client meeting — their phone visible showing a missed call from "New Inquiry." In the soft background, a competitor at their desk picking up, a "New Client Booked" notification glowing.`,mood:`Urgent. Real. The cost of one moment made visible.`,color:`Clean whites and warm environment tones. Sharp red or amber on the missed call. Bold typography in deep charcoal.`,style:`Editorial photography feel. High resolution, not staged.`},
+    'first responder': {scene:`Two phones side by side. One showing an unanswered call fading to voicemail — muted, gray. The other showing a connected call, green, active. Bold text between them making the race explicit.`,mood:`Competitive. Fast. The visual equivalent of a starting gun.`,color:`High contrast split — muted gray and red on one side, vibrant green and white on the other.`,style:`Campaign poster energy. Graphic design over photography.`},
+    'simple business math': {scene:`Bold typographic layout where the math IS the image. Numbers large enough to read in the feed.`,mood:`Blunt. Confrontational with data.`,color:`Clean white background. Numbers in bold black with red for the loss, green for the fix.`,style:`Typographic-first. Nothing decorative — just the math.`},
+    'real scenarios': {scene:`A hyper-specific moment: a ${nicheLabel.toLowerCase()} professional physically occupied — on a roof, chair-side, mid-meeting — while their phone buzzes with missed calls mounting.`,mood:`Immediate. Relatable. "That's exactly my day."`,color:`Natural, realistic lighting. Bold headline in white with dark shadow.`,style:`Photorealistic and candid-feeling.`},
+    "contrarian": {scene:`A visual contradiction: a business owner surrounded by ringing phones — leads arriving — while they look overwhelmed or unaware.`,mood:`Pattern interrupt. Provocative.`,color:`Unexpectedly bright colors contrasting with a broken system.`,style:`Slightly surreal. Editorial illustration made photorealistic.`},
+    'ai curiosity': {scene:`A warm human moment: a professional having a natural phone conversation, unaware it's AI-assisted. Not a robot. Just a person on their phone, the screen subtly showing an AI waveform.`,mood:`Approachable. Reassuring. "This is simpler than you think."`,color:`Warm neutrals. One soft accent color indicating the AI element.`,style:`Clean lifestyle photography. Technology made human.`},
+    'social proof': {scene:`A genuine human reaction: a business owner reading a "New Lead Captured" notification on their phone — expression showing real surprise or relief.`,mood:`Authentic. Warm. Credible.`,color:`Natural warm tones. Feels candid.`,style:`Documentary style. Unposed.`},
+    'unanswered reviews': {scene:`A phone or laptop screen showing a Google business listing with multiple reviews — star ratings visible — but every one shows zero responses. The manager visible in the soft background, busy, completely unaware.`,mood:`Quietly devastating. The damage is invisible to the owner but visible to every prospect.`,color:`Clean white screen. Yellow stars. "0 responses" in muted red.`,style:`Photorealistic screen detail. Feels like a screenshot from real life.`},
+    '48-hour': {scene:`A maintenance request ticket on screen — timestamp showing 47 hours elapsed, status still "Pending." In the background, a tenant packing belongings, a moving truck visible through a window.`,mood:`Slow-burn regret. The loss is already happening.`,color:`Muted documentary tones. Timestamp in amber.`,style:`Photorealistic narrative. A single frame that tells the whole story.`},
+    'after-hours': {scene:`A building at night — lights off, closed sign visible. A phone screen in the foreground showing an incoming call at 10:47pm labeled "Emergency." The call rings. Nobody answers.`,mood:`Tense. Isolating. The gap between when something happens and when someone responds.`,color:`Dark exterior. Phone screen as the single light source. High contrast.`,style:`Cinematic. Dramatic without being false.`},
+    'text-back': {scene:`A phone screen at night showing an outgoing text message sent at 11:47pm to a contact labeled "Missed Caller." The message reads something natural like "Hey, sorry we missed your call — still looking for help?" The sent timestamp clearly visible. Dark ambient background. While every competitor was silent, this business was already following up.`,mood:`Quiet urgency. The relief of a second chance. The power is in the timestamp and the action nobody else took.`,color:`Dark background. Phone screen as dominant light source. Green sent indicator. Clean white message bubble.`,style:`Photorealistic close-up of the phone screen. Ultra-sharp on message and timestamp. Background soft and dark.`},
+    'form gone cold': {scene:`A laptop screen showing an inbox or CRM with multiple unread form submissions — timestamps reading "11:34pm", "9:17pm", "8:02pm" from the previous day. Current time shown reads 9:15am the next morning. Submissions flagged as unread. Empty office in the background, day just starting.`,mood:`The quiet dread of opportunity missed. The viewer immediately calculates the hours of silence.`,color:`Screen glow on a dim background. Timestamps in amber. Clean white interface making the delay stark.`,style:`Screen-level photorealism. The interface feels familiar — like something they'd see on their own computer.`},
+    'follow-up': {scene:`A messaging thread on a phone or laptop. A conversation visible: customer sent a message 4 days ago, business replied once, then silence. Customer's last message timestamped "4 days ago." A separate notification shows the customer just booked with a competitor.`,mood:`The cost of inaction made visible. Not accusatory — just honest.`,color:`Neutral, clean interface tones. "4 days ago" timestamp in muted red. Competitor notification in sharp contrast.`,style:`Photorealistic UI/screen capture feel. Recognizable conversation layout.`},
+    'review generation': {scene:`A side-by-side comparison: two Google Business profiles on a screen. One showing 247 reviews with 4.8 stars — responses visible under every review. The other showing 31 reviews, same rating — zero responses. Same industry. Same city.`,mood:`The slow recognition of a structural disadvantage that feels fixable.`,color:`Google's familiar interface colors. Star ratings in yellow. The review count differential is the visual punch.`,style:`Photorealistic screen comparison. Familiar UI makes it instantly recognizable.`},
+    'daily value': {scene:`A split frame: one side showing a small familiar daily purchase — a coffee cup, a gas pump handle, a takeout bag — casual, reflexive, unremarkable. The other side showing a phone screen with a "New Lead Captured" notification, dollar amount of the opportunity visible.`,mood:`The moment of reframing. The product stops being a cost and becomes a lever.`,color:`Warm everyday tones on the spend side. Clean sharp green on the capture side.`,style:`Split-frame lifestyle photography. Both sides feel real and specific.`}
   };
 
-  // Match pillar to direction, fallback to missed calls
-  const matchKey = Object.keys(visualDirections).find(k =>
-    pillar && pillar && pillar.toLowerCase().includes(k.toLowerCase().split(' ')[0])
-  ) || 'Missed calls = missed revenue';
+  // Match pillar to a visual direction key
+  const p = pillar.toLowerCase();
+  let matchKey = 'missed calls';
+  if (p.includes('first responder')) matchKey = 'first responder';
+  else if (p.includes('math')) matchKey = 'simple business math';
+  else if (p.includes('scenario') || p.includes('vivid')) matchKey = 'real scenarios';
+  else if (p.includes('contrarian') || p.includes("don't have")) matchKey = 'contrarian';
+  else if (p.includes('ai curiosity') || p.includes('demystify')) matchKey = 'ai curiosity';
+  else if (p.includes('social proof')) matchKey = 'social proof';
+  else if (p.includes('unanswered reviews') || p.includes('silent revenue')) matchKey = 'unanswered reviews';
+  else if (p.includes('48-hour') || p.includes('silence')) matchKey = '48-hour';
+  else if (p.includes('after-hours') || p.includes('lost trust')) matchKey = 'after-hours';
+  else if (p.includes('text-back') || p.includes('60 seconds')) matchKey = 'text-back';
+  else if (p.includes('form gone cold') || p.includes('inquiry that disappeared')) matchKey = 'form gone cold';
+  else if (p.includes('follow-up') || p.includes('slipped away')) matchKey = 'follow-up';
+  else if (p.includes('review generation') || p.includes('count your competitor')) matchKey = 'review generation';
+  else if (p.includes('daily value') || p.includes('less than what')) matchKey = 'daily value';
 
-  const direction = visualDirections[matchKey] || visualDirections['Missed calls = missed revenue'];
-
+  const d = visualDirections[matchKey];
   return `Create a scroll-stopping LinkedIn social media graphic for ${nicheLabel}.
 
-GOAL: Make someone stop mid-scroll on LinkedIn. Not because it's shocking — because it's visually unexpected, immediately relatable, and impossible to ignore. Professional audience but that does NOT mean boring.
+GOAL: Make someone stop mid-scroll. Not because it's shocking — because it's visually unexpected, immediately relatable, and impossible to ignore.
 
 SCENE TO VISUALIZE:
-${direction.scene}
+${d.scene}
 
 MOOD & ENERGY:
-${direction.mood}
+${d.mood}
 
 COLOR DIRECTION:
-${direction.color}
+${d.color}
 
 VISUAL STYLE:
-${direction.style}
+${d.style}
 
 HEADLINE TEXT (display prominently, large, readable in feed):
 "${headline}"
 
-CTA BAR (clean bar at the bottom of the image):
+CTA BAR (clean bar at the bottom):
 ${ctaLine}
 
 STRICT RULES:
 - No logos, no phone numbers, no URLs
-- No dark-for-the-sake-of-dark — let the composition determine the lighting
-- No generic stock photo corporate handshake energy
-- No clip art, no icons, no flat illustrations unless the pillar specifically calls for it
+- No generic corporate handshake stock photo energy
 - Typography must be bold enough to read as a thumbnail
 - The image should make someone FEEL something before they read a word
 
-FORMAT: Portrait 4:5 ratio (1080x1350px equivalent) for LinkedIn feed.`;
+FORMAT: Portrait 4:5 ratio for LinkedIn feed.`;
 }
 
 async function generateImage() {
   const openaiKey = document.getElementById('openai-key').value.trim();
-  if (!openaiKey) { setToast('img-toast', 'Add your OpenAI API key in the sidebar first.', 'error'); return; }
+  if (!openaiKey) { setToast('img-toast', 'Add your OpenAI API key first.', 'error'); return; }
   if (!generatedPost) { setToast('img-toast', 'Generate a post first.', 'error'); return; }
 
   const btn = document.getElementById('img-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Generating image…';
-  setToast('img-toast', '', 'info');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating image…';
 
-  const idx = (currentPos - 1) % 90;
-  const nicheKey = mode === 'auto' ? PLAN[idx].niche : manualNiche;
-  const currentPillar = mode === "auto" ? PLAN[(currentPos-1)%90].pillar : (document.querySelector(".angle-btn.selected")?.dataset.val || "");
-  const prompt = buildImagePrompt(generatedPost, nicheKey, currentPillar);
+  const d = PLAN[(currentPos - 1) % PLAN_SIZE];
+  const nicheKey = mode === 'auto' ? d.niche : manualNiche;
+  const currentPillar = mode === 'auto' ? d.pillar : (document.querySelector('.angle-btn.selected')?.dataset.val || '');
+  const prompt     = buildImagePrompt(generatedPost, nicheKey, currentPillar);
   const imgQuality = document.getElementById('img-quality').value || 'medium';
-  const imgSize = document.getElementById('img-size').value || '1024x1536';
+  const imgSize    = document.getElementById('img-size').value   || '1024x1536';
 
   try {
     const res = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + openaiKey
-      },
-      body: JSON.stringify({
-        model: 'gpt-image-2',
-        prompt: prompt,
-        n: 1,
-        size: imgSize,
-        quality: imgQuality,
-        output_format: 'jpeg'
-      })
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+openaiKey},
+      body: JSON.stringify({model:'gpt-image-2', prompt, n:1, size:imgSize, quality:imgQuality, output_format:'jpeg'})
     });
-
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
-
     generatedImageB64 = data.data[0].b64_json;
     generatedImageUrl = 'data:image/jpeg;base64,' + generatedImageB64;
-
-    const box = document.getElementById('img-preview-box');
-    box.innerHTML = '<img src="' + generatedImageUrl + '" alt="Generated social media image" />';
-
-    document.getElementById('download-btn').style.display = 'inline-flex';
-    document.getElementById('download-btn').disabled = false;
-    document.getElementById('clear-img-btn').style.display = 'inline-flex';
-    document.getElementById('img-toggle-wrap').style.display = 'block';
-
-    setToast('img-toast', '✓ Image generated — preview above. Download or include it when sending to GHL.', 'success');
+    document.getElementById('img-preview-box').innerHTML = '<img src="' + generatedImageUrl + '" alt="Generated social media image" />';
+    document.getElementById('download-btn').style.display = 'inline-flex'; document.getElementById('download-btn').disabled = false;
+    document.getElementById('clear-img-btn').style.display = 'inline-flex'; document.getElementById('img-toggle-wrap').style.display = 'block';
+    setToast('img-toast', '✓ Image generated — download or include in GHL draft.', 'success');
   } catch(e) {
     setToast('img-toast', '✗ ' + e.message, 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Regenerate Image';
-    btn.innerHTML = '↻ Regenerate Image';
+    btn.disabled = false; btn.innerHTML = '↻ Regenerate Image';
   }
 }
 
 function downloadImage() {
   if (!generatedImageB64) return;
   const a = document.createElement('a');
-  a.href = generatedImageUrl;
-  a.download = 'linkedin-post-' + currentPos + '.jpg';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setToast('img-toast', '✓ Image downloaded — upload it to GHL Social Planner when publishing.', 'info');
+  a.href = generatedImageUrl; a.download = 'linkedin-post-' + currentPos + '.jpg';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setToast('img-toast', '✓ Image downloaded — upload to GHL Social Planner when publishing.', 'info');
 }
-
 function clearImage() {
-  generatedImageB64 = '';
-  generatedImageUrl = '';
-  document.getElementById('img-preview-box').innerHTML = '<span class="img-placeholder">Generate a post first, then click Generate Image to create a matching graphic using OpenAI image model.</span>';
+  generatedImageB64 = ''; generatedImageUrl = '';
+  document.getElementById('img-preview-box').innerHTML = '<span class="img-placeholder">Generate a post first, then click Generate Image.</span>';
   document.getElementById('download-btn').style.display = 'none';
   document.getElementById('clear-img-btn').style.display = 'none';
   document.getElementById('img-toggle-wrap').style.display = 'none';
-  setToast('img-toast', '', 'info');
 }
-
-// ── CSV EXPORT ──────────────────────────────────────────
-let exportBatch = [];
 
 function exportCSV() {
-  if (exportBatch.length === 0) {
-    setToast('gen-toast', 'No posts to export yet. Generate some posts first.', 'error');
-    return;
-  }
-  const headers = ['Post #', 'Niche', 'Pillar', 'Format', 'CTA Type', 'Caption'];
-  const rows = exportBatch.map(p => [
-    p.pos,
-    p.niche,
-    p.pillar,
-    p.format,
-    p.cta,
-    '"' + p.caption.replace(/"/g, '""') + '"'
-  ]);
+  if (exportBatch.length === 0) { setToast('gen-toast','No posts to export yet.','error'); return; }
+  const headers = ['Post #','Niche','Pillar','Format','CTA Type','Caption'];
+  const rows = exportBatch.map(p => [p.pos, p.niche, p.pillar, p.format, p.cta, '"' + p.caption.replace(/"/g,'""') + '"']);
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  const blob = new Blob([csv], {type: 'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'linkedin-posts-batch.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  setToast('gen-toast', '✓ CSV exported with ' + exportBatch.length + ' posts — open in Excel or Google Sheets.', 'success');
+  const blob = new Blob([csv], {type:'text/csv'}), url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'linkedin-posts-batch.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  setToast('gen-toast', '✓ CSV exported with ' + exportBatch.length + ' posts.', 'success');
 }
-
 </script>
 </body>
 </html>
