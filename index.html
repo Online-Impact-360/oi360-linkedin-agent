@@ -392,7 +392,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
         </div>
       </div>
       <div class="img-preview-box" id="img-preview-box">
-        <span class="img-placeholder">Generate a post first, then click Generate Image to create a matching graphic using OpenAI's image model.</span>
+        <span class="img-placeholder">Generate a post first, then click Generate Image. Requires an OpenAI API key with gpt-image-2 access. If nothing generates, go to platform.openai.com → Settings → Organisation → complete verification.</span>
       </div>
       <div class="action-row" style="margin-top:0">
         <button class="btn btn-img" id="img-btn" onclick="generateImage()" disabled>Generate Image</button>
@@ -1164,7 +1164,7 @@ async function postToGHL() {
         if (uploadRes.ok && imgUrl) mediaArray = [{url:imgUrl, type:'image'}];
       } catch(imgErr) { console.warn('Image upload skipped:', imgErr.message); }
     }
-    const payload = {accountIds:[accountId], summary:generatedPost, status:schedType==='scheduled'?'scheduled':'draft', type:'post', media:mediaArray};
+    const payload = {accountIds:[accountId], summary:generatedPost, status:schedType==='scheduled'?'scheduled':'draft', type:'post', media:mediaArray, userId:accountId};
     if (publishDate) payload.publishedAt = publishDate;
     const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locationId}/posts`, {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+ghlToken,'Version':'2021-07-28'}, body:JSON.stringify(payload)
@@ -1324,8 +1324,26 @@ async function generateImage() {
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+openaiKey},
       body: JSON.stringify({model:'gpt-image-2', prompt, n:1, size:imgSize, quality:imgQuality, output_format:'jpeg'})
     });
-    const data = await res.json();
+
+    // Always parse the body first regardless of status
+    let data;
+    try { data = await res.json(); } catch(parseErr) {
+      throw new Error('OpenAI returned an unparseable response (status ' + res.status + '). Check browser console for details.');
+    }
+
+    // Explicit status check — catches access errors, verification errors, rate limits
+    if (!res.ok) {
+      const msg = data?.error?.message || data?.message || JSON.stringify(data);
+      const hint = res.status === 401 ? ' — Check your OpenAI API key.'
+                 : res.status === 403 ? ' — Organisation verification may be required. Go to platform.openai.com → Settings → Organisation → Verify.'
+                 : res.status === 429 ? ' — Rate limit hit. Wait 60 seconds and try again.'
+                 : ' (HTTP ' + res.status + ')';
+      throw new Error(msg + hint);
+    }
+
     if (data.error) throw new Error(data.error.message);
+    if (!data.data?.[0]?.b64_json) throw new Error('OpenAI returned a success response but no image data. Check your API key permissions and organisation verification status at platform.openai.com.');
+
     generatedImageB64 = data.data[0].b64_json;
     generatedImageUrl = 'data:image/jpeg;base64,' + generatedImageB64;
     document.getElementById('img-preview-box').innerHTML = '<img src="' + generatedImageUrl + '" alt="Generated social media image" />';
@@ -1333,6 +1351,7 @@ async function generateImage() {
     document.getElementById('clear-img-btn').style.display = 'inline-flex'; document.getElementById('img-toggle-wrap').style.display = 'block';
     setToast('img-toast', '✓ Image generated — download or include in GHL draft.', 'success');
   } catch(e) {
+    console.error('[generateImage] OpenAI error:', e);
     setToast('img-toast', '✗ ' + e.message, 'error');
   } finally {
     btn.disabled = false; btn.innerHTML = '↻ Regenerate Image';
