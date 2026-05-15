@@ -170,19 +170,19 @@ const BANNED=['every missed call','every unanswered call','every unanswered revi
 const RETIRED_F=['3 missed calls','47 hours','86%','3 calls'];
 const RETIRED_T=['6:47pm','6:48pm','8:47am','2:17pm'];
 const DOMINO=['first to respond','responds first','whoever responds','whoever picks up','first contractor','first agency','first broker','first practice','first call back','respond first','who picked up first','first one who','first one to respond'];
-const ID_HOOKS=['deciding what kind','deciding whether your','are deciding','market is deciding','clients are deciding','patients are deciding','what kind of business','what kind of practice','what kind of contractor','what kind of agency','what kind of company'];
+const ID_HOOKS=['deciding what kind','deciding whether your','are deciding','market is deciding','clients are deciding','patients are deciding','what kind of business','what kind of practice','what kind of contractor','what kind of agency','what kind of company','filing a verdict','verdict about your','assessing whether','assessing what kind','are forming an opinion','first impression your','the impression you','what they think of your','what kind of operator','what kind of landlord'];
 const HOOK_PAT=[
   {i:1,n:'Consequence chain', t:l=>/→/.test(l)},
   {i:2,n:'Real-time scene',   t:l=>/^it'?s \d+:\d+|^\d+:\d+(am|pm)/i.test(l)},
   {i:3,n:'Uncomfortable math',t:l=>/\d+\s*[x×]\s*\$|\d+\s*calls?\s*[x×]/.test(l)},
   {i:4,n:'Pattern interrupt', t:l=>/you don'?t have a/.test(l)},
-  {i:5,n:'Reframing stat',    t:l=>/^\d+[%.]/.test(l.trim())&&l.trim().split(' ').length<=4},
+  {i:5,n:'Reframing stat',    t:l=>/^\d+[%.]/.test(l.trim())||/^\d+ out of \d+/.test(l.trim())||/^\d+ in \d+/.test(l.trim())},
   {i:6,n:'Confrontational ?', t:l=>l.trim().endsWith('?')&&l.length>25},
   {i:7,n:'Competitor contrast',t:l=>/your competitor/.test(l)},
   {i:8,n:'Contrast story',    t:l=>/\bthen \b/.test(l)&&/\bi \b/.test(l)},
   {i:9,n:'Trust recession',   t:l=>/every (unanswered|ignored|missed)/.test(l)&&/trust|signal|vote/.test(l)},
   {i:11,n:'Silent cost reveal',t:l=>/nobody told you|no one told you/.test(l)},
-  {i:13,n:'Incomplete frag',  t:l=>l.trim().split(' ').length<=6&&/\d/.test(l)&&l.trim().endsWith('.')},
+  {i:13,n:'Incomplete frag',  t:l=>l.trim().split(' ').length<=8&&/\d/.test(l)&&(l.trim().endsWith('.')||l.includes('. ')&&l.trim().split(' ').length<=8)},
   {i:14,n:'Identity challenge',t:l=>ID_HOOKS.some(h=>l.includes(h))},
   {i:15,n:'Inversion',        t:l=>/is not a|isn'?t a|is your competitor'?s/.test(l)},
   {i:10,n:'Snippet/curiosity',t:l=>/specific result/.test(l)},
