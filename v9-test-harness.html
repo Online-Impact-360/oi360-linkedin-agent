@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V9 Internal Test Harness — OI360</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0f;--surface:#16161a;--surface2:#1e1e24;
+  --border:#2a2a35;--accent:#22c55e;--accent-lt:rgba(34,197,94,.12);
+  --danger:#ef4444;--danger-lt:rgba(239,68,68,.12);
+  --warn:#f59e0b;--warn-lt:rgba(245,158,11,.12);
+  --text:#f0f0f5;--text-mid:#a0a0b0;--text-muted:#606070;
+  --radius:8px;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace,sans-serif;font-size:13px;line-height:1.6;min-height:100vh;padding:24px}
+h1{font-family:Georgia,serif;font-size:22px;font-weight:400;margin-bottom:4px;color:var(--text)}
+.sub{color:var(--text-muted);font-size:12px;margin-bottom:24px}
+.controls{display:flex;gap:12px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+.btn{padding:10px 20px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;transition:all .15s}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#000;border-color:var(--accent)}
+.btn-primary:hover:not(:disabled){background:#16a34a;color:#000}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.field input{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:12px;padding:8px 12px;outline:none;width:320px}
+.field input:focus{border-color:var(--accent)}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:24px;display:none}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px}
+.metric-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+.metric-n{font-size:26px;font-weight:700;font-family:Georgia,serif}
+.metric-l{font-size:10px;color:var(--text-muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+.metric-box.pass{border-color:var(--accent);background:var(--accent-lt)}
+.metric-box.pass .metric-n{color:var(--accent)}
+.metric-box.fail{border-color:var(--danger);background:var(--danger-lt)}
+.metric-box.fail .metric-n{color:var(--danger)}
+.metric-box.warn{border-color:var(--warn);background:var(--warn-lt)}
+.metric-box.warn .metric-n{color:var(--warn)}
+.test-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.test-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:var(--surface2);cursor:pointer}
+.test-id{font-weight:700;font-size:11px;color:var(--text-muted);letter-spacing:.1em}
+.test-desc{font-size:12px;color:var(--text-mid);flex:1;margin:0 12px}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.badge-pass{background:var(--accent-lt);color:var(--accent);border:1px solid var(--accent)}
+.badge-fail{background:var(--danger-lt);color:var(--danger);border:1px solid var(--danger)}
+.badge-warn{background:var(--warn-lt);color:var(--warn);border:1px solid var(--warn)}
+.badge-pending{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)}
+.badge-running{background:rgba(34,197,94,.08);color:var(--accent);border:1px solid var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.test-body{display:none;padding:16px}
+.test-body.open{display:block}
+.scores{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.score-chip{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600}
+.score-pass{background:var(--accent-lt);color:var(--accent)}
+.score-fail{background:var(--danger-lt);color:var(--danger)}
+.score-warn{background:var(--warn-lt);color:var(--warn)}
+.post-output{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-word;max-height:400px;overflow-y:auto;color:var(--text-mid)}
+.hook-highlight{color:var(--accent);font-weight:600}
+.flag-highlight{background:rgba(239,68,68,.2);border-left:3px solid var(--danger);padding:2px 6px;border-radius:2px}
+.analysis{margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6}
+.analysis strong{color:var(--text)}
+.status-bar{font-size:11px;color:var(--text-muted);margin-bottom:16px;display:none}
+</style>
+</head>
+<body>
+
+<h1>V9 Internal Test Harness</h1>
+<p class="sub">15 targeted test cases • Highest-risk failure modes • Live scoring against all V9 metrics</p>
+
+<div class="controls">
+  <div class="field">
+    <label>Anthropic API Key</label>
+    <input type="password" id="api-key" placeholder="sk-ant-api03-…" autocomplete="off"/>
+  </div>
+  <button class="btn btn-primary" id="run-btn" onclick="runAll()" disabled>▶ Run All Tests</button>
+  <button class="btn" id="single-btn" onclick="runNext()" disabled>▶ Run Next</button>
+  <button class="btn" onclick="resetAll()">↺ Reset</button>
+</div>
+
+<div class="progress-bar" id="progress-bar">
+  <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+</div>
+<div class="status-bar" id="status-bar"></div>
+
+<div class="summary-grid" id="summary">
+  <div class="metric-box" id="m-total"><div class="metric-n" id="mn-total">0/15</div><div class="metric-l">Tested</div></div>
+  <div class="metric-box" id="m-scroll"><div class="metric-n" id="mn-scroll">—</div><div class="metric-l">Scroll-Stop</div></div>
+  <div class="metric-box" id="m-banned"><div class="metric-n" id="mn-banned">—</div><div class="metric-l">Banned Openers</div></div>
+  <div class="metric-box" id="m-emdash"><div class="metric-n" id="mn-emdash">—</div><div class="metric-l">Em Dashes</div></div>
+  <div class="metric-box" id="m-domino"><div class="metric-n" id="mn-domino">—</div><div class="metric-l">Big Domino Early</div></div>
+  <div class="metric-box" id="m-employee"><div class="metric-n" id="mn-employee">—</div><div class="metric-l">Employee Frame</div></div>
+  <div class="metric-box" id="m-hook14"><div class="metric-n" id="mn-hook14">0</div><div class="metric-l">Hook 14 Used</div></div>
+</div>
+
+<div id="test-cards"></div>
+
+<script>
+// ── TEST CASES ────────────────────────────────────────────────
+const TEST_CASES = [
+  {id:'T01',niche:'pm', pillar:'Missed calls = missed revenue', format:'Punch post',    cta:'comment', topic:'What happens every time a prospective tenant calls and nobody answers',         risk:'Every missed call opener'},
+  {id:'T02',niche:'dnt',pillar:'Missed calls = missed revenue', format:'Punch post',    cta:'comment', topic:'New patients calling after hours when the practice is closed',                  risk:'Every missed call opener'},
+  {id:'T03',niche:'ins',pillar:'Missed calls = missed revenue', format:'Punch post',    cta:'comment', topic:'Quote requests hitting voicemail while agent is with a client',                 risk:'Every missed call opener'},
+  {id:'T04',niche:'mtg',pillar:'Missed calls = missed revenue', format:'Punch post',    cta:'comment', topic:'Buyer inquiries missed on Friday afternoon before the weekend',                 risk:'Every missed call opener'},
+  {id:'T05',niche:'con',pillar:'First responder wins',          format:'Scenario post', cta:'demo',    topic:'Contractor on a job site missing an emergency estimate call at 3pm',           risk:'Time recycling + scenario'},
+  {id:'T06',niche:'pm', pillar:'First responder wins',          format:'Scenario post', cta:'demo',    topic:'Property manager at a showing when a vacancy inquiry calls Saturday morning',   risk:'Time + 8:47am recycling'},
+  {id:'T07',niche:'con',pillar:'Founder story — personal discovery and conviction', format:'Founder story post', cta:'comment', topic:"Henry sitting with a contractor who didn't know how many calls he missed this week", risk:'Most [niche] dont know opener'},
+  {id:'T08',niche:'pm', pillar:'Founder story — personal discovery and conviction', format:'Founder story post', cta:'comment', topic:'Henry discovering the response gap when two comparable clients had different results', risk:'Most property managers opener'},
+  {id:'T09',niche:'pm', pillar:'Trust recession — every unanswered touchpoint costs trust', format:'Punch post', cta:'comment', topic:'Every time a tenant inquiry goes unanswered the market decides what kind of company you are', risk:'Hook 14 identity challenge'},
+  {id:'T10',niche:'dnt',pillar:'Trust recession — every unanswered touchpoint costs trust', format:'Punch post', cta:'comment', topic:'Every after-hours voicemail is a first impression being made about the practice',          risk:'Hook 14 identity challenge'},
+  {id:'T11',niche:'ins',pillar:'Third-party proof — real data, real businesses, real numbers', format:'Proof post', cta:'demo', topic:'Insurance agency who believed they responded fast — what the actual data showed',         risk:'Proof post opener quality'},
+  {id:'T12',niche:'con',pillar:'Simple business math',          format:'Math breakdown',cta:'dm',      topic:'3 missed estimate calls this week — what that number actually means over a year',  risk:'Big Domino early placement'},
+  {id:'T13',niche:'dnt',pillar:'Simple business math',          format:'Math breakdown',cta:'dm',      topic:'New patient call missed at 2pm during a procedure — the lifetime value math',       risk:'Big Domino early placement'},
+  {id:'T14',niche:'ins',pillar:'First responder wins',          format:'Data post',     cta:'demo',    topic:'First agency to respond wins 80 percent of deals — the Saturday morning data',     risk:'Fragment variety + stat hook'},
+  {id:'T15',niche:'mtg',pillar:'Database reactivation — the customers already in your CRM', format:'Before/After post', cta:'dm', topic:'Past borrowers in CRM not contacted since closing — what one message changes', risk:'Database reactivation quality'},
+];
+
+// ── NICHES DATA ───────────────────────────────────────────────
+const NICHES = {
+  pm:  {label:'Property Managers',     desc:'property managers and real estate operators', pain:'missed tenant inquiries (up to 60% of inbound leads go unanswered), 60% of leads fail to enter any follow-up sequence, unanswered calls from prospective tenants who immediately move to the next listing, vacancies extended by slow response costing $60+/day per unit, unanswered Google reviews costing occupancy, maintenance requests going silent causing tenant turnover, after-hours emergencies reaching no one, contact form inquiries going cold over weekends, no proactive review generation, 629,000 new rental units delivered in 2024, 34% of PM companies now use AI to respond faster', value:'$1,200–$3,500/month average tenant value, $2,350+ cost of one vacancy month, $1,000–$3,000 cost per tenant turnover', scenario:'mid-showing at one property when a prospective tenant calls about another vacancy, coordinating a maintenance emergency while weekend rental inquiries arrive, checking in a tenant on Friday afternoon when after-hours inquiry volume picks up'},
+  dnt: {label:'Dental Practices',      desc:'dental practice owners and managing dentists', pain:'35% of dental calls go unanswered during business hours — 80% are appointment scheduling requests, only 14% of missed callers leave a voicemail while 86% hang up and call a competitor immediately, 47–50% of appointment requests arrive after 5pm, 87% hang up without leaving an after-hours voicemail, front desk spends 40% of day on admin tasks, dental staffing crisis with 50% of professionals seeking new positions and $11,000–$14,000 replacement cost per receptionist, DSO and corporate dental chains expanding in Florida', value:'$800–$2,500 average new patient first-visit value, $8,000–$15,000 lifetime patient value, $224,730/year conservative annual revenue loss from 35% missed call rate', scenario:'front desk occupied at the chair, dentist mid-procedure when the office line rings, after-hours emergency calls, new patient calling while the hygienist is with someone'},
+  con: {label:'Contractors / Trades',  desc:'general contractors, builders, and trade business owners', pain:'62% of contractor calls go unanswered because crews physically cannot answer while on job sites, less than 3% of callers who reach voicemail leave a message — 97% hang up and call the next contractor on Google immediately, 85% of callers who miss first contact will never call back, average contractor callback time is 3 hours while 85% of homeowners have already hired someone else, estimate requests going to voicemail on weekends, no text-back after a missed call, Google Local Services Ads now display response time in listings', value:'$800–$3,500 standard service call, $1,500–$11,000 emergency service call, $5,000–$15,000 average roofing project, $45,000–$120,000/year annual loss to unanswered calls', scenario:'on a roof or job site when a homeowner calls for an emergency estimate, an HVAC crew finishing an install at 6pm when an emergency AC call comes in, driving between jobs when a weekend website form submits'},
+  ins: {label:'Insurance Agency Owners',desc:'insurance agency owners and independent brokers', pain:'40% of agency calls go unanswered, 47% of insurance inquiries arrive outside 9–5 hours with 6–8pm weekdays and Saturday mornings as the highest-volume windows, Saturday calls convert 23% higher but most agencies are closed, average agency takes 47 hours to respond while first responders win 80% of deals, 85% of callers who miss first contact never call back, agencies make 1–2 follow-up attempts while 5–8 touchpoints are needed, Florida hard market driving more comparison shopping as 20–30% premium increases push policyholders to shop at renewal, $204,204/year in recoverable revenue', value:'$800–$4,000 average policy commission, $8,000–$12,000 average 7-year customer relationship value, $204,204/year recoverable annual revenue', scenario:'in a client meeting when a new quote request calls and goes unanswered, writing a policy during peak evening hours when the highest-converting inquiries are coming in'},
+  mtg: {label:'Mortgage Brokers',      desc:'mortgage brokers and loan officers', pain:'trigger lead ban (effective March 5, 2026) eliminated cheap lead sources and drove internet lead costs up 45% YoY, first responder wins 80% of mortgage deals regardless of rate or experience, 40% of pipeline arrives after business hours, contact rates drop 80% after the first 5 minutes, average industry response time is 47 hours while the 2026 borrower expectation is under 90 seconds, brokers make 1–3 contact attempts while 5–8 touchpoints are needed, post-trigger-ban Google reviews are the primary organic pipeline', value:'$2,000–$8,000 average loan origination fee, $30,000–$80,000/year lost by missing just 2 qualified leads per week', scenario:'in a closing or signing appointment when a new buyer inquiry calls, reviewing loan files when an after-hours pre-approval form submits on a Thursday evening'},
+};
+
+const FORMAT_INSTRUCTIONS = {
+  'Punch post':        'Short and declarative. Strong claim up front. 2–3 tight paragraphs. No fluff. Every line earns its place.',
+  'Scenario post':     'Drop the reader into a specific real moment. Lead with time, place, action. Show exactly what happens when the call goes unanswered. First line must put them inside the scene.',
+  'Math breakdown':    'Walk through a simple business math scenario with dollar amounts realistic for this niche. Format each step on its own line. Make the total loss feel undeniable.',
+  'Story post':        'A short grounded story about a real type of business owner in this niche. Specific moment, specific outcome. End on the one insight that reframes how they see the problem. Do NOT open with "Most [niche] don\'t know..." — that is a soft setup that delays tension.',
+  'Question post':     'Open with a direct honest question this business owner avoids asking. 2–3 lines of real context. Close with a sharper second question.',
+  'Data post':         'State one industry stat. No narrative. One or two lines of context to ground it. The number does all the work.',
+  'Before/After post': 'Two states contrasted — no story, just before and after side by side. Let the delta speak. Do NOT label sections with "Before:" or "After:" as the first word.',
+  'Founder story post':'Written from Henry\'s voice. First person. One specific moment. OPENER RULE: Do NOT open with "Most [niche] don\'t know how many calls they missed." Open with the moment itself — where Henry was, what he saw.',
+  'Proof post':        'One specific result with real numbers. Opens with the contradicted belief: what they said vs. what the data showed. "A [niche] told me they were pretty good at X. So I asked them to pull the data." Let numbers do the work.',
+};
+
+const CTA_LINES = {
+  demo:    '\n\nWant to hear it yourself?\n\nCall 1-888-708-7367 and ask it how it would handle your calls.',
+  comment: "\n\nDrop \"curious\" in the comments. I'll send you a quick example.",
+  dm:      "\n\nDM me \"demo\" and I'll show you how it works for your business.",
+  none:    '',
+  ebook:   "\n\nI put together a free report on this. Reply and I'll send it over.",
+};
+
+const LENGTH_MAP = {short:'150–250 words', medium:'300–500 words', long:'600–900 words'};
+
+const BANNED_OPENERS = ['every missed call','every unanswered call','every unanswered review','most property managers don','most dental practice','most contractors don','most insurance','most mortgage'];
+const RETIRED_FRAGMENTS = ['every missed call','every unanswered','not eventually','3 missed calls','47 hours','86%','3 calls'];
+const IDENTITY_HOOKS = ['deciding what kind','deciding whether','are deciding','market is deciding','clients are deciding','patients are deciding','what kind of business','what kind of practice','what kind of contractor','what kind of agency'];
+
+// ── STATE ─────────────────────────────────────────────────────
+let results = {};
+let testQueue = [];
+let currentTest = 0;
+let running = false;
+
+function checkKey() {
+  const k = document.getElementById('api-key').value.trim();
+  document.getElementById('run-btn').disabled = !k;
+  document.getElementById('single-btn').disabled = !k;
+}
+document.getElementById('api-key').addEventListener('input', checkKey);
+
+// ── RENDER TEST CARDS ──────────────────────────────────────────
+function renderCards() {
+  const container = document.getElementById('test-cards');
+  container.innerHTML = TEST_CASES.map(tc => `
+    <div class="test-card" id="card-${tc.id}">
+      <div class="test-header" onclick="toggleCard('${tc.id}')">
+        <span class="test-id">${tc.id}</span>
+        <span class="test-desc">[${tc.niche.toUpperCase()}] ${tc.format} — ${tc.topic.substring(0,55)}…</span>
+        <span class="badge badge-pending" id="badge-${tc.id}">PENDING</span>
+      </div>
+      <div class="test-body" id="body-${tc.id}">
+        <div class="scores" id="scores-${tc.id}"></div>
+        <div class="post-output" id="output-${tc.id}">Waiting to run…</div>
+        <div class="analysis" id="analysis-${tc.id}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCard(id) {
+  const body = document.getElementById(`body-${id}`);
+  body.classList.toggle('open');
+}
+
+// ── BUILD SYSTEM PROMPT ────────────────────────────────────────
+function buildSystemPrompt(tc) {
+  const n = NICHES[tc.niche];
+  const isTrust = tc.pillar.toLowerCase().includes('trust recession');
+  const isFounder = tc.format === 'Founder story post' || tc.pillar.toLowerCase().includes('founder story');
+  const isProof = tc.format === 'Proof post';
+  const isDB = tc.pillar.toLowerCase().includes('database reactivation');
+  const isDailyAnchor = tc.pillar.toLowerCase().includes('daily value anchor');
+
+  return `You are a LinkedIn content writer for Online Impact 360, which installs AI business systems that answer calls, capture leads, and follow up automatically for local service businesses.
+
+The product is Smart Website 360: answers inbound calls 24/7, sends automatic text-back within 60 seconds of any missed call, responds instantly to website contact forms, follows up automatically with leads, replies to every Google review automatically, texts every customer after a job to generate reviews, tracks every lead in a CRM. Core promise: "We make sure nothing that touches a customer or prospect ever goes unanswered again."
+
+TARGET AUDIENCE: ${n.desc}
+KEY PAIN POINTS: ${n.pain}
+AVERAGE VALUE OF A MISSED OPPORTUNITY: ${n.value}
+TYPICAL SCENARIO WHERE OPPORTUNITIES ARE MISSED: ${n.scenario}
+
+HENRY CEDENO — FOUNDER BACKGROUND:
+Henry Cedeno founded Online Impact 360 in 2016. 10 years working with local service businesses across every market in the US. Before the agency, he was Product Manager at the major label level — Rick Ross (Teflon Don, Deeper Than Rap, Trilla), Trina (Amazin'), Jagged Edge (The Remedy). National campaigns across every US territory. Watched mass marketing give way to direct-to-consumer digital in real time.
+
+THE DISCOVERY: Running comparable campaigns for businesses in the same industry across different markets — same traffic, same ad spend, same strategy — some converted far more than others. The outlier was always what happened AFTER someone reached out. Speed to lead. Follow-up touchpoints. How personable the staff was. The marketing was doing its job for both clients. The gap was entirely in what happened on the other side of awareness. That's the origin of Smart Website 360.
+
+AUTHENTIC LANGUAGE: "The outlier was always what happened after someone reached out." "Marketing creates awareness. Operations determine whether you get the customer." "By the time he went back to his desk, they had already booked somewhere else." "They're in the needs business."
+
+WRITING RULES — non-negotiable:
+- One idea per post. Never drift.
+- EMPLOYEE FRAMING: Frame the product as an employee being hired, not a system being installed. "Your new employee starts Tuesday." "An employee that never calls in sick." The prospect understands employee. They do not understand AI voice agent. The word "something" is weak. The word "employee" is specific. Default to employee.
+- NEVER use em dashes (—) anywhere in the post. Not once. Use periods, commas, ellipsis (...), or line breaks instead. WRONG: "They didn't lose interest — they called the next agency." RIGHT: "They didn't lose interest. They called the next agency."
+- ANTI-REPETITION — banned opening phrases (retired permanently):
+  1. "Every missed call..." — RETIRED
+  2. "Every unanswered call/review..." — RETIRED
+  3. "You don't have a [X] problem. You have a response problem." — RETIRED
+  4. "How many [leads] did you miss? Not the ones you know about." — RETIRED
+  5. "Most [niche] don't know how many calls they missed." — RETIRED as opener
+  6. "Not eventually." as line 2 — RETIRED
+- FRAGMENT ROTATION: RETIRED FRAGMENTS (rest for 10+ posts): "3 missed calls", "47 hours", "86%", "3 calls"
+  Substitute: "$14,000", "11 minutes", "97%", "4 inquiries", "$224,000", "3 out of 4"
+- TIME RECYCLING: RETIRED times: 6:47pm, 6:48pm, 8:47am, 2:17pm. Use: 7:12am, 9:43am, 1:37pm, 4:51pm, 5:19pm, 7:38pm, 9:04pm, 10:17pm
+- Short paragraphs. Single sentences are fine. Blank lines between paragraphs.
+- Speak like a business owner talking to another business owner.
+- Use dollar values realistic for this niche.
+- Name the specific type of business owner.
+- No jargon. No buzzwords. No hashtags. No emojis.
+- Never mention pricing, product names, or onboarding.
+- Output ONLY the final post body. No title. No explanation. No preamble.
+- Do not write a CTA — it will be appended.
+- Target length: 300–500 words
+
+HOOK WRITING SYSTEM — open with one of these 15 frameworks:
+Hook 1 — Consequence chain: [Action] → [immediate consequence] → [final loss]
+Hook 2 — Real-time scene: It's [specific time]. You're [specific physical activity]. [Triggering event]. Time must be specific, not on the retired list.
+Hook 3 — Uncomfortable math: [Number] [action] × [frequency] = [annual loss not yet calculated]
+Hook 4 — Pattern interrupt: You don't have a [problem they think they have]. You have a [problem they haven't named].
+Hook 5 — Reframing stat: [Specific percentage]. [One sentence making it personal and immediate — not an industry observation, a statement about their business right now]
+Hook 6 — Confrontational question: [Question naming something they're avoiding knowing]
+Hook 7 — Competitor contrast: Your competitor just [specific action]. You [parallel inaction].
+Hook 8 — Contrast story: [Failed approach + mediocre result]. Then [different approach + dramatically better result].
+Hook 9 — Trust recession: Every [small unanswered action] is [cumulative trust damage].
+Hook 10 — Snippet/curiosity gap: [Specific result]. [Gap it closed]. Withhold the method entirely.
+Hook 11 — Silent cost reveal: Nobody told you about [cost]. But it's been happening every [time unit] for [duration].
+Hook 12 — Belief opener [founder story only]: [Counterintuitive belief that is defensible]. [One line that makes them want to know why]
+Hook 13 — Incomplete information: [Deliberate fragment — one number, one fact, one phrase with no context]. Line 2 completes it devastatingly. Examples: "$14,000." / "97%." / "4 calls. Last Tuesday." / "11 minutes."
+Hook 14 — Identity challenge: [Every time business behavior, prospects/customers are deciding what kind of business you are.] Makes the missed call a REPUTATION event, not a revenue event. Business owners cannot rationalize identity threats. MANDATORY: if this hook type has not appeared in recent posts, use it now for applicable topics. Formula: "Every time you [specific behavior], [your market/patients/prospects] are deciding [what kind of business/practice/contractor you are]."
+Hook 15 — Inversion: [Your thing they assume is helping them is actually working against them.] "Your contact form is not a lead capture tool. It's a waiting room with no receptionist."
+
+HOOK RULES:
+- Line 1 creates tension. Line 2 DEEPENS it — makes the consequence worse, more specific, more personal. Line 2 NEVER explains why line 1 is true. If line 2 starts with "because," "that's how," "not because" — it is explaining. Rewrite it.
+- LINE 1 MOBILE TEST: On mobile LinkedIn, only line 1 shows before "see more." Line 1 must create an incomplete thought, a number without context, a contradiction, or a consequence that compels reading line 2. A complete and comfortable sentence that stands alone will not stop the scroll.
+- PT BARNUM — EXTRAORDINARY CLAIM FIRST: Lead with the most audacious verifiable fact. It should sound almost unbelievable but be completely true. Short beats long: "97%." stops more scrolls than "97% of callers who reach voicemail hang up without leaving a message."
+- Never combine question + statement in first two lines.
+- NO PLACEHOLDER TEXT: Never write [City], [Name], or any bracket-enclosed text.
+- SCENARIO VARIETY: Never reuse the same time of day, same setting, same day of week consecutively.
+- READER IS MAIN CHARACTER: Every scenario is second person. "You're on a roof." Not "a contractor on a roof." "Your phone rings." Not "the phone rings."
+- BIG DOMINO (Brunson): The core belief — you don't have a lead problem, you have a RESPONSE problem, and the first to respond wins — lands within the first 40% of the post. NO SEQUENTIAL BUILD: do not spend half the post building the problem and then land the belief. The belief and the problem setup arrive together. If the post is 300 words, the domino lands by word 100.
+
+${isTrust ? `TRUST RECESSION RULE: Name the systemic trust problem. Every missed call, every unanswered review compounds into a trust deficit. Do not name the product. Name the problem. Consider using Hook 14 (Identity Challenge) here.` : ''}
+${isFounder ? `FOUNDER STORY RULE: Henry's voice. First person. OPENER RULE: Do NOT open with "Most [niche] don't know how many calls they missed." Open with the moment — where Henry was, what he saw. Include one physical detail that proves you were there (the coffee, the legal pad, the cold sandwich, the tailgate of a truck). Texture: what I saw → what I learned → what I now believe.` : ''}
+${isProof ? `PROOF POST RULE: Open with the contradicted belief. "A [niche] told me [their belief about their own performance]. So I asked them to pull the data." Then the numbers. Then what it means.` : ''}
+${isDB ? `DATABASE REACTIVATION RULE: Angle is past customers sitting unused in a CRM. The effortlessness is the message — it happened while they were doing something else entirely.` : ''}
+${isDailyAnchor ? `DAILY VALUE ANCHOR: Never mention price. Anchor to reflexive daily spend. Pivot to ROI of one captured customer. End on the ROI number, never the product cost.` : ''}`;
+}
+
+// ── SCORE A POST ───────────────────────────────────────────────
+function scorePost(post, tc) {
+  const lines = post.split('\n').filter(l => l.trim());
+  const l1 = lines[0] || '';
+  const l2 = lines[1] || '';
+  const l1l = l1.toLowerCase();
+  const l2l = l2.toLowerCase();
+  const full = post.toLowerCase();
+  const scores = {};
+
+  // 1. Mobile scroll test
+  const isFragment = l1.split(' ').length <= 5 && /\d/.test(l1);
+  const isInversion = /is not a|isn't a|is your competitor/.test(l1l);
+  const isBannedOpen = BANNED_OPENERS.some(b => l1l.startsWith(b));
+  const hasStrengthSignal = /^\d+%|^\d+ (hours|calls|days)|^it's \d|^your voicemail/.test(l1l);
+  scores.scrollStop = !isBannedOpen && (isFragment || isInversion || hasStrengthSignal);
+
+  // 2. Banned opener
+  scores.noBannedOpener = !isBannedOpen;
+  scores.bannedOpenerText = isBannedOpen ? BANNED_OPENERS.find(b => l1l.startsWith(b)) : null;
+
+  // 3. Em dash
+  const emDashCount = (post.match(/\u2014/g) || []).length;
+  scores.noEmDash = emDashCount === 0;
+  scores.emDashCount = emDashCount;
+
+  // 4. Line 2 deepens
+  const explains = /^(because|that's how|here's why|not because|here's what|this is because)/.test(l2l);
+  const deepens = /^(not a|not the|not eventually|not last|not one|they don't|all three|that same|while you|by then|already|gone\.)/.test(l2l);
+  scores.l2Deepens = deepens || (!explains && l2.length > 0);
+  scores.l2Explains = explains;
+
+  // 5. Big Domino early
+  const domino = ['first to respond','responds first','whoever responds','whoever picks up','first contractor','first agency','first broker','first practice','first call back','respond first','who picked up first','first one who'];
+  const firstWords = lines.slice(0, Math.ceil(lines.length * 0.4)).join(' ').toLowerCase();
+  scores.dominoEarly = domino.some(d => firstWords.includes(d));
+  scores.dominoAny = domino.some(d => full.includes(d));
+
+  // 6. Employee framing
+  scores.employeeFrame = post.toLowerCase().includes('employee');
+
+  // 7. Hook 14 identity challenge
+  scores.hook14Used = IDENTITY_HOOKS.some(h => full.includes(h));
+
+  // 8. No placeholder brackets
+  scores.noPlaceholders = !/\[[A-Z][^\]]{2,20}\]/.test(post);
+
+  // 9. Reader = main character (for scenario/story posts)
+  if (['Scenario post','Story post'].includes(tc.format)) {
+    const hasThirdPerson = /\b(she was|he was|she found|he found|marcus |they managed)\b/.test(post.substring(0,200).toLowerCase());
+    const hasSecondPerson = /\byou\b/.test(post.substring(0,200).toLowerCase());
+    scores.secondPerson = !hasThirdPerson || hasSecondPerson;
+  }
+
+  // 10. Retired fragment check
+  const usedRetired = RETIRED_FRAGMENTS.some(f => l1l.startsWith(f) || l1l.includes(f + '.'));
+  scores.noRetiredFragment = !usedRetired;
+
+  return scores;
+}
+
+// ── GENERATE ONE POST ─────────────────────────────────────────
+async function generatePost(tc) {
+  const key = document.getElementById('api-key').value.trim();
+  const systemPrompt = buildSystemPrompt(tc);
+  const ctaLine = CTA_LINES[tc.cta] || CTA_LINES.comment;
+  const userPrompt = `Write a LinkedIn post using the following brief.
+
+Topic: ${tc.topic}
+Content pillar: ${tc.pillar}
+Post format: ${tc.format}
+Format instructions: ${FORMAT_INSTRUCTIONS[tc.format] || FORMAT_INSTRUCTIONS['Punch post']}
+Target audience: ${NICHES[tc.niche].desc}
+
+Output only the post body. Nothing else.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }]
+    })
+  });
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const rawBody = (data.content?.[0]?.text?.trim() || '').replace(/\u2014/g, '...');
+  return rawBody + ctaLine;
+}
+
+// ── RENDER RESULT ─────────────────────────────────────────────
+function renderResult(tc, post, scores) {
+  const badge = document.getElementById(`badge-${tc.id}`);
+  const scoresEl = document.getElementById(`scores-${tc.id}`);
+  const outputEl = document.getElementById(`output-${tc.id}`);
+  const analysisEl = document.getElementById(`analysis-${tc.id}`);
+
+  const critical = [scores.noBannedOpener, scores.noEmDash, scores.scrollStop, scores.noPlaceholders, scores.noRetiredFragment];
+  const allCritical = critical.every(Boolean);
+  const warnings = [scores.l2Deepens, scores.dominoEarly || scores.dominoAny, scores.employeeFrame];
+  const overallPass = allCritical && warnings.filter(Boolean).length >= 2;
+
+  badge.className = `badge ${overallPass ? 'badge-pass' : allCritical ? 'badge-warn' : 'badge-fail'}`;
+  badge.textContent = overallPass ? 'PASS' : allCritical ? 'WARN' : 'FAIL';
+
+  const chips = [
+    {label: 'SCROLL-STOP', pass: scores.scrollStop},
+    {label: 'NO BANNED OPENER', pass: scores.noBannedOpener},
+    {label: 'NO EM DASH', pass: scores.noEmDash},
+    {label: 'L2 DEEPENS', pass: scores.l2Deepens, warn: scores.l2Explains},
+    {label: 'BIG DOMINO EARLY', pass: scores.dominoEarly, warn: scores.dominoAny && !scores.dominoEarly},
+    {label: 'EMPLOYEE FRAME', pass: scores.employeeFrame, warn: !scores.employeeFrame},
+    {label: 'HOOK 14', pass: scores.hook14Used, warn: !scores.hook14Used && ['T09','T10'].includes(tc.id)},
+    {label: 'NO BRACKETS', pass: scores.noPlaceholders},
+    {label: 'NO RETIRED FRAG', pass: scores.noRetiredFragment},
+  ];
+  if (scores.secondPerson !== undefined) chips.push({label: '2ND PERSON', pass: scores.secondPerson});
+
+  scoresEl.innerHTML = chips.map(c => {
+    const cls = c.pass ? 'score-pass' : (c.warn ? 'score-warn' : 'score-fail');
+    return `<span class="score-chip ${cls}">${c.label}</span>`;
+  }).join('');
+
+  // Highlight the first two lines in the output
+  const postLines = post.split('\n');
+  const highlighted = postLines.map((line, i) => {
+    if (!line.trim()) return '';
+    if (i === 0) return `<span class="hook-highlight">${escHtml(line)}</span>`;
+    if (i === 1 && line.trim()) return `<span style="color:${scores.l2Deepens ? '#86efac' : '#fca5a5'}">${escHtml(line)}</span>`;
+    return escHtml(line);
+  }).join('\n');
+  outputEl.innerHTML = highlighted;
+
+  // Analysis
+  const issues = [];
+  if (!scores.noBannedOpener) issues.push(`⚠ Banned opener: "${scores.bannedOpenerText}"`);
+  if (scores.emDashCount > 0) issues.push(`⚠ Em dashes found: ${scores.emDashCount} (code-level strip should have caught this)`);
+  if (!scores.scrollStop) issues.push(`⚠ Line 1 may not stop scroll on mobile — needs stronger hook`);
+  if (scores.l2Explains) issues.push(`⚠ Line 2 explains line 1 instead of deepening tension`);
+  if (!scores.dominoEarly && !scores.dominoAny) issues.push(`⚠ Big Domino not present — response-speed belief never stated`);
+  if (!scores.dominoEarly && scores.dominoAny) issues.push(`⚠ Big Domino buried in back half — needs to land by first 40%`);
+  if (!scores.employeeFrame) issues.push(`⚠ No "employee" framing — product described as system/something`);
+  if (['T09','T10'].includes(tc.id) && !scores.hook14Used) issues.push(`⚠ Hook 14 (Identity Challenge) expected but not used`);
+  if (!scores.noRetiredFragment) issues.push(`⚠ Retired fragment used in opener`);
+
+  const wins = [];
+  if (scores.noBannedOpener) wins.push('✓ Clean opener — no retired templates');
+  if (scores.scrollStop) wins.push('✓ Line 1 stops scroll');
+  if (scores.noEmDash) wins.push('✓ No em dashes');
+  if (scores.l2Deepens && !scores.l2Explains) wins.push('✓ Line 2 deepens tension');
+  if (scores.dominoEarly) wins.push('✓ Big Domino lands in first 40%');
+  if (scores.employeeFrame) wins.push('✓ Employee framing used');
+  if (scores.hook14Used) wins.push('✓ Hook 14 (Identity Challenge) present');
+
+  analysisEl.innerHTML = [
+    issues.length ? `<strong>Issues:</strong><br>${issues.join('<br>')}` : '',
+    wins.length ? `<strong>Wins:</strong><br>${wins.join('<br>')}` : ''
+  ].filter(Boolean).join('<br><br>');
+
+  document.getElementById(`body-${tc.id}`).classList.add('open');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── UPDATE SUMMARY METRICS ────────────────────────────────────
+function updateSummary() {
+  const done = Object.values(results).length;
+  const scrollPasses = Object.values(results).filter(r => r.scores.scrollStop).length;
+  const bannedFails  = Object.values(results).filter(r => !r.scores.noBannedOpener).length;
+  const emDashFails  = Object.values(results).filter(r => !r.scores.noEmDash).length;
+  const dominoEarly  = Object.values(results).filter(r => r.scores.dominoEarly).length;
+  const empFrame     = Object.values(results).filter(r => r.scores.employeeFrame).length;
+  const hook14       = Object.values(results).filter(r => r.scores.hook14Used).length;
+
+  const set = (id, val, good, bad, warn) => {
+    const el = document.getElementById(id);
+    const box = el.parentElement;
+    el.textContent = val;
+    box.className = 'metric-box' + (good ? ' pass' : bad ? ' fail' : warn ? ' warn' : '');
+  };
+
+  set('mn-total', `${done}/15`, false, false, false);
+  if (done > 0) {
+    const pct = Math.round(scrollPasses/done*100);
+    set('mn-scroll', `${pct}%`, pct >= 70, pct < 50, pct >= 50 && pct < 70);
+    set('mn-banned', bannedFails === 0 ? 'CLEAN' : `${bannedFails} FAIL`, bannedFails === 0, bannedFails > 0, false);
+    set('mn-emdash', emDashFails === 0 ? 'CLEAN' : `${emDashFails} FAIL`, emDashFails === 0, emDashFails > 0, false);
+    const dominoPct = Math.round(dominoEarly/done*100);
+    set('mn-domino', `${dominoPct}%`, dominoPct >= 20, dominoPct < 10, dominoPct >= 10 && dominoPct < 20);
+    const empPct = Math.round(empFrame/done*100);
+    set('mn-employee', `${empPct}%`, empPct >= 70, empPct < 50, empPct >= 50 && empPct < 70);
+    set('mn-hook14', hook14, hook14 >= 2, hook14 === 0, hook14 === 1);
+  }
+}
+
+// ── RUN CONTROLS ──────────────────────────────────────────────
+async function runAll() {
+  if (running) return;
+  running = true;
+  document.getElementById('run-btn').disabled = true;
+  document.getElementById('single-btn').disabled = true;
+  document.getElementById('progress-bar').style.display = 'block';
+  document.getElementById('status-bar').style.display = 'block';
+
+  for (let i = 0; i < TEST_CASES.length; i++) {
+    await runTest(i);
+    await new Promise(r => setTimeout(r, 800));
+  }
+
+  running = false;
+  document.getElementById('run-btn').disabled = false;
+  document.getElementById('single-btn').disabled = false;
+  document.getElementById('status-bar').textContent = `✓ All ${TEST_CASES.length} tests complete`;
+}
+
+async function runNext() {
+  if (running) return;
+  const nextIdx = Object.keys(results).length;
+  if (nextIdx >= TEST_CASES.length) return;
+  document.getElementById('progress-bar').style.display = 'block';
+  document.getElementById('status-bar').style.display = 'block';
+  await runTest(nextIdx);
+}
+
+async function runTest(idx) {
+  const tc = TEST_CASES[idx];
+  const badge = document.getElementById(`badge-${tc.id}`);
+  badge.className = 'badge badge-running';
+  badge.textContent = 'RUNNING…';
+  document.getElementById(`output-${tc.id}`).textContent = 'Generating…';
+  document.getElementById(`body-${tc.id}`).classList.add('open');
+
+  const pct = ((idx + 1) / TEST_CASES.length * 100).toFixed(0);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('status-bar').textContent = `Running T${String(idx+1).padStart(2,'0')}/15 — [${tc.niche.toUpperCase()}] ${tc.format}…`;
+
+  try {
+    const post = await generatePost(tc);
+    const scores = scorePost(post, tc);
+    results[tc.id] = { post, scores };
+    renderResult(tc, post, scores);
+    updateSummary();
+  } catch (e) {
+    const badge = document.getElementById(`badge-${tc.id}`);
+    badge.className = 'badge badge-fail';
+    badge.textContent = 'ERROR';
+    document.getElementById(`output-${tc.id}`).textContent = 'Error: ' + e.message;
+  }
+}
+
+function resetAll() {
+  results = {};
+  currentTest = 0;
+  running = false;
+  renderCards();
+  updateSummary();
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('status-bar').textContent = '';
+  ['mn-scroll','mn-banned','mn-emdash','mn-domino','mn-employee'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+    document.getElementById(id).parentElement.className = 'metric-box';
+  });
+  document.getElementById('mn-total').textContent = '0/15';
+  document.getElementById('mn-hook14').textContent = '0';
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+renderCards();
+</script>
+</body>
+</html>
