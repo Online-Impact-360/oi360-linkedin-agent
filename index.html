@@ -3,1516 +3,612 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinkedIn Post Agent v9 — Online Impact 360</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<title>V9 Test Harness — OI360</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg:#f0efe9; --surface:#fff; --surface2:#f7f6f2;
-  --border:#e2e0d8; --border-strong:#c8c5bb;
-  --accent:#1a6b3a; --accent-lt:#e8f5ee; --accent-mid:#2d8a50;
-  --text:#1a1916; --text-mid:#4a4843; --text-muted:#8a8780;
-  --danger:#c0392b; --danger-lt:#fdf2f1;
-  --success:#1a6b3a; --success-lt:#e8f5ee;
-  --info:#1a4a7a; --info-lt:#e8f0fa;
-  --warn:#7a4a10; --warn-lt:#fef4e4;
-  --pm:#1a4a7a; --pm-lt:#e8f0fa;
-  --ins:#6b1a6b; --ins-lt:#f5e8f5;
-  --mtg:#7a4a10; --mtg-lt:#fef4e4;
-  --dnt:#0e5c4a; --dnt-lt:#e4f5f0;
-  --con:#6b3a1a; --con-lt:#f5ede6;
-  --radius:10px; --radius-sm:6px;
-  --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f3ef;--surface:#ffffff;--surface2:#f0eee8;
+  --border:#dddbd2;--border-strong:#c8c5bb;
+  --accent:#1a6b3a;--accent-lt:#e8f5ee;
+  --danger:#c0392b;--danger-lt:#fdf2f1;
+  --warn:#7a4a10;--warn-lt:#fef4e4;
+  --info:#1a4a7a;--info-lt:#e8f0fa;
+  --text:#1a1916;--text-mid:#4a4843;--text-muted:#8a8780;
+  --radius:8px;--shadow:0 1px 3px rgba(0,0,0,.08);
 }
-body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:13.5px; line-height:1.6; min-height:100vh; }
-.header { background:var(--surface); border-bottom:1.5px solid var(--border); padding:0 28px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; box-shadow:var(--shadow-sm); }
-.logo { font-family:'Instrument Serif',serif; font-size:19px; color:var(--text); display:flex; align-items:center; gap:10px; }
-.logo-accent { color:var(--accent); }
-.logo-divider { color:var(--border-strong); }
-.logo-sub { font-size:13px; font-family:'DM Sans',sans-serif; color:var(--text-muted); font-style:italic; }
-.status-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface2); font-size:12px; color:var(--text-muted); font-weight:500; transition:all .3s; }
-.status-pill.ready { border-color:#86c9a0; background:var(--success-lt); color:var(--success); }
-.status-pill.working { border-color:#f0c060; background:var(--warn-lt); color:var(--warn); }
-.status-dot { width:8px; height:8px; border-radius:50%; background:var(--border-strong); transition:background .3s; flex-shrink:0; }
-.status-pill.ready .status-dot { background:var(--success); box-shadow:0 0 0 3px rgba(26,107,58,.15); }
-.status-pill.working .status-dot { background:#d4a020; animation:pulse 1s infinite; }
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:13.5px;line-height:1.6;min-height:100vh;padding:28px}
+h1{font-family:Georgia,serif;font-size:24px;font-weight:400;margin-bottom:4px}
+.sub{color:var(--text-muted);font-size:12px;margin-bottom:24px}
+.controls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px;padding:18px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:280px}
+.field label{font-size:11px;color:var(--text-muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.field input{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:13px;padding:8px 12px;outline:none;transition:border .15s}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,58,.1)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:9px 18px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover:not(:disabled){background:#155930;color:#fff}
+.btn-export{background:var(--info-lt);color:var(--info);border-color:#86a8d0}
+.btn-export:hover:not(:disabled){background:var(--info);color:#fff}
+.progress-wrap{margin-bottom:20px;display:none}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s}
+.status-line{font-size:12px;color:var(--text-muted);margin-top:6px}
+.section-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:24px}
+.metric{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 12px;text-align:center;box-shadow:var(--shadow)}
+.metric-n{font-size:22px;font-weight:700;font-family:Georgia,serif;line-height:1.2}
+.metric-l{font-size:10px;color:var(--text-muted);margin-top:3px;text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.metric.pass{border-color:#86c9a0;background:var(--accent-lt)}.metric.pass .metric-n{color:var(--accent)}
+.metric.fail{border-color:#e8a09a;background:var(--danger-lt)}.metric.fail .metric-n{color:var(--danger)}
+.metric.warn{border-color:#d4a040;background:var(--warn-lt)}.metric.warn .metric-n{color:var(--warn)}
+.metric.info{border-color:#86a8d0;background:var(--info-lt)}.metric.info .metric-n{color:var(--info)}
+.test-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:10px;box-shadow:var(--shadow);overflow:hidden}
+.test-header{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .1s}
+.test-header:hover{background:var(--surface2)}
+.test-id{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text-muted);min-width:32px}
+.test-info{flex:1;min-width:0}
+.test-title{font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.test-risk{font-size:10.5px;color:var(--text-muted);margin-top:1px}
+.badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;border:1.5px solid}
+.b-pass{background:var(--accent-lt);color:var(--accent);border-color:#86c9a0}
+.b-fail{background:var(--danger-lt);color:var(--danger);border-color:#e8a09a}
+.b-warn{background:var(--warn-lt);color:var(--warn);border-color:#d4a040}
+.b-pend{background:var(--surface2);color:var(--text-muted);border-color:var(--border)}
+.b-run{background:var(--accent-lt);color:var(--accent);border-color:#86c9a0;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.main { display:grid; grid-template-columns:320px 1fr; min-height:calc(100vh - 58px); }
-.sidebar { background:var(--surface); border-right:1.5px solid var(--border); overflow-y:auto; }
-.sidebar-block { padding:20px 22px; border-bottom:1.5px solid var(--border); }
-.sidebar-block:last-child { border-bottom:none; }
-.block-title { font-size:10px; font-weight:700; letter-spacing:.10em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
-.block-title-icon { width:20px; height:20px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:11px; }
-.icon-green{background:var(--accent-lt)} .icon-blue{background:var(--info-lt)} .icon-yellow{background:var(--warn-lt)}
-.field { margin-bottom:14px; }
-.field:last-child { margin-bottom:0; }
-.field label { display:block; font-size:12px; font-weight:600; color:var(--text-mid); margin-bottom:5px; }
-input[type="text"],input[type="password"],input[type="datetime-local"],select,textarea { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; padding:9px 12px; outline:none; transition:border-color .15s,background .15s,box-shadow .15s; appearance:none; }
-input:focus,select:focus,textarea:focus { border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 3px rgba(26,107,58,.1); }
-textarea { resize:vertical; min-height:64px; line-height:1.6; }
-select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8780'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 11px center; padding-right:28px; cursor:pointer; }
-.key-row { display:flex; gap:6px; align-items:flex-end; }
-.key-row input { flex:1; }
-.eye-btn { flex-shrink:0; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-sm); color:var(--text-muted); cursor:pointer; padding:9px 11px; font-size:11px; font-family:'DM Sans',sans-serif; font-weight:500; white-space:nowrap; transition:all .15s; height:38px; }
-.eye-btn:hover { border-color:var(--border-strong); color:var(--text-mid); }
-.field-hint { font-size:11px; color:var(--text-muted); margin-top:5px; line-height:1.5; padding:7px 10px; background:var(--surface2); border-radius:var(--radius-sm); border-left:3px solid var(--border-strong); }
-.cycle-tracker { background:var(--accent); border-radius:var(--radius); padding:16px; color:white; }
-.cycle-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
-.cycle-num { font-family:'Instrument Serif',serif; font-size:42px; line-height:1; color:white; }
-.cycle-label { font-size:11px; color:rgba(255,255,255,.7); margin-top:2px; font-weight:500; }
-.cycle-nav { display:flex; gap:5px; }
-.cycle-nav-btn { width:28px; height:28px; border-radius:6px; border:1.5px solid rgba(255,255,255,.3); background:rgba(255,255,255,.1); color:white; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
-.cycle-nav-btn:hover { background:rgba(255,255,255,.25); }
-.cycle-progress { height:3px; background:rgba(255,255,255,.25); border-radius:2px; margin:10px 0 8px; }
-.cycle-fill { height:100%; background:white; border-radius:2px; transition:width .4s; }
-.cycle-topic { font-size:12px; color:rgba(255,255,255,.9); font-weight:500; line-height:1.4; }
-.cycle-meta { font-size:11px; color:rgba(255,255,255,.6); margin-top:3px; }
-.niche-indicator { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; margin-top:6px; }
-.niche-pm,.niche-dnt { background:rgba(255,255,255,.2); color:white; }
-.niche-ins,.niche-con { background:rgba(255,255,255,.15); color:rgba(255,255,255,.9); }
-.niche-mtg { background:rgba(255,255,255,.12); color:rgba(255,255,255,.8); }
-.stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:12px; }
-.stat-box { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; padding:8px 10px; text-align:center; }
-.stat-n { font-size:18px; font-weight:700; color:var(--accent); }
-.stat-l { font-size:10px; color:var(--text-muted); margin-top:1px; }
-.history-item { background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:6px; cursor:pointer; transition:all .15s; }
-.history-item:hover { border-color:var(--accent); background:var(--accent-lt); }
-.hi-meta { font-size:10px; color:var(--text-muted); margin-bottom:3px; display:flex; justify-content:space-between; font-weight:500; }
-.hi-preview { font-size:11.5px; color:var(--text-mid); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.no-history { font-size:12px; color:var(--text-muted); text-align:center; padding:8px 0; font-style:italic; }
-.content-panel { padding:24px 28px; overflow-y:auto; background:var(--bg); }
-.panel-section { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; box-shadow:var(--shadow-sm); }
-.panel-header { padding:14px 18px; border-bottom:1.5px solid var(--border); background:var(--surface2); display:flex; align-items:center; justify-content:space-between; }
-.panel-title { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-mid); display:flex; align-items:center; gap:7px; }
-.panel-title-dot { width:8px; height:8px; border-radius:50%; }
-.dot-green{background:var(--accent)} .dot-blue{background:var(--info)} .dot-yellow{background:#d4a020}
-.panel-body { padding:18px; }
-.mode-toggle { display:flex; gap:0; border:1.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; background:var(--surface2); margin-bottom:16px; }
-.mode-btn { flex:1; padding:9px 14px; font-family:'DM Sans',sans-serif; font-size:12.5px; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--text-muted); transition:all .15s; text-align:center; }
-.mode-btn.active { background:var(--accent); color:white; font-weight:600; }
-.mode-btn:hover:not(.active) { background:var(--border); color:var(--text-mid); }
-.niche-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-bottom:14px; }
-.niche-btn { padding:9px 10px; font-size:12px; font-family:'DM Sans',sans-serif; font-weight:600; text-align:center; cursor:pointer; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text-mid); transition:all .15s; }
-.niche-btn:hover { border-color:var(--accent); }
-.niche-btn.sel-pm  { border-color:var(--pm);  background:var(--pm-lt);  color:var(--pm); }
-.niche-btn.sel-ins { border-color:var(--ins); background:var(--ins-lt); color:var(--ins); }
-.niche-btn.sel-mtg { border-color:var(--mtg); background:var(--mtg-lt); color:var(--mtg); }
-.niche-btn.sel-dnt { border-color:var(--dnt); background:var(--dnt-lt); color:var(--dnt); }
-.niche-btn.sel-con { border-color:var(--con); background:var(--con-lt); color:var(--con); }
-.angle-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
-.angle-btn { padding:9px 10px; font-size:12px; font-family:'DM Sans',sans-serif; font-weight:500; text-align:left; cursor:pointer; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text-mid); transition:all .15s; line-height:1.3; }
-.angle-btn:hover { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); }
-.angle-btn.selected { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); font-weight:600; }
-.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px; }
-.btn { padding:10px 20px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; border-radius:var(--radius-sm); cursor:pointer; border:none; transition:all .15s; display:inline-flex; align-items:center; gap:7px; }
-.btn:disabled { opacity:.4; cursor:not-allowed; }
-.btn-primary { background:var(--accent); color:white; box-shadow:0 2px 8px rgba(26,107,58,.25); }
-.btn-primary:hover:not(:disabled) { background:var(--accent-mid); transform:translateY(-1px); }
-.btn-secondary { background:var(--surface); color:var(--text-mid); border:1.5px solid var(--border); }
-.btn-secondary:hover:not(:disabled) { border-color:var(--border-strong); color:var(--text); }
-.btn-copy { background:var(--accent-lt); color:var(--accent); border:1.5px solid #86c9a0; font-weight:600; }
-.btn-copy:hover:not(:disabled) { background:var(--accent); color:white; }
-.action-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:14px; }
-.toast { padding:10px 14px; border-radius:var(--radius-sm); font-size:12.5px; margin-top:10px; display:none; border-left:3px solid; line-height:1.5; font-weight:500; }
-.toast.show{display:block}
-.toast.info   { background:var(--info-lt);    border-color:var(--info);    color:var(--info); }
-.toast.success{ background:var(--success-lt); border-color:var(--success); color:var(--success); }
-.toast.error  { background:var(--danger-lt);  border-color:var(--danger);  color:var(--danger); }
-.preview-box { background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:18px; min-height:180px; font-size:13.5px; line-height:1.85; color:var(--text); white-space:pre-wrap; word-break:break-word; }
-.preview-placeholder { color:var(--text-muted); font-style:italic; font-size:13px; }
-.preview-edit { width:100%; background:var(--surface); border:1.5px solid var(--accent); border-radius:var(--radius-sm); padding:18px; min-height:180px; font-family:'DM Sans',sans-serif; font-size:13.5px; line-height:1.85; color:var(--text); resize:vertical; outline:none; display:none; box-shadow:0 0 0 3px rgba(26,107,58,.1); }
-.meta-row { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
-.char-count { font-size:11.5px; color:var(--text-muted); font-weight:500; }
-.char-count.warn{color:var(--warn)} .char-count.danger{color:var(--danger)}
-.edit-toggle { font-size:12px; color:var(--accent); cursor:pointer; font-weight:600; display:none; }
-.edit-toggle:hover { text-decoration:underline; }
-.post-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
-.tag { font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; }
-.tag-pm  { background:var(--pm-lt);  color:var(--pm); }
-.tag-ins { background:var(--ins-lt); color:var(--ins); }
-.tag-mtg { background:var(--mtg-lt); color:var(--mtg); }
-.tag-dnt { background:var(--dnt-lt); color:var(--dnt); }
-.tag-con { background:var(--con-lt); color:var(--con); }
-.tag-format { background:var(--accent-lt); color:var(--accent); }
-.tag-cta    { background:var(--warn-lt);   color:var(--warn); }
-.tag-ghl    { background:#f0ebff;           color:#5b21b6; }
-.radio-row { display:flex; gap:16px; flex-wrap:wrap; }
-.radio-label { display:flex; align-items:center; gap:7px; font-size:13px; font-weight:500; color:var(--text-mid); cursor:pointer; padding:8px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); transition:all .15s; background:var(--surface2); }
-.radio-label:has(input:checked) { border-color:var(--accent); background:var(--accent-lt); color:var(--accent); }
-.radio-label input { accent-color:var(--accent); }
-.callout { padding:10px 14px; border-radius:var(--radius-sm); font-size:12px; line-height:1.55; font-weight:500; display:flex; gap:9px; align-items:flex-start; }
-.callout-green { background:var(--accent-lt); color:var(--accent); border:1.5px solid #86c9a0; }
-.callout-blue  { background:var(--info-lt);   color:var(--info);   border:1.5px solid #86a8d0; }
-.callout-icon  { flex-shrink:0; font-size:14px; margin-top:1px; }
-.spinner { display:inline-block; width:13px; height:13px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; }
-@keyframes spin{to{transform:rotate(360deg)}}
-.override-panel{display:none} .override-panel.visible{display:block}
-::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
-@media(max-width:860px){.main{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1.5px solid var(--border)}.three-col,.niche-grid{grid-template-columns:1fr 1fr}}
-.img-preview-box { width:100%; border-radius:var(--radius-sm); overflow:hidden; border:1.5px solid var(--border); background:var(--surface2); min-height:80px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
-.img-preview-box img { width:100%; max-height:300px; object-fit:contain; display:block; border-radius:var(--radius-sm); background:#000; }
-.img-placeholder { color:var(--text-muted); font-size:12px; font-style:italic; text-align:center; padding:20px; }
-.btn-img { background:#0d1117; color:#58a6ff; border:1.5px solid #30363d; font-weight:600; }
-.btn-img:hover:not(:disabled) { background:#161b22; border-color:#58a6ff; }
-.btn-download { background:var(--info-lt); color:var(--info); border:1.5px solid #86a8d0; font-weight:600; }
-.btn-download:hover:not(:disabled) { background:var(--info); color:white; }
+.test-body{display:none;border-top:1.5px solid var(--border);padding:16px}
+.test-body.open{display:block}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;border:1.5px solid}
+.c-pass{background:var(--accent-lt);color:var(--accent);border-color:#86c9a0}
+.c-fail{background:var(--danger-lt);color:var(--danger);border-color:#e8a09a}
+.c-warn{background:var(--warn-lt);color:var(--warn);border-color:#d4a040}
+.c-info{background:var(--info-lt);color:var(--info);border-color:#86a8d0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.ibt{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
+.hook-line{font-family:Georgia,serif;font-size:13.5px;line-height:1.7;padding:10px 14px;border-radius:6px;margin-bottom:4px}
+.hook-l1{background:var(--accent-lt);border-left:3px solid var(--accent);color:#1a3028}
+.hook-l1.bad{background:var(--danger-lt);border-left-color:var(--danger);color:#4a1a16}
+.hook-l2{background:var(--info-lt);border-left:3px solid var(--info);color:#1a2a40;font-size:13px}
+.hook-l2.explains{background:var(--warn-lt);border-left-color:var(--warn);color:#3a2808}
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.meta-cell{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:8px 6px;text-align:center}
+.meta-n{font-size:16px;font-weight:700;font-family:Georgia,serif}
+.meta-l{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:1px;font-weight:600}
+.post-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:14px;font-size:12.5px;line-height:1.85;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;color:var(--text-mid);font-family:Georgia,serif;margin-top:12px}
+.item{font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:6px}
+.item:last-child{border-bottom:none}
+.win{color:var(--accent)}.iss{color:var(--danger)}
 </style>
 </head>
 <body>
-<div class="header">
-  <div class="logo">
-    <span class="logo-accent">OI360</span>
-    <span class="logo-divider">/</span>
-    <span class="logo-sub">LinkedIn Post Agent v9 — Evergreen</span>
-  </div>
-  <div class="status-pill" id="status-pill">
-    <span class="status-dot"></span>
-    <span id="status-label">Enter credentials to begin</span>
-  </div>
-</div>
+<h1>V9 Internal Test Harness</h1>
+<p class="sub">15 targeted test cases · Pre-flight quality check · Export JSON for analysis</p>
 
-<div class="main">
-<div class="sidebar">
-  <div class="sidebar-block">
-    <div class="block-title"><div class="block-title-icon icon-green">🔑</div>API Credentials</div>
-    <div class="field">
-      <label>Anthropic API Key</label>
-      <div class="key-row">
-        <input type="password" id="anthropic-key" placeholder="sk-ant-api03-…" oninput="checkReady()" autocomplete="off"/>
-        <button class="eye-btn" onclick="toggleVis('anthropic-key',this)">Show</button>
-      </div>
-      <div class="field-hint">console.anthropic.com → API Keys → Create Key</div>
-    </div>
-    <div class="field">
-      <label>OpenAI API Key <span style="font-weight:400;color:var(--text-muted)">(images)</span></label>
-      <div class="key-row">
-        <input type="password" id="openai-key" placeholder="sk-…" oninput="saveOpenAI()" autocomplete="off"/>
-        <button class="eye-btn" onclick="toggleVis('openai-key',this)">Show</button>
-      </div>
-      <div class="field-hint">platform.openai.com → API Keys. Powers gpt-image-2.</div>
-    </div>
-    <div class="field">
-      <label>GHL Private Integration Token</label>
-      <div class="key-row">
-        <input type="password" id="ghl-token" placeholder="pit-…" oninput="checkReady()" autocomplete="off"/>
-        <button class="eye-btn" onclick="toggleVis('ghl-token',this)">Show</button>
-      </div>
-      <div class="field-hint">GHL → Settings → Integrations → Private Integrations. Scope: <strong>socialplanner/post.write</strong></div>
-    </div>
-    <div class="field">
-      <label>GHL Location ID</label>
-      <div class="key-row">
-        <input type="text" id="ghl-location" placeholder="Paste Location ID…" oninput="checkReady()" autocomplete="off"/>
-        <button class="eye-btn" onclick="toggleVis('ghl-location',this)">Show</button>
-      </div>
-      <div class="field-hint">GHL → Settings → Business Info → scroll to bottom</div>
-    </div>
-    <div class="field">
-      <label>GHL LinkedIn Account ID</label>
-      <div class="key-row">
-        <input type="text" id="ghl-account" placeholder="Paste LinkedIn Account ID…" oninput="checkReady()" autocomplete="off"/>
-        <button class="eye-btn" onclick="toggleVis('ghl-account',this)">Show</button>
-      </div>
-      <div class="field-hint">GHL → Marketing → Social Planner → Settings → Connected Accounts → LinkedIn. If the ID is not visible, request it from GHL support.</div>
-    </div>
-
-    <button onclick="clearCredentials()" style="width:100%;margin-top:6px;padding:7px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--text-muted);background:transparent;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">🗑 Clear saved credentials</button>
+<div class="controls">
+  <div class="field">
+    <label>Anthropic API Key</label>
+    <input type="password" id="api-key" placeholder="sk-ant-api03-…" autocomplete="off" oninput="checkKey()"/>
   </div>
-
-  <div class="sidebar-block">
-    <div class="block-title"><div class="block-title-icon icon-yellow">♾️</div>Evergreen Content Cycle</div>
-    <div class="stats-row">
-      <div class="stat-box"><div class="stat-n" id="stat-post">1</div><div class="stat-l">Post #</div></div>
-      <div class="stat-box"><div class="stat-n" id="stat-cycle">1</div><div class="stat-l">Cycle</div></div>
-      <div class="stat-box"><div class="stat-n" id="stat-library">—</div><div class="stat-l">Library</div></div>
-    </div>
-    <div class="cycle-tracker">
-      <div class="cycle-top">
-        <div>
-          <div class="cycle-num" id="current-post-display">1</div>
-          <div class="cycle-label" id="cycle-label-text">of … — then repeats forever</div>
-        </div>
-        <div class="cycle-nav">
-          <button class="cycle-nav-btn" onclick="prevPost()">←</button>
-          <button class="cycle-nav-btn" onclick="nextPost()">→</button>
-        </div>
-      </div>
-      <div class="cycle-progress"><div class="cycle-fill" id="cycle-fill" style="width:.7%"></div></div>
-      <div class="cycle-topic" id="cycle-topic">—</div>
-      <div class="cycle-meta" id="cycle-meta">—</div>
-      <div id="cycle-niche-pill"></div>
-    </div>
-  </div>
-
-  <div class="sidebar-block">
-    <div class="block-title"><div class="block-title-icon icon-blue">🕐</div>Session History</div>
-    <div id="history-list"><div class="no-history">No posts generated yet</div></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="run-btn" onclick="runAll()" disabled>▶ Run All 15</button>
+    <button class="btn" id="next-btn" onclick="runNext()" disabled>▶ Run Next</button>
+    <button class="btn" onclick="resetAll()">↺ Reset</button>
+    <button class="btn btn-export" id="export-btn" onclick="exportResults()" disabled>⬇ Export JSON</button>
   </div>
 </div>
 
-<div class="content-panel">
-
-  <div class="panel-section">
-    <div class="panel-header">
-      <div class="panel-title"><span class="panel-title-dot dot-green"></span>Step 1 — Generate Mode</div>
-    </div>
-    <div class="panel-body">
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="mode-auto" onclick="setMode('auto')">⚡ Auto — Evergreen Engine</button>
-        <button class="mode-btn" id="mode-manual" onclick="setMode('manual')">✏️ Manual — Override</button>
-      </div>
-      <div id="auto-info">
-        <div class="callout callout-green">
-          <span class="callout-icon">✓</span>
-          Evergreen engine active. 196-post library cycling across 5 niches and 18 content pillars — full Smart Website 360 feature coverage across 18 pillars: missed calls, text-back, reviews, form inquiries, after-hours, follow-up, daily value anchor, trust recession, database reactivation, founder story, and proof posts. 60% education · 30% story · 10% proof. PM 30% · Dental 30% · Construction 20% · Insurance 15% · Mortgage 5%.
-        </div>
-      </div>
-      <div class="override-panel" id="override-panel">
-        <div class="field">
-          <label>Target Niche</label>
-          <div class="niche-grid">
-            <button class="niche-btn sel-pm" id="nb-pm" onclick="selectNiche('pm')">🏢 Property Managers</button>
-            <button class="niche-btn" id="nb-dnt" onclick="selectNiche('dnt')">🦷 Dental Practices</button>
-            <button class="niche-btn" id="nb-con" onclick="selectNiche('con')">🔨 Construction</button>
-            <button class="niche-btn" id="nb-ins" onclick="selectNiche('ins')">🛡️ Insurance Agencies</button>
-            <button class="niche-btn" id="nb-mtg" onclick="selectNiche('mtg')">🏠 Mortgage Brokers</button>
-          </div>
-        </div>
-        <div class="field">
-          <label>Topic / Hook Idea</label>
-          <textarea id="topic" placeholder="e.g. What happens in the 60 seconds after a missed call when the system texts back automatically…"></textarea>
-        </div>
-        <div class="field">
-          <label>Angle / Content Pillar</label>
-          <div class="angle-grid">
-            <button class="angle-btn selected" data-val="missed calls = missed revenue">📵 Missed calls = missed revenue</button>
-            <button class="angle-btn" data-val="first responder wins">⚡ First responder wins</button>
-            <button class="angle-btn" data-val="AI curiosity — demystify">🤖 AI curiosity</button>
-            <button class="angle-btn" data-val="social proof / real client result">⭐ Social proof</button>
-            <button class="angle-btn" data-val="contrarian — you don't have a lead problem">🔄 Contrarian take</button>
-            <button class="angle-btn" data-val="simple business math — real cost">🧮 Business math</button>
-            <button class="angle-btn" data-val="unanswered reviews = silent revenue leak">📋 Unanswered reviews</button>
-            <button class="angle-btn" data-val="48-hour silence = lost client">🔕 Response silence</button>
-            <button class="angle-btn" data-val="after-hours gap = lost trust">🌙 After-hours gap</button>
-            <button class="angle-btn" data-val="missed call text-back — 60 seconds changes everything">📲 Text-back window</button>
-            <button class="angle-btn" data-val="online form gone cold — the inquiry that disappeared">📋 Form gone cold</button>
-            <button class="angle-btn" data-val="follow-up nobody sends — the lead that slipped away">🔁 Follow-up gap</button>
-            <button class="angle-btn" data-val="review generation — the count your competitor has that you don't">🌟 Review count gap</button>
-            <button class="angle-btn" data-val="daily value anchor — less than what you already spend">☕ Daily value anchor</button>
-            <button class="angle-btn" data-val="trust recession — every unanswered touchpoint costs trust">🏚 Trust recession</button>
-            <button class="angle-btn" data-val="database reactivation — the customers already in your CRM">🔄 Database reactivation</button>
-            <button class="angle-btn" data-val="founder story — personal discovery and conviction">🎤 Founder story</button>
-            <button class="angle-btn" data-val="third-party proof — real data, real businesses, real numbers">📊 Third-party proof</button>
-          </div>
-        </div>
-        <div class="three-col">
-          <div class="field" style="margin-bottom:0">
-            <label>Format</label>
-            <select id="format-override">
-              <option value="">Auto</option>
-              <option>Punch post</option>
-              <option>Scenario post</option>
-              <option>Math breakdown</option>
-              <option>Story post</option>
-              <option>Question post</option>
-              <option>Data post</option>
-              <option>Before/After post</option>
-            </select>
-          </div>
-          <div class="field" style="margin-bottom:0">
-            <label>CTA Type</label>
-            <select id="cta-override">
-              <option value="">Auto</option>
-              <option value="demo">Demo call</option>
-              <option value="comment">Comment CTA</option>
-              <option value="dm">DM CTA</option>
-              <option value="ebook">Ebook / free report</option>
-              <option value="none">No CTA</option>
-            </select>
-          </div>
-          <div class="field" style="margin-bottom:0">
-            <label>Length</label>
-            <select id="length-override">
-              <option value="medium" selected>Medium</option>
-              <option value="short">Short</option>
-              <option value="long">Long</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="action-row" style="margin-top:16px">
-        <button class="btn btn-primary" id="gen-btn" onclick="generatePost()" disabled>Generate Post</button>
-        <button class="btn btn-secondary" onclick="clearPost()">Clear</button>
-        <button class="btn btn-secondary" id="export-btn" onclick="exportCSV()" disabled>Export CSV</button>
-      </div>
-      <div class="toast" id="gen-toast"></div>
-    </div>
-  </div>
-
-  <div class="panel-section">
-    <div class="panel-header">
-      <div class="panel-title"><span class="panel-title-dot dot-blue"></span>Step 2 — Preview &amp; Edit</div>
-      <span class="edit-toggle" id="edit-toggle" onclick="toggleEdit()">Edit post</span>
-    </div>
-    <div class="panel-body">
-      <div class="post-tags" id="post-tags" style="display:none"></div>
-      <div class="preview-box" id="preview">
-        <span class="preview-placeholder">Your generated post will appear here. Hit Generate to create niche-targeted content from the evergreen library.</span>
-      </div>
-      <textarea class="preview-edit" id="edit-area" oninput="syncEdit()"></textarea>
-      <div class="meta-row">
-        <span style="font-size:11.5px;color:var(--text-muted)">LinkedIn max: 3,000 characters</span>
-        <span class="char-count" id="char-count"></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel-section">
-    <div class="panel-header">
-      <div class="panel-title"><span class="panel-title-dot" style="background:#0d1117"></span>Step 2.5 — Generate Image <span style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#fff;background:#0d1117;padding:3px 9px;border-radius:20px;margin-left:6px;">⚡ GPT-IMAGE-2</span></div>
-      <span id="img-toggle-wrap" style="display:none"><label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);cursor:pointer;"><input type="checkbox" id="include-img" checked style="accent-color:var(--accent)"> Include image in GHL draft</label></span>
-    </div>
-    <div class="panel-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-        <div class="field" style="margin-bottom:0">
-          <label style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:5px;display:block;">Quality</label>
-          <select id="img-quality">
-            <option value="low">Low — fast draft (~$0.005)</option>
-            <option value="medium" selected>Medium — recommended (~$0.041)</option>
-            <option value="high">High — hero posts (~$0.165)</option>
-          </select>
-        </div>
-        <div class="field" style="margin-bottom:0">
-          <label style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:5px;display:block;">Format</label>
-          <select id="img-size">
-            <option value="1024x1536" selected>Portrait 4:5 (LinkedIn feed)</option>
-            <option value="1024x1024">Square 1:1 (feed / story)</option>
-            <option value="1536x1024">Landscape 3:2 (article cover)</option>
-          </select>
-        </div>
-      </div>
-      <div class="img-preview-box" id="img-preview-box">
-        <span class="img-placeholder">Generate a post first, then click Generate Image. Requires an OpenAI API key with gpt-image-2 access. If nothing generates, go to platform.openai.com → Settings → Organisation → complete verification.</span>
-      </div>
-      <div class="action-row" style="margin-top:0">
-        <button class="btn btn-img" id="img-btn" onclick="generateImage()" disabled>Generate Image</button>
-        <button class="btn btn-download" id="download-btn" onclick="downloadImage()" disabled style="display:none">⬇ Download Image</button>
-        <button class="btn btn-secondary" onclick="clearImage()" style="display:none" id="clear-img-btn">Clear</button>
-      </div>
-      <div class="toast" id="img-toast"></div>
-    </div>
-  </div>
-
-  <div class="panel-section">
-    <div class="panel-header">
-      <div class="panel-title"><span class="panel-title-dot dot-yellow"></span>Step 3 — Send to GHL Social Planner</div>
-      <span style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#5b21b6;background:#f0ebff;padding:3px 9px;border-radius:20px;">⚡ GO HIGH LEVEL</span>
-    </div>
-    <div class="panel-body">
-      <div class="field" style="margin-bottom:16px">
-        <label style="margin-bottom:10px">When to publish</label>
-        <div class="radio-row">
-          <label class="radio-label"><input type="radio" name="sched" value="now" checked onchange="toggleSched(this)">Save as draft</label>
-          <label class="radio-label"><input type="radio" name="sched" value="scheduled" onchange="toggleSched(this)">Schedule for later</label>
-        </div>
-      </div>
-      <div id="sched-block" style="display:none" class="field">
-        <label>Date &amp; Time</label>
-        <input type="datetime-local" id="sched-dt" style="max-width:260px"/>
-      </div>
-      <div class="action-row">
-        <button class="btn btn-primary" id="post-btn" onclick="postToGHL()" disabled>Send to GHL as Draft</button>
-        <button class="btn btn-copy" id="copy-btn" onclick="copyPost()" disabled>📋 Copy Text</button>
-      </div>
-      <div class="toast" id="post-toast"></div>
-      <div class="callout callout-blue" style="margin-top:14px">
-        <span class="callout-icon">💡</span>
-        <span><strong>Workflow:</strong> Post saved as draft in GHL Social Planner. Open GHL → Marketing → Social Planner, add image, review copy, then publish. Add <strong>1-888-708-7367</strong> as first comment on LinkedIn after publishing — not in the post body.</span>
-      </div>
-    </div>
-  </div>
-
+<div class="progress-wrap" id="pw">
+  <div class="progress-bar"><div class="progress-fill" id="pf" style="width:0%"></div></div>
+  <div class="status-line" id="sl">Ready</div>
 </div>
+
+<p class="section-title">Summary Dashboard</p>
+<div class="summary">
+  <div class="metric" id="m-done"><div class="metric-n" id="mn-done">0/15</div><div class="metric-l">Completed</div></div>
+  <div class="metric" id="m-pass"><div class="metric-n" id="mn-pass">—</div><div class="metric-l">Overall Pass</div></div>
+  <div class="metric" id="m-scroll"><div class="metric-n" id="mn-scroll">—</div><div class="metric-l">Scroll-Stop L1</div></div>
+  <div class="metric" id="m-banned"><div class="metric-n" id="mn-banned">—</div><div class="metric-l">Banned Openers</div></div>
+  <div class="metric" id="m-em"><div class="metric-n" id="mn-em">—</div><div class="metric-l">Em Dashes</div></div>
+  <div class="metric" id="m-l2"><div class="metric-n" id="mn-l2">—</div><div class="metric-l">L2 Deepens</div></div>
+  <div class="metric" id="m-dom"><div class="metric-n" id="mn-dom">—</div><div class="metric-l">Domino Early</div></div>
+  <div class="metric" id="m-emp"><div class="metric-n" id="mn-emp">—</div><div class="metric-l">Employee Frame</div></div>
+  <div class="metric" id="m-h14"><div class="metric-n" id="mn-h14">0</div><div class="metric-l">Hook 14 Used</div></div>
+  <div class="metric info" id="m-wc"><div class="metric-n" id="mn-wc">—</div><div class="metric-l">Avg Words</div></div>
+  <div class="metric info" id="m-hv"><div class="metric-n" id="mn-hv">—</div><div class="metric-l">Hook Variety</div></div>
+  <div class="metric info" id="m-ms"><div class="metric-n" id="mn-ms">—</div><div class="metric-l">Avg API ms</div></div>
 </div>
+
+<p class="section-title">Test Cards</p>
+<div id="cards"></div>
 
 <script>
-// ── NICHE DEFINITIONS ──────────────────────────────────────────
-const NICHES = {
-  pm: {
-    label:'Property Managers', tag:'tag-pm', color:'pm',
-    desc:'property managers and real estate operators',
-    pain:'missed tenant inquiries (up to 60% of inbound leads go unanswered), 60% of leads fail to enter any follow-up sequence due to incomplete data capture, unanswered calls from prospective tenants who immediately move to the next listing, vacancies extended by slow response costing $60+/day per unit, unanswered Google reviews costing occupancy before a prospect ever calls, maintenance requests going silent causing tenant turnover, after-hours emergencies reaching no one, contact form inquiries going cold over weekends, no proactive review generation system while competitors with automated requests pull ahead, 629,000 new rental units delivered in 2024 increasing competition for every inquiry, 34% of PM companies now use AI to respond faster — the other 66% are competing manually',
-    value:'$1,200–$3,500/month average tenant value, $2,350+ cost of one vacancy month (rent + carrying costs), $1,000–$3,000 cost per tenant turnover, $9,000–$12,000/year per 20-unit portfolio from one extra vacancy week per unit',
-    scenario:'mid-showing at one property when a prospective tenant calls about another vacancy, coordinating a maintenance emergency while weekend rental inquiries arrive, checking in a tenant on Friday afternoon when after-hours inquiry volume picks up, managing multiple buildings simultaneously when a maintenance request and a new inquiry come in at the same time'
-  },
-  dnt: {
-    label:'Dental Practices', tag:'tag-dnt', color:'dnt',
-    desc:'dental practice owners and managing dentists',
-    pain:'35% of dental calls go unanswered during business hours — 80% are appointment scheduling requests, only 14% of missed callers leave a voicemail while 86% hang up and call a competitor immediately, 47–50% of appointment requests arrive after 5pm when the practice is closed, 87% hang up without leaving an after-hours voicemail, front desk spends 40% of day on admin tasks leaving no bandwidth for phones during peak hours, dental staffing crisis with 50% of professionals seeking new positions and $11,000–$14,000 replacement cost per receptionist, DSO and corporate dental chains expanding in Florida with professional call-handling infrastructure solo practices cannot match manually, unanswered Google reviews destroying trust before a new patient ever calls, no automatic follow-up when a new patient inquiry goes quiet, low review count versus competitors who systematically request reviews after every appointment',
-    value:'$800–$2,500 average new patient first-visit value, $8,000–$15,000 conservative lifetime patient value, $224,730/year conservative annual revenue loss from 35% missed call rate, $11,000–$14,000 front desk replacement cost per receptionist lost',
-    scenario:'front desk occupied at the chair, dentist mid-procedure when the office line rings, after-hours emergency calls, new patient calling while the hygienist is with someone'
-  },
-  con: {
-    label:'Contractors / Trades', tag:'tag-con', color:'con',
-    desc:'general contractors, builders, and trade business owners',
-    pain:'62% of contractor calls go unanswered because crews physically cannot answer while on job sites, less than 3% of callers who reach voicemail leave a message — 97% hang up and call the next contractor on Google immediately, 85% of callers who miss first contact will never call back, average contractor callback time is 3 hours while 85% of homeowners have already hired someone else by then, estimate requests going to voicemail on weekends when homeowners are actively researching, no text-back after a missed call in the critical 60-second window, no follow-up system after sending an estimate (3rd and 4th attempts are where most jobs actually close), homeowners calling 3–5 contractors and booking the first one to respond regardless of price, Google Local Services Ads now display response time in listings and rank fast responders higher, EPA refrigerant regulations raised HVAC ticket prices 20–30% making every missed call more expensive, $45,000–$120,000/year average annual loss to unanswered calls',
-    value:'$800–$3,500 standard service call, $1,500–$11,000 emergency service call, $5,000–$15,000 average roofing project, $2,000–$50,000+ general contracting project, $1,200 average cost per missed call (Invoca), $45,000–$120,000/year annual loss to unanswered calls',
-    scenario:'on a roof or job site when a homeowner calls for an emergency estimate, an HVAC crew finishing an install at 6pm when an emergency AC call comes in, driving between jobs when a weekend website form submits, working under a kitchen sink when a new customer calls about a renovation project'
-  },
-  ins: {
-    label:'Insurance Agency Owners', tag:'tag-ins', color:'ins',
-    desc:'insurance agency owners and independent brokers',
-    pain:'40% of agency calls go unanswered (independent agencies: 22% miss rate), 47% of insurance inquiries arrive outside 9–5 hours with 6–8pm weekdays and Saturday mornings as the highest-volume windows, Saturday calls convert 23% higher but most agencies are closed, average agency takes 47 hours to respond while first responders win 80% of deals, 85% of callers who miss first contact never call back, agencies make 1–2 follow-up attempts while 5–8 touchpoints are needed to convert, no systematic review request after policy interactions in a commodity industry where trust is the only differentiator, unanswered negative reviews about unresponsiveness are self-confirming for prospects researching the agency, Florida hard market driving more comparison shopping as 20–30% premium increases push policyholders to shop at renewal, $204,204/year in recoverable revenue from missed calls for the average agency',
-    value:'$800–$4,000 average policy commission, $8,000–$12,000 average 7-year customer relationship value, $204,204/year recoverable annual revenue from missed and unrecaptured calls, $50,000+ annual loss baseline for moderately busy agency',
-    scenario:'in a client meeting when a new quote request calls and goes unanswered, writing a policy during peak evening hours when the highest-converting inquiries are coming in, in renewal conversations while Saturday morning callers hit voicemail, handling a hard-market renewal discussion while a new Florida homeowner calling after carrier exits goes to voicemail'
-  },
-  mtg: {
-    label:'Mortgage Brokers', tag:'tag-mtg', color:'mtg',
-    desc:'mortgage brokers and loan officers',
-    pain:'trigger lead ban (effective March 5, 2026) eliminated cheap lead sources and drove internet lead costs up 45% YoY — every missed organic inbound lead now costs 45% more to replace, first responder wins 80% of mortgage deals regardless of rate or experience because they establish the relationship first, 40% of pipeline arrives after business hours when borrowers research in the evenings and on weekends, contact rates drop 80% after the first 5 minutes and qualification rates drop 21x after the same threshold, average industry response time is 47 hours while the 2026 borrower expectation is under 90 seconds, brokers make 1–3 contact attempts while 5–8 touchpoints are needed to convert a borrower who went quiet, post-trigger-ban Google reviews are the primary organic pipeline — every unanswered review is a borrower choosing someone else, no text-back in the critical 60-second window after a missed pre-approval inquiry, rate-sensitive buyers simultaneously contacting 3–5 lenders and committing to whoever responds first',
-    value:'$2,000–$8,000 average loan origination fee, $350,000–$450,000 average loan amount (2025 market), $30,000–$80,000/year lost by missing just 2 qualified leads per week, 45% YoY increase in internet lead costs post-trigger-ban makes every missed organic lead more expensive',
-    scenario:'in a closing or signing appointment when a new buyer inquiry calls and goes unanswered, reviewing loan files when an after-hours pre-approval form submits on a Thursday evening, on the phone with a current borrower when a rate shopper calls and hits voicemail, at dinner when a first-time buyer submits a contact form after researching rates on their phone'
+const TC=[
+  {id:'T01',n:'pm', p:'Missed calls = missed revenue',f:'Punch post',c:'comment',t:'What happens every time a prospective tenant calls and nobody answers',r:'Banned opener test',h14:false},
+  {id:'T02',n:'dnt',p:'Missed calls = missed revenue',f:'Punch post',c:'comment',t:'New patients calling after hours when the practice is closed',r:'Banned opener test',h14:false},
+  {id:'T03',n:'ins',p:'Missed calls = missed revenue',f:'Punch post',c:'comment',t:'Quote requests hitting voicemail while agent is with a client',r:'Banned opener test',h14:false},
+  {id:'T04',n:'mtg',p:'Missed calls = missed revenue',f:'Punch post',c:'comment',t:'Buyer inquiries missed on Friday afternoon before the weekend',r:'Banned opener test',h14:false},
+  {id:'T05',n:'con',p:'First responder wins',f:'Scenario post',c:'demo',t:'Contractor on a job site missing an emergency estimate call at 3pm',r:'Time recycling + 3rd person drift',h14:false},
+  {id:'T06',n:'pm', p:'First responder wins',f:'Scenario post',c:'demo',t:'Property manager at a showing when a vacancy inquiry calls Saturday morning',r:'Time recycling + 8:47am overuse',h14:false},
+  {id:'T07',n:'con',p:'Founder story — personal discovery and conviction',f:'Founder story post',c:'comment',t:"Henry sitting with a contractor who didn't know how many calls he missed",r:"Most [niche] don't know opener",h14:false},
+  {id:'T08',n:'pm', p:'Founder story — personal discovery and conviction',f:'Founder story post',c:'comment',t:'Henry discovering the response gap when two comparable clients had different results',r:'Most property managers opener',h14:false},
+  {id:'T09',n:'pm', p:'Trust recession — every unanswered touchpoint costs trust',f:'Punch post',c:'comment',t:'Every time a tenant inquiry goes unanswered the market decides what kind of company you are',r:'Hook 14 REQUIRED — identity challenge PM',h14:true},
+  {id:'T10',n:'dnt',p:'Trust recession — every unanswered touchpoint costs trust',f:'Punch post',c:'comment',t:'Every after-hours voicemail is a first impression being made about the practice',r:'Hook 14 REQUIRED — identity challenge DNT',h14:true},
+  {id:'T11',n:'ins',p:'Third-party proof — real data, real businesses, real numbers',f:'Proof post',c:'demo',t:'Insurance agency who believed they responded fast — what the actual data showed',r:'Proof post opener quality',h14:false},
+  {id:'T12',n:'con',p:'Simple business math',f:'Math breakdown',c:'dm',t:'Missed estimate calls this week — what that number actually means over a year',r:'Big Domino early placement',h14:false},
+  {id:'T13',n:'dnt',p:'Simple business math',f:'Math breakdown',c:'dm',t:'New patient call missed during a procedure — the lifetime value math',r:'Big Domino early placement',h14:false},
+  {id:'T14',n:'ins',p:'First responder wins',f:'Data post',c:'demo',t:'First agency to respond wins 80 percent of deals — the Saturday morning data',r:'Fragment variety + stat hook',h14:false},
+  {id:'T15',n:'mtg',p:'Database reactivation — the customers already in your CRM',f:'Before/After post',c:'dm',t:'Past borrowers in CRM not contacted since closing — what one message changes',r:'Database reactivation quality',h14:false},
+];
+
+const NI={
+  pm:{l:'Property Managers',d:'property managers and real estate operators',pa:'missed tenant inquiries (up to 60% of inbound leads go unanswered), 60% of leads fail to enter any follow-up sequence, unanswered calls from prospective tenants who immediately move to the next listing, vacancies extended by slow response costing $60+/day per unit, unanswered Google reviews costing occupancy, maintenance requests going silent, after-hours emergencies reaching no one, contact form inquiries going cold over weekends, 629,000 new rental units delivered in 2024, 34% of PM companies now use AI to respond faster',va:'$1,200–$3,500/month average tenant value, $2,350+ cost of one vacancy month, $1,000–$3,000 cost per tenant turnover',sc:'mid-showing at one property when a prospective tenant calls about another vacancy, coordinating a maintenance emergency while weekend rental inquiries arrive'},
+  dnt:{l:'Dental Practices',d:'dental practice owners and managing dentists',pa:'35% of dental calls go unanswered during business hours, 14% leave voicemail while 86% hang up and call a competitor immediately, 47-50% of appointment requests arrive after 5pm, front desk spends 40% of day on admin tasks, dental staffing crisis with $11,000-$14,000 replacement cost per receptionist, DSO and corporate dental chains expanding in Florida',va:'$800-$2,500 average new patient first-visit value, $8,000-$15,000 lifetime patient value, $224,730/year conservative annual revenue loss from 35% missed call rate',sc:'front desk occupied at the chair, dentist mid-procedure when the office line rings, after-hours emergency calls'},
+  con:{l:'Contractors / Trades',d:'general contractors, builders, and trade business owners',pa:'62% of contractor calls go unanswered because crews cannot answer while on job sites, less than 3% of callers who reach voicemail leave a message — 97% hang up and call the next contractor on Google immediately, 85% of callers who miss first contact will never call back, average contractor callback time is 3 hours while 85% of homeowners have already hired someone else, Google Local Services Ads now display response time in listings',va:'$800-$3,500 standard service call, $1,500-$11,000 emergency service call, $45,000-$120,000/year annual loss to unanswered calls',sc:'on a roof or job site when a homeowner calls, HVAC crew finishing an install at 6pm when an emergency AC call comes in, driving between jobs when a weekend website form submits'},
+  ins:{l:'Insurance Agency Owners',d:'insurance agency owners and independent brokers',pa:'40% of agency calls go unanswered, 47% of insurance inquiries arrive outside 9-5 hours with 6-8pm weekdays and Saturday mornings as the highest-volume windows, Saturday calls convert 23% higher but most agencies are closed, average agency takes 47 hours to respond while first responders win 80% of deals, Florida hard market driving more comparison shopping as 20-30% premium increases push policyholders to shop at renewal, $204,204/year in recoverable revenue',va:'$800-$4,000 average policy commission, $8,000-$12,000 average 7-year customer relationship value, $204,204/year recoverable annual revenue',sc:'in a client meeting when a new quote request calls, writing a policy during peak evening hours when the highest-converting inquiries are coming in'},
+  mtg:{l:'Mortgage Brokers',d:'mortgage brokers and loan officers',pa:'trigger lead ban effective March 5 2026 drove internet lead costs up 45% YoY, first responder wins 80% of mortgage deals regardless of rate or experience, 40% of pipeline arrives after business hours, contact rates drop 80% after the first 5 minutes, average industry response time is 47 hours while the 2026 borrower expectation is under 90 seconds',va:'$2,000-$8,000 average loan origination fee, $30,000-$80,000/year lost by missing just 2 qualified leads per week',sc:'in a closing when a new buyer inquiry calls, reviewing loan files when an after-hours pre-approval form submits on a Thursday evening'},
+};
+
+const FI={
+  'Punch post':'Short and declarative. Strong claim up front. 2-3 tight paragraphs. No fluff.',
+  'Scenario post':'Drop the reader into a specific real moment. Lead with time, place, action. Use second person — "you" not "a contractor." First line inside the scene.',
+  'Math breakdown':'Walk through simple business math. Format each step on its own line. Make the total loss feel undeniable.',
+  'Story post':'Specific moment, specific outcome. Do NOT open with "Most [niche] don\'t know..." — open with the moment itself.',
+  'Data post':'State one industry stat. One or two lines of context to ground it. The number does all the work.',
+  'Before/After post':'Two states contrasted. Let the delta speak. Do NOT label sections "Before:" or "After:" as the first word.',
+  'Founder story post':'Henry\'s voice. First person. OPENER RULE: Do NOT open with "Most [niche] don\'t know how many calls they missed." Open with the moment — where Henry was, what he saw. Include one physical detail (the coffee, the legal pad, the tailgate).',
+  'Proof post':'Open with the contradicted belief. "A [niche] told me [their belief]. So I asked them to pull the data." Then the numbers. Then what it means.',
+};
+
+const CTA={demo:'\n\nWant to hear it yourself?\n\nCall 1-888-708-7367 and ask it how it would handle your calls.',comment:'\n\nDrop "curious" in the comments. I\'ll send you a quick example.',dm:'\n\nDM me "demo" and I\'ll show you how it works for your business.'};
+
+const BANNED=['every missed call','every unanswered call','every unanswered review','every unanswered inquiry','most property managers don','most dental practice','most contractors don','most insurance','most mortgage','most loan'];
+const RETIRED_F=['3 missed calls','47 hours','86%','3 calls'];
+const RETIRED_T=['6:47pm','6:48pm','8:47am','2:17pm'];
+const DOMINO=['first to respond','responds first','whoever responds','whoever picks up','first contractor','first agency','first broker','first practice','first call back','respond first','who picked up first','first one who','first one to respond','picked up the phone first','picked up first','answered first','picks up first','answers first','who answered','who responded first','fastest response','respond fastest','first to answer','first to pick up','who picks up','who calls back first','first responder'];
+const ID_HOOKS=['deciding what kind','deciding whether your','are deciding','market is deciding','clients are deciding','patients are deciding','what kind of business','what kind of practice','what kind of contractor','what kind of agency','what kind of company','filing a verdict','verdict about your','assessing whether','assessing what kind','are forming an opinion','first impression your','the impression you','what they think of your','what kind of operator','what kind of landlord','forming a conclusion','forming an opinion','conclusion lands','what you are as a','reputation event','that conclusion is','not just a missed','building a reputation','that is the impression','what your business looks like','what your practice looks like','making a judgment','judgment about how','judgment about your','making a decision about','they are deciding','the market decides','prospects decide','clients decide','tenants decide','patients decide'];
+const HOOK_PAT=[
+  {i:1,n:'Consequence chain', t:l=>/→/.test(l)},
+  {i:2,n:'Real-time scene',   t:l=>/^it'?s \d+:\d+|^\d+:\d+(am|pm)/i.test(l)},
+  {i:3,n:'Uncomfortable math',t:l=>/\d+\s*[x×]\s*\$|\d+\s*calls?\s*[x×]/.test(l)},
+  {i:4,n:'Pattern interrupt', t:l=>/you don'?t have a/.test(l)},
+  {i:5,n:'Reframing stat',    t:l=>/^\d+[%.]/.test(l.trim())||/^\d+ out of \d+/.test(l.trim())||/^\d+ in \d+/.test(l.trim())},
+  {i:6,n:'Confrontational ?', t:l=>l.trim().endsWith('?')&&l.length>25},
+  {i:7,n:'Competitor contrast',t:l=>/your competitor/.test(l)},
+  {i:8,n:'Contrast story',    t:l=>/\bthen \b/.test(l)&&/\bi \b/.test(l)},
+  {i:9,n:'Trust recession',   t:l=>/every (unanswered|ignored|missed)/.test(l)&&/trust|signal|vote/.test(l)},
+  {i:11,n:'Silent cost reveal',t:l=>/nobody told you|no one told you/.test(l)},
+  {i:13,n:'Incomplete frag',  t:l=>l.trim().split(' ').length<=8&&/\d/.test(l)&&(l.trim().endsWith('.')||l.includes('. ')&&l.trim().split(' ').length<=8)},
+  {i:14,n:'Identity challenge',t:l=>ID_HOOKS.some(h=>l.includes(h))},
+  {i:15,n:'Inversion',        t:l=>/is not a|isn'?t a|is your competitor'?s/.test(l)},
+  {i:10,n:'Snippet/curiosity',t:l=>/specific result/.test(l)},
+  {i:12,n:'Belief opener',    t:l=>/most .* don'?t have a/.test(l)},
+];
+
+let RES={}, running=false;
+
+function checkKey(){const k=document.getElementById('api-key').value.trim();document.getElementById('run-btn').disabled=!k;document.getElementById('next-btn').disabled=!k;}
+
+function score(post, tc){
+  const lines=post.split('\n').filter(l=>l.trim());
+  const l1=(lines[0]||'').trim(),l2=(lines[1]||'').trim();
+  const l1l=l1.toLowerCase(),l2l=l2.toLowerCase(),full=post.toLowerCase();
+  const s={};
+  s.hookType=HOOK_PAT.find(h=>h.t(l1l))||{i:0,n:'Unknown'};
+  const banned=BANNED.some(b=>l1l.startsWith(b));
+  const frag=l1.split(' ').length<=6&&/\d/.test(l1)&&l1.endsWith('.');
+  const inv=/is not a|isn't a|is your competitor/.test(l1l);
+  const strong=/^\d+[%$]|^your voicemail|^it's \d|\d+ inquiries\.|^4 |^5 |^6 |^7 |^8 |^9 /.test(l1l);
+  const weak=/^most |^she |^he |^marcus |^sarah /.test(l1l);
+  // Format-aware scroll-stop: story/proof/identity posts use curiosity test not fragment test
+  const isNarrativeFormat=['Founder story post','Proof post'].includes(tc.f);
+  const isIdentityHook=ID_HOOKS.some(h=>l1l.includes(h));
+  const narrativeScrollOk=!banned&&!weak&&(l1.length>30)&&(l1.includes('?')||/\blike\b|\bwrong\b|\bdifferent\b|\bconfident\b|\bproud\b/.test(l1l)||isIdentityHook);
+  s.scrollStop=!banned&&!weak&&((isNarrativeFormat||isIdentityHook)?narrativeScrollOk:(frag||inv||strong));
+  s.noBannedOpener=!banned;
+  s.bannedText=banned?BANNED.find(b=>l1l.startsWith(b)):null;
+  s.emDashCount=(post.match(/\u2014/g)||[]).length;
+  s.noEmDash=s.emDashCount===0;
+  const isFragL1=l1.trim().split(' ').length<=6&&/\d/.test(l1)&&l1.trim().endsWith('.');
+  s.l2Explains=!isFragL1&&/^(because |that's how many|that's how |here's why |not because |here's what|this is because)/.test(l2l);
+  s.l2Deepens=!s.l2Explains&&l2.length>0&&!/^here's the (math|number|data)/.test(l2l);
+  const first40=lines.slice(0,Math.ceil(lines.length*0.4)).join(' ').toLowerCase();
+  s.dominoEarly=DOMINO.some(d=>first40.includes(d));
+  s.dominoAny=DOMINO.some(d=>full.includes(d));
+  // Founder story posts don't describe the product — exempt from employee requirement
+const isFounderFormat = tc.f === 'Founder story post';
+s.employeeFrame = isFounderFormat || full.includes('employee') || full.includes('new hire') || full.includes('a new hire') || full.includes('your new hire');
+  s.hook14Used=ID_HOOKS.some(h=>full.includes(h));
+  s.hook14Required=tc.h14;
+  s.hook14Pass=!tc.h14||s.hook14Used;
+  s.noPlaceholders=!/\[[A-Z][^\]]{2,20}\]/.test(post);
+  s.noRetiredFrag=!RETIRED_F.some(f=>l1l.includes(f));
+  s.noRetiredTime=!RETIRED_T.some(t=>l1l.includes(t));
+  if(['Scenario post','Story post'].includes(tc.f)){
+    const th=/\b(she was|he was|she found|he found|marcus |sarah )\b/.test(post.substring(0,200).toLowerCase());
+    const sec=/\byou\b/.test(post.substring(0,200).toLowerCase());
+    s.secondPerson=!th||sec;
   }
-};
-
-// ── CONTENT LIBRARY ────────────────────────────────────────────
-function buildPlan() {
-  const pillars = [
-    'Missed calls = missed revenue',
-    'First responder wins',
-    'Real scenarios — vivid and specific',
-    "You don't have a lead problem — contrarian",
-    'AI curiosity / demystify',
-    'Simple business math',
-    'Social proof moments',
-    'Unanswered reviews = silent revenue leak',
-    '48-hour silence = lost client',
-    'After-hours gap = lost trust',
-    'Missed call text-back — 60 seconds changes everything',
-    'Online form gone cold — the inquiry that disappeared',
-    'Follow-up nobody sends — the lead that slipped away',
-    'Daily value anchor — less than what you already spend',
-    'Trust recession — every unanswered touchpoint costs trust',
-    'Database reactivation — the customers already in your CRM',
-    'Founder story — personal discovery and conviction',
-    'Third-party proof — real data, real businesses, real numbers'
-  ];
-  const formats = ['Punch post','Scenario post','Math breakdown','Story post','Question post','Data post','Before/After post','Founder story post','Proof post'];
-  const ctas    = ['comment','demo','dm','ebook','comment','demo','dm'];
-
-  const pmTopics = [
-    {t:'Every missed tenant call is a vacancy you funded',h:'Every [action] is [consequence]'},
-    {t:"It's Saturday morning. A prospective tenant calls about your 2-bedroom.",h:"It's [time]. You're [location]."},
-    {t:"You have 50 Google reviews. You've replied to zero.",h:"Most [niche] owners don't know this"},
-    {t:'The management company that responds first gets the lease',h:'The business that responds first'},
-    {t:"You don't have a vacancy problem. You have a response problem.",h:"You don't have a [assumed problem]"},
-    {t:'3 prospective tenants called on Sunday. Nobody answered.',h:"It's [time]. You're [location]."},
-    {t:'How fast does your property management company respond?',h:'What happens when [trigger]?'},
-    {t:'How many tenant inquiries did you miss this week?',h:"Most [niche] owners don't know"},
-    {t:'A property manager told me something surprising last week',h:'A [niche] owner said: [quote]'},
-    {t:'The voicemail prospective tenants never leave',h:'Every [action] is [consequence]'},
-    {t:'3 missed tenant calls x $21,600 annual rent = do the math',h:'[Number] x [number] = [result]'},
-    {t:"It's not AI. It's just your phone — but smarter.",h:'[Simple bold claim]'},
-    {t:"Your competitor just answered. You didn't.",h:'The business that responds first'},
-    {t:'Friday evening showing. 4 calls. No answer.',h:"It's [time]. You're [location]."},
-    {t:"Most property managers don't know this is happening",h:"Most [niche] owners don't know"},
-    {t:'If a prospective tenant called your office right now...',h:'What happens when [trigger]?'},
-    {t:'48 hours of silence after a maintenance request is all it takes to lose a good tenant',h:'Every [action] is [consequence]'},
-    {t:'The maintenance request that started the move-out',h:'A [niche] owner said: [quote]'},
-    {t:'Where tenant inquiries leak in property management',h:"Most [niche] owners don't know"},
-    {t:'What AI actually does for a property management office',h:'[Simple bold claim]'},
-    {t:"The tenant you didn't know you lost",h:'Every [action] is [consequence]'},
-    {t:'Why the second call from a tenant rarely happens',h:'[Simple bold claim]'},
-    {t:'From missed inquiry to signed lease — the path',h:'What happens when [trigger]?'},
-    {t:"One thing I'd tell every property management company",h:'[Simple bold claim]'},
-    {t:"It's 10pm. A tenant's heat just went out. What does your system do?",h:"It's [time]. You're [location]."},
-    {t:"Your competitor has 200 Google reviews. You have 19. You've both been managing properties for the same number of years.",h:"Most [niche] owners don't know"},
-    {t:'The inquiry that disappeared before you saw it',h:'Every [action] is [consequence]'},
-    {t:'A question property managers keep asking me',h:'What happens when [trigger]?'},
-    {t:"They called at 6:47pm. You missed it. Did they get a text back in 60 seconds?",h:'What happens when [trigger]?'},
-    {t:'The 60-second window between a missed tenant call and a lease that went elsewhere',h:'[Simple bold claim]'},
-    {t:'4 contact form inquiries came in over the weekend. You saw them Tuesday morning.',h:"It's [time]. You're [location]."},
-    {t:'The online rental inquiry that went cold while you slept',h:'Every [action] is [consequence]'},
-    {t:"They replied to your showing inquiry. Didn't book. You moved on. They signed with someone else who followed up on day 3.",h:'Every [action] is [consequence]'},
-    {t:'The property manager who followed up on day 4 got the signed lease',h:'The business that responds first'},
-    {t:"Your competitor has 200 Google reviews. You have 19. The difference is one automated text after every move-in.",h:"Most [niche] owners don't know"},
-    {t:'Less than what most property managers spend on lunch before the first showing. One filled unit covers it for the year.',h:'[Simple bold claim]'},
-    // ── HOOK 14: IDENTITY CHALLENGE TOPICS ──
-    {t:'Every time you let a tenant inquiry go unanswered, every future prospect reading your reviews is deciding what kind of management company you are.',h:'Identity challenge — reputation event not revenue event'},
-    {t:'Every unanswered after-hours call is a vote your market is casting about whether your company is the responsive type. Most property managers are losing that vote and don\'t know it.',h:'Identity challenge — market reputation'},
-    {t:'Every tenant who leaves because a maintenance request went silent is writing a mental review of your company. That review lives in every conversation they have with anyone looking for a rental.',h:'Identity challenge — word of mouth reputation'},
-    // ── V8.1 RESEARCH-VALIDATED TOPICS ──
-    {t:'60% of your inbound rental leads never enter any follow-up system at all. They vanish before you know they existed.',h:'[Number]% of [niche] [problem] — and they never knew'},
-    {t:'A prospective tenant submitted an inquiry Saturday at 7pm. You saw it Monday at 9am. They signed a lease Sunday afternoon.',h:"It's [time]. You're [location]."},
-    {t:'629,000 new rental units hit the market in 2024. The most since 1986. Your competitor is one faster response away from filling before you do.',h:'Most [niche] owners don\'t know this'},
-    {t:'34% of property management companies are already using AI to respond to inquiries faster. The other 66% are losing tenants to them.',h:'Most [niche] owners don\'t know this'},
-    {t:'One extra vacancy week per unit = $2,350 in lost rent plus carrying costs. Multiply that by every unit you manage.',h:'[Number] x [number] = [result]'},
-    {t:'71% of renters expect a response within 24 hours of their inquiry. How long does your company actually take?',h:'What happens when [trigger]?'},
-    // ── V8 STORY POSTS (30% category) ──
-    {t:"I spent years building websites for service businesses. The phones kept ringing. Nobody answered.",h:'Contrast story — failed approach vs discovery'},
-    {t:"The moment I stopped talking about traffic and started talking about response — everything changed.",h:'Contrast story — the shift'},
-    {t:"I looked at a property management company's call log for the first time. I counted 47 missed calls in one month. They had no idea.",h:'Silent cost reveal'},
-    {t:"Most service businesses don't have a lead problem. The leads are arriving. They're just not being answered.",h:'Belief post opener'},
-    {t:"A property manager told me she thought her team was answering every call. Then we pulled the data together.",h:'A [niche] owner said: [quote]'},
-    {t:"Why I stopped calling this a marketing solution — and what I call it instead.",h:'Belief post opener'},
-    {t:"The first time a client's AI employee answered a call at 11pm that would have gone to voicemail — they texted me the next morning.",h:'Social proof — founder story'},
-    {t:"Every time I hear 'we have someone who handles the phones' I ask one question: what happens at 6:47pm on a Friday?",h:'Confrontational question'},
-    {t:"The question I ask every property manager that makes them go quiet: how many calls did you miss last week? Do you actually know?",h:'Confrontational question'},
-    {t:"We're not in a bad market. We're in a trust recession. And every unanswered call makes it worse.",h:'Trust recession opener'},
-    // ── V8 PROOF POSTS (10% category) ──
-    {t:"We called 10 property management companies at 7:15pm on a Thursday. 2 answered. Here's what that means for the 8 who didn't.",h:'[Number] test result = [implication]'},
-    {t:"A PM company had 400 past tenants in their CRM. Nobody had contacted them in 18 months. We sent one message. 31 replied in 72 hours.",h:'Database reactivation result'},
-    {t:"This property management company had 67 Google reviews. They had responded to zero. Here's what that was costing them.",h:'Third-party analysis — real cost'},
-    // ── V8 NEW PILLAR TOPICS ──
-    {t:"Every unanswered review, every missed callback, every ignored inquiry — it's not bad luck. It's a trust deficit. And you're building it every day.",h:'Trust recession opener'},
-    {t:"You have past tenants in your CRM right now who haven't heard from you in months. One automated message changes that.",h:'Database reactivation pitch'},
-    {t:"I built this because I watched good businesses lose customers they never knew they lost — while spending money to find new ones.",h:'Founder story — origin'},
-    {t:"Two property management companies. Same city. Same years operating. One has 200 Google reviews. One has 23. Same quality. Different systems.",h:'Competitor comparison proof'}
-  ];
-
-  const dntTopics = [
-    {t:'Every missed call from a new patient is a lifetime of revenue you never got',h:'Every [action] is [consequence]'},
-    {t:"It's 2:15pm. The front desk is chair-side. Your phone rings.",h:"It's [time]. You're [location]."},
-    {t:'The math behind one missed new patient call at a dental practice',h:'[Number] x [number] = [result]'},
-    {t:'The dental practice that picks up first gets the appointment',h:'The business that responds first'},
-    {t:"You don't have a slow season problem. You have a response problem.",h:"You don't have a [assumed problem]"},
-    {t:'A new patient called 3 dental offices. One picked up. Guess who they booked with.',h:"It's [time]. You're [location]."},
-    {t:'How fast does your practice respond to a new patient inquiry?',h:'What happens when [trigger]?'},
-    {t:'How many new patient calls did your practice miss this week?',h:"Most [niche] owners don't know"},
-    {t:'A practice owner told me something about her front desk that surprised me',h:'A [niche] owner said: [quote]'},
-    {t:'The voicemail a new patient never leaves twice',h:'Every [action] is [consequence]'},
-    {t:"3 missed new patient calls x $2,000 first-visit value = the number you're ignoring",h:'[Number] x [number] = [result]'},
-    {t:"It's not AI. It's just your front desk — always available.",h:'[Simple bold claim]'},
-    {t:'Your competitor answered on the first ring. You went to voicemail.',h:'The business that responds first'},
-    {t:'Mid-procedure. 3 new patient calls. Nobody answered.',h:"It's [time]. You're [location]."},
-    {t:"Most dental practices don't track how many new patient calls go unanswered",h:"Most [niche] owners don't know"},
-    {t:"If a new patient called your practice right now at 6pm...",h:'What happens when [trigger]?'},
-    {t:'The appointment request that went to the practice down the street',h:'Every [action] is [consequence]'},
-    {t:"Speed to appointment: the scenario most practice owners never calculate",h:'[Simple bold claim]'},
-    {t:'What a practice owner said after the first week of never missing a call',h:'A [niche] owner said: [quote]'},
-    {t:"What's one new patient worth to your practice over their lifetime?",h:'[Number] x [number] = [result]'},
-    {t:"It's not about hiring another front desk person — it's about this",h:"You don't have a [assumed problem]"},
-    {t:"You have 80 Google reviews. You've responded to zero.",h:"Most [niche] owners don't know"},
-    {t:'A patient had a dental emergency at 9pm. What did your practice do?',h:'What happens when [trigger]?'},
-    {t:'Your after-hours voicemail is sending new patients to your competitor',h:'[Simple bold claim]'},
-    {t:'Where new patient revenue leaks in a dental practice',h:"Most [niche] owners don't know"},
-    {t:'What an AI receptionist actually does for a dental practice',h:'[Simple bold claim]'},
-    {t:'Why new patients rarely call a dental practice twice',h:'[Simple bold claim]'},
-    {t:'The 30-second thing most dental practices skip that costs them patients',h:"It's [time]. You're [location]."},
-    {t:'A new patient called during a procedure. You missed it. Did they get a text back within 60 seconds?',h:'What happens when [trigger]?'},
-    {t:'The 60-second window between a missed new patient call and a lost appointment',h:'[Simple bold claim]'},
-    {t:'3 appointment request forms came in after hours. You saw them Wednesday morning.',h:"It's [time]. You're [location]."},
-    {t:'The new patient inquiry that went cold before you saw it',h:'Every [action] is [consequence]'},
-    {t:"They asked about a consultation. You replied. They went quiet. The practice down the street followed up on day 4.",h:'Every [action] is [consequence]'},
-    {t:"Most dental practices follow up once and assume the patient isn't interested",h:"Most [niche] owners don't know"},
-    {t:'Your competitor has 340 Google reviews. You have 31. You opened the same year. The difference is one automated text after every appointment.',h:"Most [niche] owners don't know"},
-    {t:'Less than what your front desk spends on coffee before the first patient arrives. One new patient covers it for the year.',h:'[Simple bold claim]'},
-    // ── HOOK 14: IDENTITY CHALLENGE TOPICS ──
-    {t:'Every time a new patient reaches your voicemail after hours, they\'re deciding whether your practice is the kind that shows up for patients — before they\'ve ever sat in your chair.',h:'Identity challenge — patient first impression'},
-    {t:'Every unanswered after-hours call is your practice telling the market what kind of office you run. 47% of appointment requests arrive after you close. That\'s 47% of first impressions being made by a voicemail.',h:'Identity challenge — practice reputation'},
-    {t:'Every review you haven\'t responded to is a signal to every patient reading your profile: this practice doesn\'t engage with the people who chose them. That signal runs before anyone calls.',h:'Identity challenge — review reputation'},
-    // ── V8.1 RESEARCH-VALIDATED TOPICS ──
-    {t:'35% of dental calls go unanswered during business hours. Not after hours. During your open hours. Right now.',h:'[Number]% of [niche] [problem]'},
-    {t:'Only 14% of missed dental callers leave a voicemail. The other 86% hang up and call the next dentist on Google.',h:'[Simple bold claim]'},
-    {t:'Half of all dental appointment requests arrive after 5pm. Your office sends them to voicemail. That\'s half your bookings going somewhere else.',h:'Most [niche] owners don\'t know this'},
-    {t:'Your front desk spends 40% of their day on admin tasks. That\'s the time the phone rings and nobody answers it.',h:'[Simple bold claim]'},
-    {t:'Your receptionist is probably already looking for another job. When they leave, your phones go dark. What\'s your backup?',h:'[Simple bold claim]'},
-    {t:'26 missed new patient calls per month. At $850 each. That\'s $224,000 leaving your practice every year. Silently.',h:'[Number] x [number] = [result]'},
-    // ── V8 STORY POSTS ──
-    {t:"Dental practices spend thousands on marketing. The new patient calls that come in — a third of them go to voicemail during procedures. I've seen the numbers.",h:'Silent cost reveal'},
-    {t:"A practice owner told me her front desk was handling everything. Then I asked about the 4 calls that came in between 2pm and 4pm yesterday. Silence.",h:'Confrontational question'},
-    {t:"Most dental practices don't have a new patient problem. New patients are calling. They're hitting voicemail and calling the practice down the street.",h:'Belief post opener'},
-    {t:"The first time a dental client's AI employee answered a Saturday morning call and booked a new patient appointment — while the practice was closed.",h:'Social proof — founder story'},
-    {t:"I asked a dental practice owner how many new patient calls go unanswered on a typical Tuesday. She said 'maybe one or two.' The call log said eleven.",h:'Silent cost reveal'},
-    {t:"Why the second call from a new patient almost never happens — and what it costs a practice per year.",h:'Contrast story — the shift'},
-    {t:"The difference between a dental practice with 300 reviews and one with 30 isn't location, reputation, or years in business. It's one text message after every appointment.",h:'Competitor comparison'},
-    {t:"Every unanswered Google review is a signal to every prospective patient reading it: this practice doesn't respond. You've sent that signal dozens of times.",h:'Trust recession opener'},
-    {t:"We're in a trust recession. Patients read reviews before they ever call. When they see no responses — even to the good reviews — they call the next practice.",h:'Trust recession opener'},
-    {t:"What I would tell every dental practice owner: the phone calls you're missing aren't from people who weren't interested. They were ready to book.",h:'Belief post opener'},
-    // ── V8 PROOF POSTS ──
-    {t:"We called 10 dental practices at 6:30pm on a Wednesday. 1 answered. 9 went to voicemail. Here's what that costs per year at $1,800 average first visit.",h:'[Number] test result = [implication]'},
-    {t:"A dental practice had 280 past patients who hadn't booked in over a year. We sent one automated reactivation message. 44 booked appointments in one week.",h:'Database reactivation result'},
-    {t:"This dental practice had 91 Google reviews. They had responded to none of them. We calculated what that silence was costing in lost patient conversions.",h:'Third-party analysis — real cost'},
-    // ── V8 NEW PILLAR TOPICS ──
-    {t:"Every ignored patient inquiry, every unanswered review, every call that hit voicemail after hours — trust erodes quietly. And patients don't tell you when they leave.",h:'Trust recession opener'},
-    {t:"Your practice has past patients who loved their experience and haven't come back in 18 months. They don't need a coupon. They need a message.",h:'Database reactivation pitch'},
-    {t:"I built this because I watched dental practices spend $3,000 a month on ads to get new patients while losing them on the first phone call.",h:'Founder story — origin'},
-    {t:"One dental practice in Miami. 340 Google reviews, 4.9 stars — they respond to every one. Their competitor has 28 reviews and no responses. Both have been open 8 years.",h:'Competitor comparison proof'}
-  ];
-
-  const conTopics = [
-    {t:'Every missed job call is a project your competitor just priced',h:'Every [action] is [consequence]'},
-    {t:"It's 3pm. You're on a roof. Your phone rings.",h:"It's [time]. You're [location]."},
-    {t:'The math behind missed estimate requests at a contracting business',h:'[Number] x [number] = [result]'},
-    {t:'The contractor who calls back first gets the job',h:'The business that responds first'},
-    {t:"You don't have a slow pipeline problem. You have a response problem.",h:"You don't have a [assumed problem]"},
-    {t:'A homeowner called 4 contractors. One called back same day.',h:"It's [time]. You're [location]."},
-    {t:'How fast does your contracting business respond to new job requests?',h:'What happens when [trigger]?'},
-    {t:'How many estimate calls did you miss on the job site this week?',h:"Most [niche] owners don't know"},
-    {t:'A general contractor told me something about job site calls',h:'A [niche] owner said: [quote]'},
-    {t:'The estimate request that went to the other guy while you were on site',h:'Every [action] is [consequence]'},
-    {t:'3 missed job calls x $8,000 average project = do the math',h:'[Number] x [number] = [result]'},
-    {t:"It's not AI. It's just your office — answering while you work.",h:'[Simple bold claim]'},
-    {t:'Your competitor answered. You were cutting tile.',h:'The business that responds first'},
-    {t:'Hands full on a job site. 2 estimate calls. Nobody answered.',h:"It's [time]. You're [location]."},
-    {t:"Most contractors don't realize how many jobs they're losing to voicemail",h:"Most [niche] owners don't know"},
-    {t:"If a homeowner called your business right now at 7pm...",h:'What happens when [trigger]?'},
-    {t:"The job that paid for someone else's new truck — not yours",h:'Every [action] is [consequence]'},
-    {t:'What an AI receptionist actually does for a contracting business',h:'[Simple bold claim]'},
-    {t:'The question contractors keep asking me about missed calls',h:'What happens when [trigger]?'},
-    {t:'The 30-second thing most contractors skip that costs them thousands',h:"It's [time]. You're [location]."},
-    {t:'A homeowner called while you were on a roof. Did they get a text back in 60 seconds?',h:'What happens when [trigger]?'},
-    {t:'The 60 seconds between a missed job call and losing the estimate to a faster contractor',h:'[Simple bold claim]'},
-    {t:"An estimate request came in Saturday night. You saw it Monday at noon. They'd already hired someone.",h:"It's [time]. You're [location]."},
-    {t:'The job request that went cold over the weekend while your competitors were texting back',h:'Every [action] is [consequence]'},
-    {t:'They asked for an estimate. You sent it. They went quiet. Another contractor followed up on day 3 and got the job.',h:'Every [action] is [consequence]'},
-    {t:'Most contractors send one estimate and wait. The contractor who wins follows up.',h:'The business that responds first'},
-    {t:'Less than the fuel you burn before lunch on Monday. One signed job covers it for more than the year.',h:'[Simple bold claim]'},
-    // ── HOOK 14: IDENTITY CHALLENGE TOPICS ──
-    {t:'Every missed call is a homeowner forming an opinion about your business before they\'ve ever seen your work. Most contractors compete on craftsmanship. The decision gets made before craftsmanship enters the picture.',h:'Identity challenge — reputation before the work'},
-    {t:'Every estimate request you don\'t respond to within the hour is a homeowner deciding whether you\'re the contractor who\'s serious about their business — or the one who will be hard to reach when something goes wrong on the job.',h:'Identity challenge — reliability signal'},
-    {t:'Every time a homeowner calls a contractor and gets voicemail, they\'re not just deciding whether to call back. They\'re deciding whether this is the kind of business they want managing a project in their home.',h:'Identity challenge — trust before the call back'},
-    // ── V8.1 RESEARCH-VALIDATED TOPICS ──
-    {t:'62% of calls to contractors go unanswered. Not because you don\'t care. Because you\'re on the job. That\'s the problem.',h:'[Number]% of [niche] [problem]'},
-    {t:'Less than 3% of callers who reach voicemail leave a message. The other 97% immediately call the next contractor on Google.',h:'[Simple bold claim]'},
-    {t:'Your Google ad now shows your response time. Fast responders rank higher. Slow responders disappear. The algorithm and the phone are now the same problem.',h:'Most [niche] owners don\'t know this'},
-    {t:'An emergency AC call at 9pm in July is worth $3,500. If you\'re asleep when it comes in, your competitor is waking up richer.',h:"It's [time]. You're [location]."},
-    {t:'Average contractor calls back 3 hours after a missed call. 85% of homeowners have already hired someone else by then.',h:'Every [action] is [consequence]'},
-    {t:'At $1,200 per missed call and a 62% miss rate — the average contractor loses $45,000 to $120,000 per year to voicemail.',h:'[Number] x [number] = [result]'},
-    // ── V8 STORY POSTS ──
-    {t:"A contractor told me his business was doing fine — he was busy. Then I asked him how many jobs he quoted last year that he never heard back from after sending the estimate.",h:'Confrontational question'},
-    {t:"Most contractors don't lose jobs because their price is wrong. They lose them because someone else followed up and they didn't.",h:'Belief post opener'},
-    {t:"The first time a contractor client called me on a Monday morning because his AI employee had booked two jobs over the weekend while he was at a family barbecue.",h:'Social proof — founder story'},
-    {t:"I asked a general contractor how many calls his crew misses while they're on a job site. He said not many. His call log said 23 last week.",h:'Silent cost reveal'},
-    {t:"Every contractor in your market is one thing away from taking the jobs you're not answering. That one thing is a phone that picks up.",h:'Belief post opener'},
-    {t:"We're in a trust recession. Homeowners call 4 contractors. They go with whoever calls back first — not whoever does the best work. I've seen this pattern hundreds of times.",h:'Trust recession opener'},
-    // ── V8 PROOF POSTS ──
-    {t:"We called 10 roofing contractors at 7pm on a Tuesday. Zero answered. Every single call went to voicemail. Here's what that window of silence costs in a competitive market.",h:'[Number] test result = [implication]'},
-    {t:"A general contractor had 200 past clients who hadn't been contacted since their job closed. One automated check-in message. 18 replied about new projects within 4 days.",h:'Database reactivation result'},
-    // ── V8 NEW PILLAR TOPICS ──
-    {t:"Every job inquiry that goes unanswered over a weekend isn't just one missed job. It's your reputation for not responding — built one missed call at a time.",h:'Trust recession opener'},
-    {t:"Your past clients are your warmest leads. They already trust your work. They just need someone to reach out. Most contractors never do.",h:'Database reactivation pitch'},
-    {t:"I built this because I watched skilled contractors with full schedules miss calls from homeowners who would have paid a premium — because nobody answered.",h:'Founder story — origin'},
-    {t:"Two contractors in the same zip code. One has 180 Google reviews and responds to all of them. One has 14. They've been in business the same number of years.",h:'Competitor comparison proof'}
-  ];
-
-  const insTopics = [
-    {t:'Every missed quote request is a policy your competitor wrote',h:'Every [action] is [consequence]'},
-    {t:"It's Thursday afternoon. You're with a client. Your phone rings.",h:"It's [time]. You're [location]."},
-    {t:'The math behind missed inbound calls at an insurance agency',h:'[Number] x [number] = [result]'},
-    {t:'The agency that responds first writes the policy',h:'The business that responds first'},
-    {t:"You don't have a lead problem. You have a speed problem.",h:"You don't have a [assumed problem]"},
-    {t:'A prospect called 4 agencies. One answered. Guess who they went with.',h:"It's [time]. You're [location]."},
-    {t:'How fast does your agency respond to a new quote request?',h:'What happens when [trigger]?'},
-    {t:'An agency owner told me something that stuck with me',h:'A [niche] owner said: [quote]'},
-    {t:'3 missed quote calls x $2,400 policy commission = the number that hurts',h:'[Number] x [number]'},
-    {t:"It's not AI. It's just a receptionist that never misses a call.",h:'[Simple bold claim]'},
-    {t:'Your competitor just picked up. You went to voicemail.',h:'The business that responds first'},
-    {t:"Most insurance agency owners don't realize this is happening",h:"Most [niche] owners don't know"},
-    {t:'The quote request that evaporated before you saw it',h:'Every [action] is [consequence]'},
-    {t:'What an AI receptionist actually does for an insurance office',h:'[Simple bold claim]'},
-    {t:"The policy you didn't know you lost",h:'Every [action] is [consequence]'},
-    {t:'A prospect called during a renewal meeting. You missed it. Did your system text them back within 60 seconds?',h:'What happens when [trigger]?'},
-    {t:'The 60 seconds between a missed quote call and a written policy for your competitor',h:'[Simple bold claim]'},
-    {t:"They requested a quote. You sent it. They went quiet. Most agencies assume they found another provider. Most are wrong.",h:"Most [niche] owners don't know"},
-    {t:'The prospect who didn\'t respond to your quote was waiting to see who followed up first',h:'The business that responds first'},
-    {t:'Less than what most agents spend on parking near their office each month. One written policy covers it for the year.',h:'[Simple bold claim]'},
-    // ── HOOK 14: IDENTITY CHALLENGE TOPICS ──
-    {t:'Every missed call from a prospective policyholder is them deciding whether your agency is the kind that picks up — before they\'ve given you a dollar. In a hard market where trust is everything, that decision happens in 60 seconds.',h:'Identity challenge — agency trust signal'},
-    {t:'Every unanswered Google review is your agency telling every future prospect how you treat clients after the policy is written. Prospects read it that way. Every single one of them.',h:'Identity challenge — post-sale reputation'},
-    {t:'Every Saturday morning call that hits your voicemail is a prospect deciding whether your agency is the type that shows up for clients when it matters — which is never during business hours.',h:'Identity challenge — availability as identity'},
-    // ── V8.1 RESEARCH-VALIDATED TOPICS ──
-    {t:'47% of insurance inquiries arrive after 5pm. Saturday morning is your highest-converting window. Is anyone answering your phone Saturday morning?',h:'[Number]% of [niche] [problem]'},
-    {t:'The average insurance agency takes 47 hours to respond to a new lead. The first agency to call back wins 80% of deals. Do the math.',h:'[Number] x [number] = [result]'},
-    {t:'Saturday calls to insurance agencies convert 23% higher than weekday calls. Because the prospect has time to decide. Most agencies send them to voicemail.',h:'Most [niche] owners don\'t know this'},
-    {t:'Florida homeowners are shopping insurance more aggressively than ever. Carriers are leaving. Rates are up. Your phone is ringing more. Are you answering more?',h:'Most [niche] owners don\'t know this'},
-    {t:'$204,000 per year. That\'s what the average moderately busy agency leaves in missed and unrecaptured calls. Every year.',h:'[Number] x [number] = [result]'},
-    {t:'Your prospect Googled insurance. Found your agency. Called. Nobody answered. They\'re now with the agency that did. That happens at 40% of agencies every single day.',h:'Every [action] is [consequence]'},
-    // ── V8 STORY POSTS ──
-    {t:"Insurance agents spend years building a book of business. The single fastest way to erode it is to be the agency that doesn't respond when prospects reach out.",h:'Belief post opener'},
-    {t:"A prospect calls four insurance agencies on the same afternoon. By 5pm, they've given their business to whoever called back first. I've watched this happen.",h:'Competitor contrast'},
-    {t:"Every unanswered quote request isn't just a missed commission. It's someone who chose a competitor and will renew with them for the next decade.",h:'Silent cost reveal'},
-    {t:"We're in a trust recession. Prospects research agencies before they call. When they see slow responses and unanswered reviews — they don't call.",h:'Trust recession opener'},
-    {t:"The best insurance agents I know aren't the most technically skilled. They're the most responsive. That's the actual competitive advantage.",h:'Belief post opener'},
-    // ── V8 PROOF POSTS ──
-    {t:"We called 10 independent insurance agencies at 5:30pm on a weekday. 3 answered. 7 went to voicemail. Here's what the math looks like on missed quote requests.",h:'[Number] test result = [implication]'},
-    {t:"An insurance agency had 150 past clients who hadn't renewed or been contacted in over 14 months. One automated reactivation sequence. 22 responded about new policies.",h:'Database reactivation result'},
-    // ── V8 NEW PILLAR TOPICS ──
-    {t:"Every unanswered inquiry, every review that goes without a response, every voicemail that never gets returned — it builds a reputation for unresponsiveness you didn't choose.",h:'Trust recession opener'},
-    {t:"Your past clients are sitting in your CRM. Some of them need new policies. Some have life changes that mean more coverage. Most agents never ask.",h:'Database reactivation pitch'},
-    {t:"I built this because I watched insurance agents lose long-term clients to competitors who were simply faster to respond — not better at their job.",h:'Founder story — origin'},
-    {t:"Two insurance agencies in the same market. One has 95 Google reviews with responses to every one. One has 12 reviews and zero responses. Prospects see this before they call.",h:'Competitor comparison proof'}
-  ];
-
-  const mtgTopics = [
-    {t:'Every missed buyer inquiry is a loan your competitor closed',h:'Every [action] is [consequence]'},
-    {t:"It's Friday at 4:45pm. A buyer calls about pre-approval.",h:"It's [time]. You're [location]."},
-    {t:'The loan officer who responds first gets the application',h:'The business that responds first'},
-    {t:'3 missed buyer inquiries x $4,500 origination = the real cost',h:'[Number] x [number]'},
-    {t:'From missed call to closed loan — the path',h:'What happens when [trigger]?'},
-    {t:'A buyer called during a closing. You missed it. A 60-second text back could have saved the application.',h:'What happens when [trigger]?'},
-    {t:'The 60-second window between a missed buyer call and a loan your competitor just closed',h:'[Simple bold claim]'},
-    {t:"They asked about pre-approval. You replied. They went quiet. Another broker followed up on day 2 and got the file.",h:'Every [action] is [consequence]'},
-    {t:"Rate-sensitive buyers don't wait. Most brokers follow up once. The brokers who close follow up three times.",h:'The business that responds first'},
-    {t:'Less than what most brokers spend on coffee before their first call. One closed loan covers it for more than the year.',h:'[Simple bold claim]'},
-    // ── HOOK 14: IDENTITY CHALLENGE TOPICS ──
-    {t:'Every buyer inquiry you don\'t respond to within the first five minutes is them deciding whether you\'re the loan officer who takes their deal seriously — before the conversation has started.',h:'Identity challenge — broker reliability signal'},
-    {t:'Post-trigger-ban, your Google reviews are the first thing a buyer sees about you. Every review you haven\'t responded to is you telling future buyers: I don\'t engage after the close. That\'s who they\'re borrowing from.',h:'Identity challenge — post-close reputation'},
-    // ── V8.1 RESEARCH-VALIDATED TOPICS ──
-    {t:'Trigger leads died on March 5, 2026. Internet leads are now 45% more expensive. Every missed organic inquiry costs 45% more to replace than it did a year ago.',h:'[Simple bold claim]'},
-    {t:'40% of mortgage inquiries arrive after business hours. Borrowers research at night. They submit at 9pm. Your office opens at 8am. Two other brokers already called.',h:"It's [time]. You're [location]."},
-    {t:'You\'re paying $300 per internet lead. Your average response time is hours. That\'s not a lead problem. That\'s a response problem.',h:'[Number] x [number] = [result]'},
-    {t:'Post-trigger-lead-ban, your Google reviews are your pipeline. Every unanswered review is a borrower choosing someone else. When did you last respond to all of them?',h:'Most [niche] owners don\'t know this'},
-    {t:'Contact rates drop 80% after the first 5 minutes. Most loan officers call back in hours. The math on that is brutal.',h:'Every [action] is [consequence]'},
-    {t:'Missing 2 qualified borrower inquiries per week = $30,000 to $80,000 in lost origination annually. How many did you miss this week?',h:'[Number] x [number] = [result]'},
-    // ── V8 STORY POSTS ──
-    {t:"Rate-sensitive buyers aren't loyal to the best rate. They're loyal to the loan officer who answered first. I've seen this play out dozens of times.",h:'Belief post opener'},
-    {t:"A mortgage broker told me he follows up with every lead. Then I asked what he does with leads who don't respond after the first follow-up. Long pause.",h:'Confrontational question'},
-    {t:"The market isn't the problem. The problem is buyers call three brokers and go with whoever responds first. Most brokers are third.",h:'Belief post opener'},
-    {t:"We're in a trust recession. Buyers research loan officers before they call. Your Google reviews, your response pattern, your after-hours availability — they see all of it.",h:'Trust recession opener'},
-    // ── V8 PROOF POSTS ──
-    {t:"We contacted 10 past borrowers for a mortgage broker who hadn't reached out to them in over a year. 6 were either refinancing or knew someone who was.",h:'Database reactivation result'},
-    // ── V8 NEW PILLAR TOPICS ──
-    {t:"Every missed buyer call, every inquiry that goes cold overnight, every unanswered question — in a rate-sensitive market, trust is the only thing that separates you.",h:'Trust recession opener'},
-    {t:"Your past borrowers know people who are buying or refinancing right now. Most loan officers never ask. One message changes that.",h:'Database reactivation pitch'},
-    {t:"I built this for mortgage brokers because I watched qualified buyers go to whoever picked up — not whoever would have served them better.",h:'Founder story — origin'},
-    {t:"Two loan officers. Same rates. Same market. One responds to every inquiry within 60 seconds, even at 9pm. One responds the next morning. You know who closes more.",h:'Competitor comparison proof'}
-  ];
-
-  const topicMap = { pm:pmTopics, dnt:dntTopics, con:conTopics, ins:insTopics, mtg:mtgTopics };
-
-  // ── BUG FIX: derive sizes from actual arrays, never hardcode ──
-  const libSizes = {
-    pm:  pmTopics.length,
-    dnt: dntTopics.length,
-    con: conTopics.length,
-    ins: insTopics.length,
-    mtg: mtgTopics.length
-  };
-
-  // 20-post repeating block × 7 cycles = 140 posts
-  // PM=6, DNT=6, CON=4, INS=3, MTG=1 per block → 30/30/20/15/5%
-  const sequence = ['pm','dnt','con','pm','dnt','ins','con','pm','dnt','pm','dnt','con','ins','pm','dnt','con','pm','dnt','ins','mtg'];
-  const counters  = {pm:0,dnt:0,con:0,ins:0,mtg:0};
-  const PLAN_SIZE = 140;
-
-  const plan = [];
-  for (let i = 0; i < PLAN_SIZE; i++) {
-    const niche = sequence[i % sequence.length];
-    const idx   = counters[niche] % libSizes[niche];
-    const pIdx  = idx % pillars.length;
-    const fIdx  = idx % formats.length;
-    const cIdx  = idx % ctas.length;
-    plan.push({
-      pos: i+1, niche,
-      topic: topicMap[niche][idx].t,
-      hook:  topicMap[niche][idx].h,
-      pillar: pillars[pIdx],
-      format: formats[fIdx],
-      cta:    ctas[cIdx]
-    });
-    counters[niche]++;
+  if(tc.f==='Founder story post'){
+    s.founderOk=!l1l.startsWith('most ');
+    s.hasPhysical=/\b(coffee|table|cold|pen|legal pad|tailgate|truck|notepad|sandwich|chair|desk|window|whiteboard)\b/i.test(post);
   }
-  return plan;
+  if(tc.f==='Proof post') s.proofOk=/told me|said (his|her|their|they)|believed|thought/i.test(lines[0]||'');
+  s.wordCount=post.trim().split(/\s+/).filter(w=>w).length;
+  s.wordOk=s.wordCount>=150&&s.wordCount<=700;
+  const sents=post.match(/[^.!?]+[.!?]+/g)||[];
+  s.avgSent=sents.length?Math.round(sents.reduce((a,s)=>a+s.trim().split(' ').length,0)/sents.length):0;
+  const crits=[s.noBannedOpener,s.noEmDash,s.noPlaceholders,s.noRetiredFrag,s.hook14Pass];
+  const qual=[s.scrollStop,s.l2Deepens,s.dominoEarly||s.dominoAny,s.employeeFrame,s.wordOk];
+  s.pass=crits.every(Boolean)&&qual.filter(Boolean).length>=3;
+  s.warn=crits.every(Boolean)&&!s.pass;
+  return s;
 }
 
-const PLAN = buildPlan();
-const PLAN_SIZE = PLAN.length;
+function buildSys(tc){
+  const n=NI[tc.n];
+  const isTrust=tc.p.toLowerCase().includes('trust recession');
+  const isFounder=tc.f==='Founder story post';
+  const isProof=tc.f==='Proof post';
+  const isDB=tc.p.toLowerCase().includes('database reactivation');
+  return `You are a LinkedIn content writer for Online Impact 360, which installs AI business systems that answer calls, capture leads, and follow up automatically for local service businesses.
 
-// ── CTA LINES ──────────────────────────────────────────────────
-const CTA_LINES = {
-  demo:    '\n\nWant to hear it yourself?\n\nCall 1-888-708-7367 and ask it how it would handle your calls.',
-  comment: '\n\nDrop "curious" in the comments. I\'ll send you a quick example.',
-  dm:      '\n\nDM me "demo" and I\'ll show you how it works for your business.',
-  none:    ''
-};
-const EBOOK_CTA = {
-  pm:  "\n\nI put together a free report on the 5 places property managers lose rent every month without realizing it. Reply and I'll send it over.",
-  dnt: "\n\nI put together a free report on the 5 places dental practices lose new patients before they ever book. Reply and I'll send it over.",
-  con: "\n\nI put together a free report on the 5 ways contractors lose job opportunities to voicemail every week. Reply and I'll send it over.",
-  ins: "\n\nI put together a free report on the 5 ways insurance agencies lose policies to faster competitors. Reply and I'll send it over.",
-  mtg: "\n\nI put together a free report on the 5 places mortgage brokers lose qualified buyers without knowing it. Reply and I'll send it over."
-};
-function getCtaLine(ctaType, nicheKey) {
-  if (ctaType === 'ebook') return EBOOK_CTA[nicheKey] || EBOOK_CTA['pm'];
-  return CTA_LINES[ctaType] || CTA_LINES['comment'];
-}
+Smart Website 360: answers inbound calls 24/7, sends automatic text-back within 60 seconds of any missed call, responds instantly to website contact forms, follows up automatically with leads, replies to every Google review, texts every customer after a job to generate reviews, tracks every lead in a CRM. Core promise: "We make sure nothing that touches a customer or prospect ever goes unanswered again."
 
-const LENGTH_MAP = { short:'150–250 words', medium:'300–500 words', long:'600–900 words' };
-const FORMAT_INSTRUCTIONS = {
-  'Punch post':        'Short and declarative. Strong claim up front. 2–3 tight paragraphs. No fluff. Every line earns its place.',
-  'Scenario post':     'Drop the reader into a specific real moment. Lead with time, place, action. Show exactly what happens when the call goes unanswered or the text never arrives. First line must put them inside the scene.',
-  'Math breakdown':    'Walk through a simple business math scenario with dollar amounts realistic for this niche. Format each step on its own line. Make the total loss feel undeniable.',
-  'Story post':        'A short grounded story about a real type of business owner in this niche. Specific moment, specific outcome. End on the one insight that reframes how they see the problem. Do NOT open with "Here is a story I hear constantly." Do NOT open with "Most [niche] don\'t know..." — this is a weak low-tension setup that tells the reader to wait for the point instead of feeling it immediately. Open with the most striking moment of the story — name the character, the situation, the gap — immediately. The reader discovers it is a story as they read it.',
-  'Question post':     'Open with a direct honest question this business owner avoids asking. 2–3 lines of real context. Close with a sharper second question that makes them stop.',
-  'Data post':         'State one industry stat. No narrative. One or two lines of context to ground it. The number does all the work.',
-  'Before/After post': 'Two states contrasted — no story, just before and after side by side. Let the delta speak. IMPORTANT: Do NOT label the sections with the word "Before:" or "After:" as the first word the reader sees. These structural labels release the hook tension established in line 1. Write the before state as a story moment, the after state as the resolution. The contrast should be felt, not labelled.',
-  'Founder story post':'Written from Henry\'s voice. First person. One specific moment, observation, or discovery. Not educational — personal. What I saw. What I learned. What I now believe. OPENER RULE: Do NOT open with "Most [niche] don\'t know how many calls they missed." This is a soft setup that delays tension. Open instead with the moment itself — where Henry was, what he saw, what broke the pattern. The physical setting should be in the first two lines. End on a belief or insight that changes how the reader sees their own business. Keep it under 250 words. The authenticity is the value. No product pitch — the discovery is the post. TEXTURE RULE: Include one physical detail that proves you were in the room. Not relevant to the business lesson — irrelevant details are what make stories feel true. The time of day, an object on the table, what they said before the important thing, the expression on their face, whether the coffee was still warm. A case study tells you what happened. A story puts you in the room. The physical detail is the difference.',
-  'Proof post':        'One specific result with real numbers. Name the niche. State the before. State the after. Let the data do the talking. No opinion, no explanation of how the system works — just the result and what it means. If using third-party or public analysis, say so honestly. Do NOT open with "A [niche] told me something surprising." That is too vague. Open with the specific contradiction — what they believed vs. what the data showed. For example: "A dental practice owner told me her front desk was \'pretty good at following up.\' So I asked her to pull the last 90 days." That is a proof opener with built-in tension.'
-};
+TARGET AUDIENCE: ${n.d}
+KEY PAIN POINTS: ${n.pa}
+AVERAGE VALUE OF A MISSED OPPORTUNITY: ${n.va}
+TYPICAL SCENARIO WHERE OPPORTUNITIES ARE MISSED: ${n.sc}
 
-let currentPos     = parseInt(localStorage.getItem('oi360_pos') || '1');
-let generatedPost  = '';
-let isEditing      = false;
-let sessionHistory = [];
-let mode           = 'auto';
-let manualNiche    = 'pm';
-let generatedImageB64 = '';
-let generatedImageUrl = '';
-let exportBatch    = [];
+HENRY CEDENO — FOUNDER BACKGROUND:
+Henry Cedeno founded Online Impact 360 in 2016. 10 years working with local service businesses across every US market. Before the agency, Product Manager at the major label level — Rick Ross, Trina, Jagged Edge. National campaigns across every US territory. Watched mass marketing give way to direct-to-consumer digital in real time.
 
-window.onload = () => {
-  // Update library display once PLAN is ready
-  document.getElementById('stat-library').textContent = PLAN_SIZE;
-  document.getElementById('cycle-label-text').textContent = 'of ' + PLAN_SIZE + ' — then repeats forever';
+THE DISCOVERY: Running comparable campaigns for businesses in the same industry — same traffic, same ad spend — some converted far more than others. The outlier was always what happened AFTER someone reached out. Speed to lead. Follow-up touchpoints. How personable the staff was. The marketing was equal. The gap was entirely in what happened on the other side of awareness. That is the origin of Smart Website 360.
 
-  renderCycleInfo();
-  const fields = [
-    ['oi360_ak','anthropic-key'],['oi360_gt','ghl-token'],['oi360_gl','ghl-location'],
-    ['oi360_ga','ghl-account'],['oi360_oai','openai-key']
-  ];
-  fields.forEach(([key,id]) => { const v = localStorage.getItem(key); if (v) document.getElementById(id).value = v; });
-  checkReady();
-};
-
-function clearCredentials() {
-  if (!confirm('Clear all saved credentials?')) return;
-  ['oi360_ak','oi360_gt','oi360_gl','oi360_ga'].forEach(k => localStorage.removeItem(k));
-  ['anthropic-key','ghl-token','ghl-location','ghl-account'].forEach(id => document.getElementById(id).value = '');
-  checkReady();
-  setToast('gen-toast','Credentials cleared.','info');
-}
-
-function renderCycleInfo() {
-  const idx   = (currentPos - 1) % PLAN_SIZE;
-  const d     = PLAN[idx];
-  const cycle = Math.floor((currentPos - 1) / PLAN_SIZE) + 1;
-  const pct   = ((idx + 1) / PLAN_SIZE * 100).toFixed(1);
-  document.getElementById('current-post-display').textContent = currentPos;
-  document.getElementById('stat-post').textContent  = currentPos;
-  document.getElementById('stat-cycle').textContent = cycle;
-  document.getElementById('cycle-fill').style.width = pct + '%';
-  document.getElementById('cycle-topic').textContent = d.topic;
-  document.getElementById('cycle-meta').textContent  = d.pillar + ' · ' + d.format;
-  document.getElementById('cycle-niche-pill').innerHTML =
-    `<span class="niche-indicator niche-${d.niche}">${NICHES[d.niche].label}</span>`;
-  localStorage.setItem('oi360_pos', currentPos);
-}
-
-function prevPost() { if (currentPos > 1) { currentPos--; renderCycleInfo(); } }
-function nextPost() { currentPos++; renderCycleInfo(); }
-
-function setMode(m) {
-  mode = m;
-  document.getElementById('mode-auto').classList.toggle('active', m === 'auto');
-  document.getElementById('mode-manual').classList.toggle('active', m === 'manual');
-  document.getElementById('override-panel').classList.toggle('visible', m === 'manual');
-  document.getElementById('auto-info').style.display = m === 'auto' ? 'block' : 'none';
-}
-
-function selectNiche(n) {
-  manualNiche = n;
-  ['pm','ins','mtg','dnt','con'].forEach(k => {
-    const btn = document.getElementById('nb-' + k);
-    if (btn) btn.className = 'niche-btn' + (k === n ? ' sel-' + k : '');
-  });
-}
-
-function toggleVis(id, btn) {
-  const el = document.getElementById(id);
-  el.type = el.type === 'password' ? 'text' : 'password';
-  btn.textContent = el.type === 'password' ? 'Show' : 'Hide';
-}
-
-function saveOpenAI() { const v = document.getElementById('openai-key').value.trim(); if (v) localStorage.setItem('oi360_oai', v); }
-
-function checkReady() {
-  const ak = document.getElementById('anthropic-key').value.trim();
-  const gt = document.getElementById('ghl-token').value.trim();
-  const gl = document.getElementById('ghl-location').value.trim();
-  if (ak) localStorage.setItem('oi360_ak', ak);
-  if (gt) localStorage.setItem('oi360_gt', gt);
-  if (gl) localStorage.setItem('oi360_gl', gl);
-  const ga2 = document.getElementById('ghl-account').value.trim();
-  if (ga2) localStorage.setItem('oi360_ga', ga2);
-  const ready = !!(ak && gt && gl && ga2);
-  document.getElementById('gen-btn').disabled = !ready;
-  const pill = document.getElementById('status-pill');
-  pill.className = 'status-pill' + (ready ? ' ready' : '');
-  document.getElementById('status-label').textContent = ready ? 'Ready to generate' : 'Enter all 5 credentials to begin';
-}
-function setStatus(w) {
-  document.getElementById('status-pill').className = 'status-pill' + (w ? ' working' : ' ready');
-  document.getElementById('status-label').textContent = w ? 'Working…' : 'Ready to generate';
-}
-function setToast(id, msg, type) { const el = document.getElementById(id); el.textContent = msg; el.className = 'toast show ' + type; }
-function clearToast(id) { document.getElementById(id).className = 'toast'; }
-function toggleSched(r) { document.getElementById('sched-block').style.display = r.value === 'scheduled' ? 'block' : 'none'; }
-
-function toggleEdit() {
-  isEditing = !isEditing;
-  const preview = document.getElementById('preview'), editArea = document.getElementById('edit-area'), toggle = document.getElementById('edit-toggle');
-  if (isEditing) {
-    editArea.value = generatedPost; editArea.style.display = 'block'; preview.style.display = 'none'; toggle.textContent = 'Back to preview';
-  } else {
-    generatedPost = editArea.value; preview.textContent = generatedPost; editArea.style.display = 'none'; preview.style.display = 'block'; toggle.textContent = 'Edit post'; updateCharCount();
-  }
-}
-function syncEdit() { generatedPost = document.getElementById('edit-area').value; updateCharCount(); }
-function updateCharCount() {
-  const len = generatedPost.length, el = document.getElementById('char-count');
-  el.textContent = len + ' / 3,000 chars';
-  el.className = 'char-count' + (len > 2800 ? ' danger' : len > 2400 ? ' warn' : '');
-}
-function clearPost() {
-  generatedPost = ''; isEditing = false;
-  document.getElementById('preview').innerHTML = '<span class="preview-placeholder">Your generated post will appear here. Hit Generate to create niche-targeted content from the evergreen library.</span>';
-  document.getElementById('preview').style.display = 'block';
-  document.getElementById('edit-area').style.display = 'none';
-  document.getElementById('edit-toggle').style.display = 'none';
-  document.getElementById('post-btn').disabled = true;
-  document.getElementById('copy-btn').disabled = true;
-  document.getElementById('char-count').textContent = '';
-  document.getElementById('post-tags').style.display = 'none';
-  clearToast('gen-toast'); clearToast('post-toast');
-}
-function showTags(niche, pillar, format, cta) {
-  const el = document.getElementById('post-tags'); el.style.display = 'flex';
-  el.innerHTML = `<span class="tag tag-${niche}">${NICHES[niche].label}</span><span class="tag tag-format">${format}</span><span class="tag tag-cta">${cta} CTA</span><span class="tag tag-ghl">→ GHL Social Planner</span>`;
-}
-function addHistory(post, pos, niche) {
-  sessionHistory.unshift({ post, pos, niche, label:NICHES[niche].label, time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) });
-  if (sessionHistory.length > 8) sessionHistory.pop();
-  document.getElementById('history-list').innerHTML = sessionHistory.map((h,i) =>
-    `<div class="history-item" onclick="loadFromHistory(${i})"><div class="hi-meta"><span>#${h.pos} · ${h.label}</span><span>${h.time}</span></div><div class="hi-preview">${h.post.substring(0,72)}…</div></div>`
-  ).join('');
-}
-function loadFromHistory(i) {
-  const h = sessionHistory[i]; generatedPost = h.post;
-  document.getElementById('preview').textContent = generatedPost; document.getElementById('preview').style.display = 'block';
-  document.getElementById('edit-area').style.display = 'none'; isEditing = false;
-  document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
-  document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false; updateCharCount();
-}
-document.querySelectorAll('.angle-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.angle-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-  });
-});
-
-async function generatePost() {
-  const anthropicKey = document.getElementById('anthropic-key').value.trim();
-  const btn = document.getElementById('gen-btn');
-  let topic, pillar, format, ctaType, length, niche, hook, nicheKey;
-
-  if (mode === 'auto') {
-    const d = PLAN[(currentPos - 1) % PLAN_SIZE];
-    nicheKey = d.niche; topic = d.topic; pillar = d.pillar;
-    format = d.format; ctaType = d.cta; hook = d.hook;
-    length = 'medium'; niche = NICHES[d.niche].desc;
-  } else {
-    nicheKey = manualNiche;
-    topic = document.getElementById('topic').value.trim();
-    if (!topic) { setToast('gen-toast','Enter a topic first.','error'); return; }
-    pillar  = document.querySelector('.angle-btn.selected')?.dataset.val || 'missed calls = missed revenue';
-    format  = document.getElementById('format-override').value || 'Punch post';
-    ctaType = document.getElementById('cta-override').value || 'comment';
-    length  = document.getElementById('length-override').value || 'medium';
-    niche   = NICHES[nicheKey].desc; hook = '';
-  }
-
-  const nicheData = NICHES[nicheKey];
-  const ctaLine   = getCtaLine(ctaType, nicheKey);
-  const isDailyAnchor        = pillar.toLowerCase().includes('daily value anchor') || pillar.toLowerCase().includes('less than what');
-  const isTrustRecession     = pillar.toLowerCase().includes('trust recession');
-  const isSnippet            = pillar.toLowerCase().includes('ai curiosity') || pillar.toLowerCase().includes('social proof');
-  const isFounderStory       = format === 'Founder story post' || pillar.toLowerCase().includes('founder story');
-  const isProofPost          = format === 'Proof post' || pillar.toLowerCase().includes('third-party proof');
-  const isDatabaseReactivation = pillar.toLowerCase().includes('database reactivation');
-
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating…';
-  clearToast('gen-toast'); setStatus(true);
-
-  const system = `You are a LinkedIn content writer for Online Impact 360, which installs AI business systems that answer calls, capture leads, and follow up automatically for local service businesses.
-
-The product is Smart Website 360: a complete AI business system that answers inbound calls 24/7, sends an automatic text back within 60 seconds of any missed call, responds instantly to website contact form submissions, follows up automatically with leads who don't respond after first contact, replies to every Google review automatically, texts every customer after a job to generate new reviews, and tracks every lead in a CRM pipeline. The core promise: "We make sure nothing that touches a customer or prospect ever goes unanswered again."
-
-TARGET AUDIENCE: ${nicheData.desc}
-KEY PAIN POINTS: ${nicheData.pain}
-AVERAGE VALUE OF A MISSED OPPORTUNITY: ${nicheData.value}
-TYPICAL SCENARIO WHERE OPPORTUNITIES ARE MISSED: ${nicheData.scenario}
-
-HENRY CEDENO — FOUNDER BACKGROUND (for founder story posts and authentic voice):
-
-Henry Cedeno founded Online Impact 360 in 2016. He has spent 10 years working with local service businesses across every industry, every market size, and every city in the United States — from major metros to small suburbs. Before the agency, he worked at the major label level in the music industry as Product Manager and in marketing on Rick Ross (Teflon Don, Deeper Than Rap, Trilla), Trina (Amazin'), and Jagged Edge (The Remedy) — national campaigns touching every territory simultaneously.
-
-THE DISCOVERY THAT CHANGED EVERYTHING:
-Henry was running comparable digital marketing campaigns for similar businesses in the same industry across different markets — same strategy, same traffic, same ad spend. Some clients converted significantly more business than others despite identical marketing. The outlier was always what happened after someone reached out. Speed to lead. Follow-up touchpoints. How personable the staff was. How the website guided the prospect. How many times they attempted contact. The marketing was doing its job equally for both clients. The gap was entirely in what happened on the other side of awareness. That discovery is the origin of Smart Website 360.
-
-WHAT 10 YEARS OF AGENCY WORK SHOWED HIM:
-- Small businesses almost never track their pipeline. They cannot tell you how many leads came in this month, what their close rate is, or where 25 out of 30 leads went before converting. They spend on marketing but have no intelligence on what it produced.
-- The universal follow-up failure: most local business owners make one contact attempt and stop. The belief is "if they were really interested, they would call me back." This ignores that people have family obligations, emergencies, and busy lives unrelated to their interest level. The lead was warm. Life interrupted. The business that follows up on day 3 closes jobs that called day 1.
-- The economy excuse: when businesses aren't growing, owners blame the economy. Henry has watched two businesses in the same market, same industry, same economic conditions — one thriving, one struggling — because one operates efficiently and one does not.
-- The time crunch pattern: a South Florida film studio thought they needed more marketing. The real problem was speed to lead. Film producers book locations last minute. They call multiple studios simultaneously and go with whoever responds first. By the time the studio owner returned calls from his desk after a meeting, producers had already booked elsewhere. This pattern repeats in auto parts, construction materials, salons, car repair — any industry where urgency creates parallel outreach.
-
-MUSIC INDUSTRY LESSONS THAT APPLY TO EVERY BUSINESS:
-Even with famous artists with millions of fans, real budgets, and national distribution — it still takes multiple touch points and activations for people to register that an album is coming out. If major recording artists need that many repetitions, a local business that thinks one call is enough is operating on a delusional timeline. Also: in a national campaign, every department must move in conjunction — publicity, radio, digital, street team, interviews, music videos. A win in one department feeds ammunition to all others. Missed timing in one area slows the entire machine. The systems must work together.
-
-THE WEBSITE SHIFT:
-Henry was in the music industry when mass marketing gave way to direct-to-consumer digital — radio and billboards to iTunes, MySpace, YouTube. He watched that transition in real time. Websites gave businesses a direct channel to customers, but websites themselves never evolved. They became digital brochures and stayed that way. The dumb phone to smartphone transition is the same shift happening now with websites. 99% of business websites in 2026 are still static brochures. Smart Website 360 is the smartphone upgrade — it answers, responds, follows up, generates reviews, and gets smarter over time.
-
-THE ON-DEMAND CONDITIONING:
-Uber Eats, Netflix, Spotify, YouTube conditioned customers across every city in America to expect immediate responses. A business owner in a small market may naturally operate more slowly — less visible competition, less urgency. But their customers developed the same expectations as someone in Miami or New York from using the same apps every day. That gap between how slowly the business owner moves and how fast the customer expects a response is where customers are lost.
-
-WHY IT MATTERS PERSONALLY:
-Small businesses are the backbone of America — not corporations. Local service providers are what make a community. When a business does well, it pays its staff well. Those employees buy goods and services from other local businesses. That money circulates. Working with 20 businesses that each have 10 employees touches 200 people's lives. The flywheel of local business success is what actually builds healthy communities.
-
-AUTHENTIC LANGUAGE PATTERNS:
-Henry speaks in observations and patterns, not theory. He builds from specific examples — the film studio, the two comparable clients with different results, the producer in a time crunch — to universal principles. He does not frame business owners as lazy or careless. They are operating without the right infrastructure. He uses phrases like: "the outlier was always what happened after someone reached out," "marketing creates awareness, operations determine whether you get the customer," "they're in the needs business," "same market, same industry, same economy — one doing better than the other," "by the time he went back to his desk, they had already booked somewhere else."
+AUTHENTIC PHRASES: "The outlier was always what happened after someone reached out." "Marketing creates awareness. Operations determine whether you get the customer." "By the time he went back to his desk, they had already booked somewhere else."
 
 WRITING RULES — non-negotiable:
 - One idea per post. Never drift.
-- EMPLOYEE FRAMING: When describing the product or solution, use the word "employee" or "new hire" — not "system," "tool," "something," "technology," "AI," or "Smart Website 360 [verb]." WRONG: "Smart Website 360 answers every call" → RIGHT: "your new employee answers every call." WRONG: "a system that responds within 60 seconds" → RIGHT: "an employee that responds within 60 seconds." WRONG: "it texts back automatically" → RIGHT: "your new hire texts back within 60 seconds." The word "employee" or "new hire" is mandatory in every post that mentions the solution. Do not describe what the product does in any sentence without including the word "employee" or "new hire" in that same sentence.
-- BIG DOMINO (Brunson principle): Every post must tip one belief: the prospect does not have a lead problem, they have a RESPONSE problem, and the first to respond wins. Use this exact vocabulary when stating the domino: 'the first to respond wins,' 'responds first,' 'whoever picks up first,' 'whoever answers first,' 'picked up the phone first,' 'first one to call back,' 'first responder wins.' The belief must be explicitly stated with this vocabulary — not just implied. STRUCTURAL TEMPLATE — THE DOMINO MUST BE PARAGRAPH 2:
-Write your post in this EXACT sequence:
-  PARAGRAPH 1: The hook (line 1 + line 2 + 1-2 more lines setting the scene or tension)
-  PARAGRAPH 2: The Big Domino stated in plain language. One or two sentences. "The first contractor to respond wins the job. Not the best one. The fastest one." OR "First to respond wins. Not whoever has the best price. Whoever picks up." This paragraph must exist and must be SECOND.
-  PARAGRAPHS 3-6: Evidence, math, story, consequences — all of it PROVING the belief you already stated in paragraph 2.
-  FINAL PARAGRAPH: The CTA setup or the employee framing that makes the solution obvious.
-Do NOT write the evidence first and state the belief at the end. State the belief in paragraph 2, then prove it. This is non-negotiable. A reader who stops after paragraph two should already know the core belief, even if they missed the rest. Test: could someone read only the first three paragraphs and understand that the answer to their problem is not more marketing but faster response? If not, restructure.
-- NO SEQUENTIAL BUILD: The most common failure is: paragraph 1-3 builds the problem, paragraph 4-6 builds the consequence, paragraph 7 tips the domino. This is backwards. The belief must tip inside the first movement. You do not need to earn the right to land the Big Domino — you land it early and the rest of the post is proof.
-- MATH POST DOMINO RULE: Math breakdown posts have a specific failure pattern — they walk through the math for 80% of the post and then attempt to state the belief at the end. This is wrong. The belief must appear in the first TWO paragraphs, before the math begins. State it plainly: "The first contractor who responds wins the job. Not the best one. The fastest one." Then run the math as proof of a belief already stated, not as a setup to a belief not yet delivered.
-- Strong first line — the hook. Make it impossible to scroll past.
-
-HOOK WRITING SYSTEM — every post opens with one of these 12 frameworks. Select the one that best fits the pillar and format:
-
-Hook 1 — Consequence chain: [Action] → [immediate consequence] → [final loss]. "You let the call go to voicemail. They left a message. They never called back."
-Hook 2 — Real-time scene: It\'s [specific time]. You\'re [specific physical activity]. [Triggering event]. Time must be specific (7:12pm not "evening"). Activity must be physical and recognizable.
-Hook 3 — Uncomfortable math: [Number] [action] × [frequency] = [annual loss not yet calculated]. Use niche-specific figures. Never round — specific numbers feel calculated, not estimated.
-Hook 4 — Pattern interrupt: You don\'t have a [problem they think they have]. You have a [problem they haven\'t named]. "You don\'t have a marketing problem. You have a response problem."
-Hook 5 — Reframing stat: [Specific percentage or number]. [One sentence making the implication personal and immediate, about their business right now — not an industry observation.]
-Hook 6 — Confrontational question: [Question that names something they\'re avoiding knowing the answer to.] Must name something specific they avoid — not general. "How many calls did you miss last week? Do you actually know the number?"
-Hook 7 — Competitor contrast: Your competitor just [specific action]. You [parallel inaction]. "Your competitor just answered at 11pm. You were asleep. That tenant signed their lease this morning."
-Hook 8 — Contrast story [story/founder posts]: [Failed approach with effort + mediocre result]. Then [different approach with dramatically better result]. Shows the discovery, not the product.
-Hook 9 — Trust recession [trust recession pillar]: Every [small unanswered action] is [cumulative trust damage]. "Every unanswered review is a signal to every future prospect: this business doesn\'t respond. You\'ve sent that signal 50 times this year."
-Hook 10 — Snippet / curiosity gap [AI curiosity + social proof pillars]: [Specific result]. [Gap it closed]. Withhold the method entirely. Never explain how in the hook. The how is the CTA. Trigger: "how did you do that? Can you do it for me?"
-Hook 11 — Silent cost reveal: Nobody told you about [cost]. But it\'s been happening every [time unit] for [duration]. "Nobody told you that 9% of your tenants chose someone else because you didn\'t respond to your Google reviews. That\'s been happening for two years."
-Hook 12 — Belief opener [founder story posts only]: [Counterintuitive belief that is defensible]. [One line that makes them want to know why you believe it.] "Most service businesses don\'t have a lead problem. The leads are arriving. They\'re just not being answered."
-Hook 13 — Incomplete information: [Deliberate fragment that means nothing without context — one number, one word, one phrase.] Line 2 completes it in a way that lands harder than any full sentence could. "47 hours." / "86 out of 100." / "3 calls. Last Tuesday." / "One policy. Written by someone else." The incompleteness IS the hook — the reader\'s brain cannot continue scrolling without knowing what it means. Use this when you have a number or fact that sounds impossible or alarming in isolation.
-Hook 14 — Identity challenge [MANDATORY for trust recession posts]: The formula is: \"Every time [you do specific behavior], [your patients/tenants/prospects] are deciding [what kind of business you are].\"
-LITERAL TEMPLATE — no synonyms permitted. Line 1 MUST contain one of these exact phrases verbatim: \"deciding what kind of [business type] you are\" OR \"deciding whether your [business] is the kind that\" OR \"are deciding what kind of\" OR \"making a judgment about what kind of.\" Do NOT use: "forming a conclusion," "filing a verdict," "making a judgment about how you operate" — these are near-misses that will not work. Use the word DECIDING or the phrase WHAT KIND OF. These are the only accepted formulations. This makes missed calls a REPUTATION event not a revenue event. Business owners can rationalize lost revenue. They cannot rationalize a reputation verdict. MANDATORY: trust recession pillar posts must use this exact structure in line 1. Approved openers: \"Every time a patient reaches your voicemail after hours, they are deciding whether your practice is the kind that takes care of people.\" / \"Every time you let a call go unanswered, your market is deciding what kind of contractor you are.\" / \"Every unanswered inquiry is your market filing a verdict about your company.\" / \"Every time a tenant reaches your voicemail, they are forming a conclusion about your company.\" / \"Every missed call is a reputation event, not just a revenue event.\" The key words: deciding, forming a conclusion, verdict, what kind of [business type] you are. These exact words MUST appear. Must appear in every trust recession post without exception.
-Hook 15 — Inversion: [Your thing they assume is helping them is actually working against them.] Flips their mental model on something they thought was neutral or positive. "Your contact form is not a lead capture tool. It\'s a waiting room with no receptionist." / "Your voicemail is your competitor\'s best employee." / "Your busy front desk is your biggest revenue leak." Line 1 names the thing. Line 2 flips what it actually is.
-
-HOOK RULES — non-negotiable:
-- Line 1 creates tension. Line 2 deepens it or makes it specific. No warm-up. No preamble. The hook IS the first thing they read.
-- Never combine a question and a statement in the first two lines. Pick one. A question opens with curiosity-tension. A statement opens with declaration-tension. Mixing eliminates both.
-- LINE 2 MUST DEEPEN, NOT EXPLAIN: Line 2 must make the reader MORE uncomfortable than line 1 made them. If line 2 explains WHY line 1 is true, it is releasing tension, not building it. If line 2 starts with "because," "that's how," "not because," or "here's why" — rewrite it. The test: does line 2 make the consequence worse, name a behavior that confirms the cost, or complete an intentional gap from line 1? If yes, keep it. If it explains or defends, cut it.
-- For snippet / curiosity gap posts: show the result, show what changed, never explain how. The withheld method is the hook.
-- ANTI-REPETITION — banned opening phrases (retired permanently):
-  1. "Every missed call..." — overused across 3+ batches. Retired.
-  2. "Every unanswered call/review..." — same structural pattern as #1. Retired.
-  3. "You don't have a [X] problem. You have a response problem." — retired.
-  4. "How many [leads] did you miss? Not the ones you know about." — retired.
-  5. "Most [niche] don't know how many calls they missed." — low-tension setup, retired as an opener.
-  6. "Not eventually." as a line 2 — appears 3+ times per batch. Retire it. Find a more specific consequence.
-  Select a different hook type from the 15 frameworks for any of the above patterns.
-- FRAGMENT ROTATION: If using Hook 13 (Incomplete Information), the specific fragment must differ from any fragment used in the two preceding posts. RETIRED FRAGMENTS (overused across 3+ batches and must rest for 10+ posts before reuse): '3 missed calls', '47 hours', '86%', '3 calls'. Substitute with: '$14,000', '11 minutes', '97%', '4 inquiries', '62%', '$224,000', '28 days', '3 out of 4' — any specific number that is fresh and devastating in context.
-- TIME RECYCLING: These specific times are retired until library refreshes: 6:47pm, 6:48pm, 8:47am, 2:17pm. Use different times: 7:12am, 9:43am, 11:22am, 1:37pm, 4:51pm, 5:19pm, 7:38pm, 9:04pm, 10:17pm.
-- EXTRAORDINARY CLAIM FIRST (PT Barnum): Open with the most audacious verifiable fact about this problem. One sentence. It should feel almost unbelievable but be completely true. Best examples: "47 hours." / "3 missed calls last Tuesday." / "86% hang up without leaving a voicemail." Lead with the number or the consequence — never with context.
-- LINE 1 MOBILE TEST: On mobile LinkedIn, only line 1 is visible before the reader chooses to expand. Line 1 must create an incomplete thought, a number without context, a contradiction, or a consequence that demands reading line 2. If line 1 is a complete and comfortable sentence that stands alone without curiosity — it will not stop the scroll. Short beats long: "47 hours." stops more scrolls than "The average insurance agency takes 47 hours to respond." Same fact. One stops. One explains.
-- READER IS THE MAIN CHARACTER: Every scenario is written in second person. The reader is not observing someone else's situation. They ARE the person in the scenario. Write "you're on a roof" not "a contractor on a roof." Write "your phone rings" not "the phone rings." Write "you let it go to voicemail" not "it goes to voicemail." The shift from third person to second person is the difference between content the reader processes and an experience they live. If the post drifts to "a property manager" or "a dental practice owner" as the subject of a scenario — stop and rewrite it as "you."
-- SCENARIO VARIETY: If using Hook 2 (real-time scene), the physical setting must differ from these overused defaults:
-- TIME RECYCLING: These specific times have now been overused and must be rotated out until the library refreshes: 6:47pm, 6:48pm, 8:47am, 2:17pm. Use a different time for the next 10 posts that use a time-based hook. Examples of fresh times: 7:12am, 9:43am, 11:22am, 1:37pm, 4:51pm, 5:19pm, 7:38pm, 9:04pm, 10:17pm. The specificity is the point — any time that is not a round number and is not on this retired list works. Tuesday afternoon at a dental office, Saturday soccer game, 2pm any weekday. Use a different time, a different day, a different activity. The specificity is the point — but specificity only stops the scroll when it is not yet familiar.
-- BIG DOMINO VOCABULARY: The response-speed belief must be stated with one of these exact phrases: first to respond wins, responds first, whoever picks up first, whoever answers first, picked up the phone first, first one to call back. Implied domino does not count. State it verbatim in the first 40% of the post.\n- NO PLACEHOLDER TEXT: Never write [City], [Name], [Contractor Name], or any bracket-enclosed placeholder. Use a real city name, omit it, or use a general descriptor like "a roofing contractor in Broward County." A bracket in a published post is a production failure.
+- EMPLOYEE FRAMING: Frame the product as an employee being hired, not a system. "Your new employee starts Tuesday." "An employee that never calls in sick." The word "something" is weak. The word "employee" is specific. Default to employee.
+- NEVER use em dashes (—). Not once. Use periods, commas, ellipsis (...), or line breaks instead.
+- ANTI-REPETITION — permanently retired openers: (1) "Every missed call..." (2) "Every unanswered call/review/inquiry..." (3) "You don't have a [X] problem. You have a response problem." (4) "How many [leads] did you miss? Not the ones you know about." (5) "Most [niche] don't know how many calls they missed." (6) "Not eventually." as line 2.
+- RETIRED FRAGMENTS: "3 missed calls", "47 hours", "86%", "3 calls" — rest for 10+ posts. Use: "$14,000", "97%", "4 inquiries", "$224,000", "3 out of 4", "11 minutes".
+- RETIRED TIMES: 6:47pm, 6:48pm, 8:47am, 2:17pm. Use instead: 7:12am, 9:43am, 1:37pm, 4:51pm, 5:19pm, 7:38pm, 9:04pm, 10:17pm.
 - Short paragraphs. Single sentences are fine. Blank lines between paragraphs.
-- Speak like a business owner talking to another business owner. Zero marketing voice.
-- Use dollar values realistic for this niche when relevant.
-- Name the specific type of business owner — not a generic label.
-- Use real scenarios specific to this industry — time of day, what they're doing, what's happening.
-- VARY TIME REFERENCES: Use a wide range — early morning, mid-morning, noon, afternoon, evening, after-hours, weekends. Never repeat the same time of day.
-- Business math should feel natural and undeniable, not like a sales pitch.
-- No jargon. No buzzwords. No tech speak.
-- NEVER use em dashes (—) anywhere in the post. Not once. Em dashes are the single most recognizable sign of AI-generated writing and will undermine the authenticity of every post they appear in. When you feel the urge to use an em dash: use a period and start a new sentence, use a comma, use ellipsis (...), or use a line break. Examples of what to do instead: WRONG: 'They didn't leave interest — they just called the next agency.' RIGHT: 'They didn't lose interest. They just called the next agency.' WRONG: 'The math isn't complicated — it's just ignored.' RIGHT: 'The math isn't complicated. It's just ignored.' There is no exception. Not in the hook, not in the body, not in a list.
-- No hashtags. No emojis unless genuinely natural.
-- Never mention pricing, product names, or onboarding.
-- Output ONLY the final post body. No title. No explanation. No preamble. Nothing extra.
-- Do not write a CTA — it will be appended after.
-- Target length: ${LENGTH_MAP[length]}
+- Speak like a business owner talking to another business owner.
+- No jargon. No buzzwords. No hashtags. No emojis.
+- Output ONLY the final post body. No title. No explanation. Do not write a CTA.
+- Target length: 300-500 words.
 
+HOOK FRAMEWORKS — open with one of these 15:
+Hook 1 — Consequence chain: [Action] then [immediate consequence] then [final loss]
+Hook 2 — Real-time scene: It's [specific FRESH time not on retired list]. You're [physical activity]. [Triggering event].
+Hook 3 — Uncomfortable math: [Number] times [frequency] equals [annual loss not yet calculated]
+Hook 4 — Pattern interrupt: You don't have a [problem they think they have]. You have a [different problem].
+Hook 5 — Reframing stat: [Specific % or number]. [One sentence making it personal to their business right now.]
+Hook 6 — Confrontational question: [Question naming something they avoid knowing]
+Hook 7 — Competitor contrast: Your competitor just [specific action]. You [parallel inaction].
+Hook 8 — Contrast story: [Failed approach]. Then [different approach with dramatically better result].
+Hook 9 — Trust recession: Every [small unanswered action] is [cumulative trust damage].
+Hook 10 — Snippet/curiosity gap: [Specific result]. [Gap it closed]. Withhold the method.
+Hook 11 — Silent cost reveal: Nobody told you about [cost]. But it has been happening every [time unit] for [duration].
+Hook 12 — Belief opener [founder story only]: [Counterintuitive defensible belief]. [Why I believe it.]
+Hook 13 — Incomplete information: [Deliberate fragment — one number or phrase with no context.] Line 2 completes it devastatingly. Examples: "$14,000." / "97%." / "4 inquiries. Last week." / "11 minutes."
+Hook 14 — Identity challenge [USE THIS FOR TRUST RECESSION POSTS]: Every time [specific behavior], [prospects] are deciding [what kind of business you are]. Makes missed calls a REPUTATION event not just revenue. MANDATORY for trust recession pillar.
+Hook 15 — Inversion: [Your thing they assume helps is actually working against them.] "Your contact form is not a lead capture tool. It is a waiting room with no receptionist."
 
-  ${isDailyAnchor ? `
-DAILY VALUE ANCHOR RULE — THIS POST ONLY:
-- NEVER mention the price ($297, $9.90, or any dollar amount for the product)
-- NEVER give the reader math that calculates a monthly or annual cost for the product
-- Choose ONE daily small-spend item that THIS specific type of business owner already spends money on reflexively — something they buy without thinking: coffee before the first patient, fuel before the first job, parking near the office, lunch between showings, supplies at the counter — whatever feels most natural and specific to their daily world
-- The anchor must be something they spend on automatically, not something they decide on
-- After the anchor, pivot IMMEDIATELY to the value of ONE captured customer using the realistic dollar figures above
-- All math stays on the ROI side — what does one new patient, one filled unit, one signed policy, one closed loan mean in dollars?
-- End on the ROI number, never on the product cost
-- The product disappears as an expense and becomes a lever` : ''}
-${isTrustRecession ? `
-TRUST RECESSION RULE — THIS POST ONLY:
-Name the systemic trust problem the prospect feels but hasn't articulated. Every missed call, every unanswered review, every ignored inquiry compounds into a trust deficit that makes every future interaction harder. The cure isn't more leads — it's making sure nothing goes unanswered. Do not name the product. Name the problem.` : ''}
-${isSnippet ? `
-SNIPPET STRATEGY RULE — THIS POST ONLY:
-Show one specific result — the what, the gap it closes, the outcome. But do NOT show HOW it works. Withhold the method entirely. The goal is to trigger the question: "How did you do that? Can you do it for me?" The mechanism is never revealed in the post body. The curiosity gap IS the hook.
-SNIPPET COMPLETION TEST: Before writing the CTA, ask — has the central question raised in line 1 been answered anywhere in this post? If yes, the gap is closed and the CTA will feel like an afterthought. If the reader can understand HOW without commenting or calling — rewrite the ending. The CTA only works when the gap is genuinely still open. Never close your own loop.` : ''}
-${isFounderStory ? `
-FOUNDER STORY RULE — THIS POST ONLY:
-Write in Henry's voice. First person throughout. One specific moment, observation, or discovery. Not educational — this is personal. The structure is: what I saw → what I learned → what I now believe. End on a belief or insight that changes how the reader sees their own business. Under 250 words. The authenticity is the value. Never pitch the product — the discovery is the post.` : ''}
-${isProofPost ? `
-PROOF POST RULE — THIS POST ONLY:
-One specific result with real numbers. Name the niche. State the before clearly. State the after clearly with dollar amounts or counts. Let the data do all the talking. No opinion. No explanation of how the system works. Just the result and what it means for someone in the same position. If using third-party or publicly available analysis, say so honestly with "I analyzed..." or "We looked at..."` : ''}
-${isDatabaseReactivation ? `
-DATABASE REACTIVATION RULE — THIS POST ONLY:
-The angle is past customers sitting unused in a CRM — people who already trusted this business and haven't been contacted. The revelation is that the system contacts them all automatically. If using a holiday or seasonal angle, make it specific and time-relevant. The punchline is always the effortlessness: it happened while they were doing something else entirely.` : ''}`;
+HOOK RULES:
+- Line 1 creates tension. Line 2 DEEPENS it. Never explains it. If line 2 starts with "because," "that's how," "here's why" — it is explaining. Rewrite.
+- LINE 1 MOBILE TEST: Only line 1 shows before "see more." A complete comfortable sentence will not stop the scroll. Short fragments, contradictions, and numbers without context stop scrolls.
+- PT BARNUM — EXTRAORDINARY CLAIM FIRST: Most audacious verifiable fact up front. Short beats long. "$14,000." stops more scrolls than a full sentence.
+- READER IS MAIN CHARACTER: "You're on a roof." Not "a contractor on a roof."
+- BIG DOMINO (Brunson): Response speed = revenue belief lands in FIRST 40% of the post. NOT sequential build. Belief and problem setup arrive together.
+- NO PLACEHOLDERS: Never write [City], [Name], or any bracket text.
 
-  const user = `Write a LinkedIn post using the following brief.
+${isTrust?'TRUST RECESSION + IDENTITY: Use Hook 14. Make every missed touchpoint a reputation event, not just a revenue event. The prospect is deciding what kind of business you are every time they reach voicemail. Formula: Every time you [specific behavior], [your market] are deciding [what kind of business you are].':''}
+${isFounder?'FOUNDER STORY: Henry\'s voice. First person. OPENER RULE: Do NOT open with "Most [niche] don\'t know." Open with the moment. Include one physical detail that proves you were there (the coffee, the legal pad, the tailgate of a truck).':''}
+${isProof?'PROOF POST: Open with the contradicted belief. "A [niche] told me [their belief]. So I asked them to pull the data." Then the numbers. Then what it means.':''}
+${isDB?'DATABASE REACTIVATION: Past customers in CRM. The effortlessness is the message — it happened while they were doing something else entirely.':''}`;
+}
 
-Topic: ${topic}
-Content pillar: ${pillar}
-Post format: ${format}
-Format instructions: ${FORMAT_INSTRUCTIONS[format] || FORMAT_INSTRUCTIONS['Punch post']}
-Target audience: ${niche}
-${hook ? 'Hook framework (inspiration only, not literal): ' + hook : ''}
+async function gen(tc){
+  const key=document.getElementById('api-key').value.trim();
+  const t0=Date.now();
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:buildSys(tc),messages:[{role:'user',content:`Write a LinkedIn post.\n\nTopic: ${tc.t}\nContent pillar: ${tc.p}\nPost format: ${tc.f}\nFormat instructions: ${FI[tc.f]||FI['Punch post']}\nTarget audience: ${NI[tc.n].d}\n\nOutput only the post body. Nothing else.`}]})
+  });
+  const data=await res.json();
+  if(data.error)throw new Error(data.error.message);
+  const ms=Date.now()-t0;
+  const body=(data.content?.[0]?.text?.trim()||'').replace(/\u2014/g,'...');
+  return{post:body+(CTA[tc.c]||''),ms,ti:data.usage?.input_tokens||0,to:data.usage?.output_tokens||0};
+}
 
-Output only the post body. Nothing else.`;
+function mkCard(tc){
+  return`<div class="test-card" id="card-${tc.id}">
+    <div class="test-header" onclick="tog('${tc.id}')">
+      <span class="test-id">${tc.id}</span>
+      <div class="test-info">
+        <div class="test-title">[${tc.n.toUpperCase()}] ${tc.f} — ${tc.t.substring(0,52)}…</div>
+        <div class="test-risk">Risk: ${tc.r}${tc.h14?' · Hook 14 required':''}</div>
+      </div>
+      <span class="badge b-pend" id="badge-${tc.id}">PENDING</span>
+    </div>
+    <div class="test-body" id="body-${tc.id}">
+      <div class="chips" id="chips-${tc.id}"></div>
+      <div class="two-col">
+        <div>
+          <div class="ibt">Hook Lines</div>
+          <div class="hook-line hook-l1" id="l1-${tc.id}">Waiting…</div>
+          <div class="hook-line hook-l2" id="l2-${tc.id}"></div>
+        </div>
+        <div>
+          <div class="ibt">Diagnostics</div>
+          <div class="meta-grid">
+            <div class="meta-cell"><div class="meta-n" id="wc-${tc.id}">—</div><div class="meta-l">Words</div></div>
+            <div class="meta-cell"><div class="meta-n" id="ht-${tc.id}">—</div><div class="meta-l">Hook #</div></div>
+            <div class="meta-cell"><div class="meta-n" id="ms-${tc.id}">—</div><div class="meta-l">API ms</div></div>
+            <div class="meta-cell"><div class="meta-n" id="ti-${tc.id}">—</div><div class="meta-l">Tokens In</div></div>
+            <div class="meta-cell"><div class="meta-n" id="to-${tc.id}">—</div><div class="meta-l">Tokens Out</div></div>
+            <div class="meta-cell"><div class="meta-n" id="sl-${tc.id}">—</div><div class="meta-l">Avg Sent</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div><div class="ibt">Issues</div><div id="iss-${tc.id}" style="color:var(--text-muted);font-size:12px;font-style:italic">None yet</div></div>
+        <div><div class="ibt">Wins</div><div id="win-${tc.id}" style="color:var(--text-muted);font-size:12px;font-style:italic">None yet</div></div>
+      </div>
+      <div class="ibt" style="margin-top:12px">Full Post</div>
+      <div class="post-box" id="post-${tc.id}">Waiting…</div>
+    </div>
+  </div>`;
+}
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1000, system, messages:[{role:'user',content:user}]})
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    // Strip em dashes from generated body — model-level rule enforced at code level
-    let rawBody = (data.content?.[0]?.text?.trim() || '').replace(/—/g, '...');
+function tog(id){document.getElementById('body-'+id).classList.toggle('open')}
 
-    // Code-level employee framing enforcement:
-    // Replace "Smart Website 360 [verb]" patterns with employee language
-    rawBody = rawBody.replace(/Smart Website 360 answers/g, 'Your new employee answers');
-    rawBody = rawBody.replace(/Smart Website 360 responds/g, 'Your new employee responds');
-    rawBody = rawBody.replace(/Smart Website 360 texts/g, 'Your new employee texts');
-    rawBody = rawBody.replace(/Smart Website 360 follows up/g, 'Your new employee follows up');
-    rawBody = rawBody.replace(/Smart Website 360 handles/g, 'Your new employee handles');
-    rawBody = rawBody.replace(/Smart Website 360 captures/g, 'Your new employee captures');
-    rawBody = rawBody.replace(/Smart Website 360 sends/g, 'Your new employee sends');
-    rawBody = rawBody.replace(/Smart Website 360 works/g, 'Your new employee works');
-    rawBody = rawBody.replace(/Smart Website 360 does/g, 'Your new employee does');
-    rawBody = rawBody.replace(/Smart Website 360 is a/g, 'Your new employee is a');
-    rawBody = rawBody.replace(/Smart Website 360 is the/g, 'Your new employee is the');
+function rr(tc,post,s,ms,ti,to){
+  const badge=document.getElementById('badge-'+tc.id);
+  badge.className='badge '+(s.pass?'b-pass':s.warn?'b-warn':'b-fail');
+  badge.textContent=s.pass?'PASS':s.warn?'WARN':'FAIL';
 
-    generatedPost = rawBody + ctaLine;
+  const chips=[
+    {l:'SCROLL-STOP',pass:s.scrollStop},
+    {l:'NO BANNED',pass:s.noBannedOpener},
+    {l:'NO EM DASH',pass:s.noEmDash,skip:s.noEmDash},
+    {l:'L2 DEEPENS',pass:s.l2Deepens,warn:s.l2Explains},
+    {l:'DOMINO EARLY',pass:s.dominoEarly,warn:s.dominoAny&&!s.dominoEarly},
+    {l:'EMPLOYEE',pass:s.employeeFrame,warn:!s.employeeFrame},
+    ...(tc.h14?[{l:'HOOK 14 REQ',pass:s.hook14Used}]:[{l:'HOOK 14',pass:s.hook14Used,info:!s.hook14Used}]),
+    {l:'NO BRACKETS',pass:s.noPlaceholders,skip:s.noPlaceholders},
+    {l:'NO RET.FRAG',pass:s.noRetiredFrag},
+    {l:'FRESH TIME',pass:s.noRetiredTime,warn:!s.noRetiredTime},
+    {l:`H${s.hookType.i}: ${s.hookType.n}`,pass:true,info:true},
+    ...(s.secondPerson!==undefined?[{l:'2ND PERSON',pass:s.secondPerson}]:[]),
+    ...(s.founderOk!==undefined?[{l:'FOUND.OPEN',pass:s.founderOk},{l:'PHYS.DETAIL',pass:s.hasPhysical,warn:!s.hasPhysical}]:[]),
+    ...(s.proofOk!==undefined?[{l:'PROOF OPEN',pass:s.proofOk}]:[]),
+  ];
+  document.getElementById('chips-'+tc.id).innerHTML=chips.map(c=>`<span class="chip ${c.info?'c-info':c.pass?'c-pass':c.warn?'c-warn':'c-fail'}">${c.l}</span>`).join('');
 
-    // Code-level employee framing check
-    const hasEmployeeFrame = /\bemployee\b|\bnew hire\b/i.test(rawBody);
-    const mentionsSolution = /smart website|answers every call|texts back|follow.?up automatically|missed call text/i.test(rawBody);
-    if (mentionsSolution && !hasEmployeeFrame) {
-      setToast('gen-toast', '⚠ No employee/new hire framing detected. The solution is described without using "employee" or "new hire." Consider regenerating.', 'error');
-    }
+  const lines=post.split('\n').filter(l=>l.trim());
+  const l1e=document.getElementById('l1-'+tc.id),l2e=document.getElementById('l2-'+tc.id);
+  l1e.textContent=lines[0]||''; l1e.className='hook-line hook-l1'+(s.scrollStop?'':' bad');
+  l2e.textContent=lines[1]||''; l2e.className='hook-line hook-l2'+(s.l2Explains?' explains':'');
 
-    // Code-level domino check — does "first to respond" or similar appear in first 30% of post?
-    const postWords = rawBody.split(/\s+/);
-    const first30pct = postWords.slice(0, Math.floor(postWords.length * 0.3)).join(' ').toLowerCase();
-    const dominoPhrases = ['first to respond','responds first','whoever responds','whoever picks up','picked up first','picked up the phone first','answered first','first responder','first one to','who picks up'];
-    const dominoInFirst30 = dominoPhrases.some(p => first30pct.includes(p));
-    const dominoAnywhere = dominoPhrases.some(p => rawBody.toLowerCase().includes(p));
-    if (!dominoAnywhere) {
-      // Only warn if solution is being described (otherwise it's a pure problem post which is valid)
-      if (mentionsSolution) setToast('gen-toast', '⚠ Big Domino belief not found. The response-speed belief was not explicitly stated. Consider adding "the first to respond wins" in the opening.', 'error');
-    }
+  document.getElementById('wc-'+tc.id).textContent=s.wordCount;
+  document.getElementById('ht-'+tc.id).textContent=s.hookType.i||'?';
+  document.getElementById('ms-'+tc.id).textContent=ms+'ms';
+  document.getElementById('ti-'+tc.id).textContent=ti;
+  document.getElementById('to-'+tc.id).textContent=to;
+  document.getElementById('sl-'+tc.id).textContent=s.avgSent+'w';
 
-    // Code-level banned opener detection
-    const bannedOpeners = [
-      'every missed call',
-      'every unanswered',
-      'most property managers don',
-      'most dental practice',
-      'most contractors don',
-      'most insurance',
-      'most mortgage',
-    ];
-    const postLine1 = generatedPost.split('\n').filter(l => l.trim())[0]?.toLowerCase() || '';
-    const bannedMatch = bannedOpeners.find(b => postLine1.startsWith(b));
-    if (bannedMatch) {
-      setToast('gen-toast', '⚠ Retired opener detected ("' + postLine1.substring(0,40) + '..."). Consider regenerating for a stronger hook.', 'error');
-    }
-    document.getElementById('preview').textContent = generatedPost; document.getElementById('preview').style.display = 'block';
-    document.getElementById('edit-area').style.display = 'none'; isEditing = false;
-    document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
-    document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false;
-    document.getElementById('img-btn').disabled = false; document.getElementById('export-btn').disabled = false;
-    exportBatch.push({pos:currentPos, niche:nicheKey, pillar, format, cta:ctaType, caption:generatedPost});
-    updateCharCount(); showTags(nicheKey, pillar, format, ctaType);
-    addHistory(generatedPost, currentPos, nicheKey);
-    setToast('gen-toast', `✓ Post #${currentPos} generated — ${nicheData.label} · ${format}`, 'success');
-    setStatus(false);
-  } catch(e) {
-    setToast('gen-toast','✗ ' + e.message,'error'); setStatus(false);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Generate Post';
+  const issues=[];
+  if(!s.noBannedOpener)issues.push('Banned opener: "'+s.bannedText+'"');
+  if(s.emDashCount>0)issues.push('Em dashes in body: '+s.emDashCount);
+  if(!s.scrollStop)issues.push('Line 1 weak — will not stop scroll on mobile');
+  if(s.l2Explains)issues.push('Line 2 explains line 1 — needs to deepen instead');
+  if(!s.dominoEarly&&!s.dominoAny)issues.push('Big Domino absent — response-speed belief never stated');
+  if(!s.dominoEarly&&s.dominoAny)issues.push('Big Domino buried in back half (needs first 40%)');
+  if(!s.employeeFrame)issues.push('No employee framing — product described generically');
+  if(tc.h14&&!s.hook14Used)issues.push('Hook 14 (Identity Challenge) required but not used');
+  if(!s.noRetiredFrag)issues.push('Retired fragment used in opener — rotate it');
+  if(!s.noRetiredTime)issues.push('Retired time used — use a fresh time');
+  if(s.secondPerson===false)issues.push('Third-person drift — use "you" not "a contractor"');
+  if(s.founderOk===false)issues.push('Founder story opened with "Most [niche] don\'t know" — banned');
+  if(s.hasPhysical===false)issues.push('Founder story missing physical detail');
+  if(s.proofOk===false)issues.push('Proof post should open with contradicted belief');
+
+  const wins=[];
+  if(s.noBannedOpener)wins.push('Clean opener — no retired templates');
+  if(s.scrollStop)wins.push('Line 1 stops scroll');
+  if(s.noEmDash)wins.push('No em dashes');
+  if(s.l2Deepens&&!s.l2Explains)wins.push('Line 2 deepens tension correctly');
+  if(s.dominoEarly)wins.push('Big Domino lands in first 40%');
+  if(s.employeeFrame)wins.push('Employee framing used');
+  if(s.hook14Used)wins.push('Hook 14 (Identity Challenge) present');
+  if(s.hookType.i===13)wins.push('Fragment hook used (Hook 13)');
+  if(s.hookType.i===15)wins.push('Inversion hook used (Hook 15)');
+  if(s.hasPhysical)wins.push('Physical detail in founder story');
+
+  document.getElementById('iss-'+tc.id).innerHTML=issues.length?issues.map(i=>`<div class="item iss"><span>✗</span>${i}</div>`).join(''):'<span style="color:var(--accent)">No issues ✓</span>';
+  document.getElementById('win-'+tc.id).innerHTML=wins.length?wins.map(w=>`<div class="item win"><span>✓</span>${w}</div>`).join(''):'<span style="color:var(--text-muted)">—</span>';
+  document.getElementById('post-'+tc.id).textContent=post;
+  document.getElementById('body-'+tc.id).classList.add('open');
+}
+
+function setM(id,val,pass,fail,warn){
+  const el=document.getElementById(id);
+  el.textContent=val;
+  el.parentElement.className='metric'+(pass?' pass':fail?' fail':warn?' warn':' info');
+}
+
+function updSum(){
+  const vals=Object.values(RES),n=vals.length;
+  if(!n)return;
+  const pct=v=>Math.round(v/n*100)+'%';
+  document.getElementById('mn-done').textContent=n+'/15';
+  const p=vals.filter(r=>r.s.pass).length;
+  setM('mn-pass',pct(p),p===n,p<n*0.6,p<n);
+  const sc=vals.filter(r=>r.s.scrollStop).length;
+  setM('mn-scroll',pct(sc),sc/n>=0.7,sc/n<0.5,sc/n<0.7);
+  const bn=vals.filter(r=>!r.s.noBannedOpener).length;
+  setM('mn-banned',bn===0?'CLEAN':bn+' FAIL',bn===0,bn>0,false);
+  const em=vals.filter(r=>!r.s.noEmDash).length;
+  setM('mn-em',em===0?'CLEAN':em+' FAIL',em===0,em>0,false);
+  const l2=vals.filter(r=>r.s.l2Deepens&&!r.s.l2Explains).length;
+  setM('mn-l2',pct(l2),l2/n>=0.7,l2/n<0.5,l2/n<0.7);
+  const de=vals.filter(r=>r.s.dominoEarly).length;
+  setM('mn-dom',pct(de),de/n>=0.2,de/n<0.1,de/n<0.2);
+  const ef=vals.filter(r=>r.s.employeeFrame).length;
+  setM('mn-emp',pct(ef),ef/n>=0.7,ef/n<0.5,ef/n<0.7);
+  const h14=vals.filter(r=>r.s.hook14Used).length;
+  document.getElementById('mn-h14').textContent=h14;
+  document.getElementById('m-h14').className='metric'+(h14>=2?' pass':h14===0?' fail':' warn');
+  const avgW=Math.round(vals.reduce((a,r)=>a+r.s.wordCount,0)/n);
+  setM('mn-wc',avgW,avgW>=250&&avgW<=500,avgW<150||avgW>700,false);
+  const hv=new Set(vals.map(r=>r.s.hookType.i)).size;
+  setM('mn-hv',hv,hv>=5,hv<3,hv<5);
+  const avgMs=Math.round(vals.reduce((a,r)=>a+r.ms,0)/n);
+  setM('mn-ms',avgMs+'ms',avgMs<4000,avgMs>8000,avgMs>=4000);
+}
+
+async function runAll(){
+  if(running)return;running=true;
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('next-btn').disabled=true;
+  document.getElementById('pw').style.display='block';
+  for(let i=0;i<TC.length;i++){await runT(i);if(i<TC.length-1)await new Promise(r=>setTimeout(r,600));}
+  running=false;
+  document.getElementById('run-btn').disabled=false;
+  document.getElementById('next-btn').disabled=false;
+  document.getElementById('sl').textContent='All 15 complete. Click Export JSON.';
+  document.getElementById('export-btn').disabled=false;
+}
+
+async function runNext(){
+  if(running)return;
+  const idx=Object.keys(RES).length;
+  if(idx>=TC.length)return;
+  document.getElementById('pw').style.display='block';
+  await runT(idx);
+  document.getElementById('export-btn').disabled=false;
+}
+
+async function runT(idx){
+  const tc=TC[idx];
+  const badge=document.getElementById('badge-'+tc.id);
+  badge.className='badge b-run';badge.textContent='RUNNING…';
+  document.getElementById('pf').style.width=(((idx+1)/TC.length)*100)+'%';
+  document.getElementById('sl').textContent='Running '+tc.id+' ['+tc.n.toUpperCase()+'] '+tc.f+'…';
+  try{
+    const{post,ms,ti,to}=await gen(tc);
+    const s=score(post,tc);
+    RES[tc.id]={post,s,ms,ti,to};
+    rr(tc,post,s,ms,ti,to);
+    updSum();
+    document.getElementById('export-btn').disabled=false;
+  }catch(e){
+    badge.className='badge b-fail';badge.textContent='ERROR';
+    document.getElementById('post-'+tc.id).textContent='Error: '+e.message;
   }
 }
 
-async function postToGHL() {
-  const ghlToken = document.getElementById('ghl-token').value.trim();
-  const locationId = document.getElementById('ghl-location').value.trim();
-  const accountId  = document.getElementById('ghl-account').value.trim();
-  if (!generatedPost) { setToast('post-toast','Generate a post first.','error'); return; }
-  if (!accountId) { setToast('post-toast','LinkedIn Account ID required. Use Copy Text instead.','error'); return; }
-
-  const schedType = document.querySelector('input[name="sched"]:checked').value;
-  let publishDate = null;
-  if (schedType === 'scheduled') {
-    const dtVal = document.getElementById('sched-dt').value;
-    if (!dtVal) { setToast('post-toast','Pick a date and time.','error'); return; }
-    publishDate = new Date(dtVal).toISOString();
-  }
-
-  const btn = document.getElementById('post-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending to GHL…';
-  clearToast('post-toast'); setStatus(true);
-
-  try {
-    let mediaArray = [];
-    const includeImg = document.getElementById('include-img');
-    if (includeImg && includeImg.checked && generatedImageB64) {
-      try {
-        const byteChars = atob(generatedImageB64), byteArr = new Uint8Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
-        const formData = new FormData();
-        formData.append('file', new Blob([byteArr], {type:'image/jpeg'}), 'linkedin-post-' + currentPos + '.jpg');
-        formData.append('name', 'linkedin-post-' + currentPos);
-        const uploadRes = await fetch('https://services.leadconnectorhq.com/medias/upload-file', {
-          method:'POST', headers:{'Authorization':'Bearer '+ghlToken,'Version':'2021-07-28','location-id':locationId}, body:formData
-        });
-        const uploadData = await uploadRes.json();
-        const imgUrl = uploadData?.url || uploadData?.fileUrl || uploadData?.data?.url || uploadData?.mediaUrl;
-        if (uploadRes.ok && imgUrl) mediaArray = [{url:imgUrl, type:'image'}];
-      } catch(imgErr) { console.warn('Image upload skipped:', imgErr.message); }
-    }
-    const payload = {accountIds:[accountId], summary:generatedPost, status:schedType==='scheduled'?'scheduled':'draft', type:'post', media:mediaArray, userId:accountId};
-    if (publishDate) payload.publishedAt = publishDate;
-    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locationId}/posts`, {
-      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+ghlToken,'Version':'2021-07-28'}, body:JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'GHL API error ' + res.status);
-    const msg = schedType==='scheduled' ? '✓ Scheduled in GHL for ' + new Date(publishDate).toLocaleString()
-      : mediaArray.length > 0 ? '✓ Draft saved in GHL with image — open GHL to review and publish' : '✓ Saved as draft in GHL Social Planner';
-    setToast('post-toast', msg, 'success');
-    currentPos++; renderCycleInfo(); setStatus(false);
-  } catch(e) {
-    setToast('post-toast','✗ ' + e.message + ' — Use Copy Text instead.','error'); setStatus(false);
-  } finally { btn.disabled = false; btn.textContent = 'Send to GHL as Draft'; }
+function resetAll(){
+  RES={};running=false;
+  document.getElementById('pf').style.width='0%';
+  document.getElementById('sl').textContent='Ready';
+  document.getElementById('export-btn').disabled=true;
+  document.getElementById('cards').innerHTML=TC.map(mkCard).join('');
+  ['mn-pass','mn-scroll','mn-banned','mn-em','mn-l2','mn-dom','mn-emp','mn-wc','mn-hv','mn-ms'].forEach(id=>{
+    document.getElementById(id).textContent='—';
+    document.getElementById(id).parentElement.className='metric';
+  });
+  document.getElementById('mn-done').textContent='0/15';
+  document.getElementById('mn-h14').textContent='0';
 }
 
-async function copyPost() {
-  if (!generatedPost) return;
-  const btn = document.getElementById('copy-btn');
-  if (navigator.clipboard && window.isSecureContext) {
-    try { await navigator.clipboard.writeText(generatedPost); showCopySuccess(btn); return; } catch(e) {}
-  }
-  const ta = document.createElement('textarea');
-  ta.value = generatedPost; ta.style.cssText = 'position:fixed;left:-9999px;opacity:0';
-  document.body.appendChild(ta); ta.focus(); ta.select();
-  try { if (document.execCommand('copy')) showCopySuccess(btn); else setToast('post-toast','Select text manually and press Cmd+C.','error'); } catch(e) {}
-  document.body.removeChild(ta);
-}
-function showCopySuccess(btn) {
-  const orig = btn.innerHTML;
-  btn.innerHTML = '✓ Copied!'; btn.style.background = 'var(--accent)'; btn.style.color = 'white';
-  setToast('post-toast','✓ Copied to clipboard.','success');
-  setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
-  currentPos++; renderCycleInfo();
-}
-
-// ── IMAGE GENERATION ──────────────────────────────────────────
-function buildImagePrompt(post, niche, pillar) {
-  const nicheLabel = NICHES[niche] ? NICHES[niche].label : 'local service businesses';
-  const lines = post.split('\n').filter(l => l.trim().length > 0);
-  const headline = lines[0].trim().replace(/['"]/g, '');
-  const ctaLine = lines.slice(-2).find(l => /drop|call|dm|curious|comment|report|reply/i.test(l)) || 'See how it works — call 1-888-708-7367';
-
-  const visualDirections = {
-    'missed calls': {scene:`A split-second dramatic moment: a ${nicheLabel.toLowerCase()} professional mid-task — treating a patient, on a job site, in a client meeting — their phone visible showing a missed call from "New Inquiry." In the soft background, a competitor at their desk picking up, a "New Client Booked" notification glowing.`,mood:`Urgent. Real. The cost of one moment made visible.`,color:`Clean whites and warm environment tones. Sharp red or amber on the missed call. Bold typography in deep charcoal.`,style:`Editorial photography feel. High resolution, not staged.`},
-    'first responder': {scene:`Two phones side by side. One showing an unanswered call fading to voicemail — muted, gray. The other showing a connected call, green, active. Bold text between them making the race explicit.`,mood:`Competitive. Fast. The visual equivalent of a starting gun.`,color:`High contrast split — muted gray and red on one side, vibrant green and white on the other.`,style:`Campaign poster energy. Graphic design over photography.`},
-    'simple business math': {scene:`Bold typographic layout where the math IS the image. Numbers large enough to read in the feed.`,mood:`Blunt. Confrontational with data.`,color:`Clean white background. Numbers in bold black with red for the loss, green for the fix.`,style:`Typographic-first. Nothing decorative — just the math.`},
-    'real scenarios': {scene:`A hyper-specific moment: a ${nicheLabel.toLowerCase()} professional physically occupied — on a roof, chair-side, mid-meeting — while their phone buzzes with missed calls mounting.`,mood:`Immediate. Relatable. "That's exactly my day."`,color:`Natural, realistic lighting. Bold headline in white with dark shadow.`,style:`Photorealistic and candid-feeling.`},
-    "contrarian": {scene:`A visual contradiction: a business owner surrounded by ringing phones — leads arriving — while they look overwhelmed or unaware.`,mood:`Pattern interrupt. Provocative.`,color:`Unexpectedly bright colors contrasting with a broken system.`,style:`Slightly surreal. Editorial illustration made photorealistic.`},
-    'ai curiosity': {scene:`A warm human moment: a professional having a natural phone conversation, unaware it's AI-assisted. Not a robot. Just a person on their phone, the screen subtly showing an AI waveform.`,mood:`Approachable. Reassuring. "This is simpler than you think."`,color:`Warm neutrals. One soft accent color indicating the AI element.`,style:`Clean lifestyle photography. Technology made human.`},
-    'social proof': {scene:`A genuine human reaction: a business owner reading a "New Lead Captured" notification on their phone — expression showing real surprise or relief.`,mood:`Authentic. Warm. Credible.`,color:`Natural warm tones. Feels candid.`,style:`Documentary style. Unposed.`},
-    'unanswered reviews': {scene:`A phone or laptop screen showing a Google business listing with multiple reviews — star ratings visible — but every one shows zero responses. The manager visible in the soft background, busy, completely unaware.`,mood:`Quietly devastating. The damage is invisible to the owner but visible to every prospect.`,color:`Clean white screen. Yellow stars. "0 responses" in muted red.`,style:`Photorealistic screen detail. Feels like a screenshot from real life.`},
-    '48-hour': {scene:`A maintenance request ticket on screen — timestamp showing 47 hours elapsed, status still "Pending." In the background, a tenant packing belongings, a moving truck visible through a window.`,mood:`Slow-burn regret. The loss is already happening.`,color:`Muted documentary tones. Timestamp in amber.`,style:`Photorealistic narrative. A single frame that tells the whole story.`},
-    'after-hours': {scene:`A building at night — lights off, closed sign visible. A phone screen in the foreground showing an incoming call at 10:47pm labeled "Emergency." The call rings. Nobody answers.`,mood:`Tense. Isolating. The gap between when something happens and when someone responds.`,color:`Dark exterior. Phone screen as the single light source. High contrast.`,style:`Cinematic. Dramatic without being false.`},
-    'text-back': {scene:`A phone screen at night showing an outgoing text message sent at 11:47pm to a contact labeled "Missed Caller." The message reads something natural like "Hey, sorry we missed your call — still looking for help?" The sent timestamp clearly visible. Dark ambient background. While every competitor was silent, this business was already following up.`,mood:`Quiet urgency. The relief of a second chance. The power is in the timestamp and the action nobody else took.`,color:`Dark background. Phone screen as dominant light source. Green sent indicator. Clean white message bubble.`,style:`Photorealistic close-up of the phone screen. Ultra-sharp on message and timestamp. Background soft and dark.`},
-    'form gone cold': {scene:`A laptop screen showing an inbox or CRM with multiple unread form submissions — timestamps reading "11:34pm", "9:17pm", "8:02pm" from the previous day. Current time shown reads 9:15am the next morning. Submissions flagged as unread. Empty office in the background, day just starting.`,mood:`The quiet dread of opportunity missed. The viewer immediately calculates the hours of silence.`,color:`Screen glow on a dim background. Timestamps in amber. Clean white interface making the delay stark.`,style:`Screen-level photorealism. The interface feels familiar — like something they'd see on their own computer.`},
-    'follow-up': {scene:`A messaging thread on a phone or laptop. A conversation visible: customer sent a message 4 days ago, business replied once, then silence. Customer's last message timestamped "4 days ago." A separate notification shows the customer just booked with a competitor.`,mood:`The cost of inaction made visible. Not accusatory — just honest.`,color:`Neutral, clean interface tones. "4 days ago" timestamp in muted red. Competitor notification in sharp contrast.`,style:`Photorealistic UI/screen capture feel. Recognizable conversation layout.`},
-    'review generation': {scene:`A side-by-side comparison: two Google Business profiles on a screen. One showing 247 reviews with 4.8 stars — responses visible under every review. The other showing 31 reviews, same rating — zero responses. Same industry. Same city.`,mood:`The slow recognition of a structural disadvantage that feels fixable.`,color:`Google's familiar interface colors. Star ratings in yellow. The review count differential is the visual punch.`,style:`Photorealistic screen comparison. Familiar UI makes it instantly recognizable.`},
-    'trust recession': {
-      scene:`A visual metaphor of trust being withdrawn one interaction at a time: a phone inbox, a review page, and an inquiry form — all showing unanswered or ignored items stacking up. The business owner in the background is busy and completely unaware. The accumulation is the message — not one missed call but dozens of small trust withdrawals over months.`,
-      mood:`Quietly damning. The damage is invisible to the owner but clearly visible to the viewer. Creates a slow recognition — "this is what I look like to my market."`,
-      color:`Muted, desaturated tones. Each unanswered item highlighted in amber or muted red. The business owner warm and professional — the contrast between their energy and the neglect around them is the visual tension.`,
-      style:`Documentary. Feels like evidence gathered without the subject knowing. High production value that still feels candid and real.`
+function exportResults(){
+  const vals=Object.values(RES);
+  if(!vals.length){alert('Run tests first.');return;}
+  const n=vals.length;
+  const out={
+    generated_at:new Date().toISOString(),
+    model:'claude-sonnet-4-6',
+    total_tests:TC.length,completed:n,
+    summary:{
+      overall_pass_pct:Math.round(vals.filter(r=>r.s.pass).length/n*100),
+      scroll_stop_pct:Math.round(vals.filter(r=>r.s.scrollStop).length/n*100),
+      banned_opener_fails:vals.filter(r=>!r.s.noBannedOpener).length,
+      em_dash_fails:vals.filter(r=>!r.s.noEmDash).length,
+      l2_deepens_pct:Math.round(vals.filter(r=>r.s.l2Deepens&&!r.s.l2Explains).length/n*100),
+      domino_early_pct:Math.round(vals.filter(r=>r.s.dominoEarly).length/n*100),
+      domino_any_pct:Math.round(vals.filter(r=>r.s.dominoAny).length/n*100),
+      employee_frame_pct:Math.round(vals.filter(r=>r.s.employeeFrame).length/n*100),
+      hook14_count:vals.filter(r=>r.s.hook14Used).length,
+      retired_frag_fails:vals.filter(r=>!r.s.noRetiredFrag).length,
+      retired_time_fails:vals.filter(r=>!r.s.noRetiredTime).length,
+      avg_word_count:Math.round(vals.reduce((a,r)=>a+r.s.wordCount,0)/n),
+      hook_types_used:[...new Set(vals.map(r=>r.s.hookType.n))],
+      avg_api_ms:Math.round(vals.reduce((a,r)=>a+r.ms,0)/n),
+      total_input_tokens:vals.reduce((a,r)=>a+r.ti,0),
+      total_output_tokens:vals.reduce((a,r)=>a+r.to,0),
     },
-    'database reactivation': {
-      scene:`A phone screen showing an outgoing automated message sent to a contact labeled "Past Customer — 14 months inactive." The message is warm and natural — not a pitch. Timestamp shows it was sent at 9am on a Tuesday. In the background, the business owner is clearly occupied with something else — on a job, with a client, in a meeting. The effortlessness is the message.`,
-      mood:`Warm surprise. The business owner doesn't even know it's happening — the system is working while they work. The power is in the automation being invisible.`,
-      color:`Warm background tones. Phone screen clean and bright. The sent timestamp in soft green. Ambient environment specific to the niche.`,
-      style:`Lifestyle photography. The phone in the background, the owner's environment in focus. Feels like a moment captured incidentally, not staged.`
-    },
-    'founder story': {
-      scene:`Henry in a real, specific environment — not a studio. Speaking directly to camera or captured mid-thought. The setting should be recognizable as a working professional's world, not a brand photoshoot. The expression is direct, honest, engaged — not polished or performed. This visual is personal credibility, not product advertising.`,
-      mood:`Authentic. The kind of trust that comes from seeing a real person say something real. Not inspirational — honest. The viewer should feel like they're getting an unguarded moment.`,
-      color:`Natural, environment-specific lighting. Warm neutrals. No branded colors or graphic overlays — this is a person, not an ad.`,
-      style:`Documentary portrait. High resolution but candid composition. The imperfection is intentional — it signals authenticity.`
-    },
-    'third-party proof': {
-      scene:`A side-by-side data comparison on a screen — two businesses in the same market, same years in operation, same niche. One column shows strong numbers: review count, response rate, time to first reply. The other column shows the gaps. Dollar amount of the difference visible. No logos — just the data.`,
-      mood:`The quiet revelation of a structural disadvantage. The viewer can immediately see which side they're on — and which side they want to be on. Clinical, not confrontational.`,
-      color:`Clean interface tones. Data in clear columns. The gap highlighted in amber or green depending on which side is being emphasized. Minimal design — the data is the visual.`,
-      style:`Data visualization meets documentary. Like a screenshot from a competitive audit tool. Familiar data layout makes it immediately credible.`
-    },
-    'daily value': {scene:`A split frame: one side showing a small familiar daily purchase — a coffee cup, a gas pump handle, a takeout bag — casual, reflexive, unremarkable. The other side showing a phone screen with a "New Lead Captured" notification, dollar amount of the opportunity visible.`,mood:`The moment of reframing. The product stops being a cost and becomes a lever.`,color:`Warm everyday tones on the spend side. Clean sharp green on the capture side.`,style:`Split-frame lifestyle photography. Both sides feel real and specific.`}
+    tests:TC.map(tc=>{
+      const r=RES[tc.id];
+      if(!r)return{id:tc.id,niche:tc.n,format:tc.f,pillar:tc.p,risk:tc.r,status:'NOT_RUN'};
+      return{
+        id:tc.id,niche:tc.n,format:tc.f,pillar:tc.p,risk:tc.r,topic:tc.t,requires_hook14:tc.h14,
+        status:r.s.pass?'PASS':r.s.warn?'WARN':'FAIL',
+        api_ms:r.ms,input_tokens:r.ti,output_tokens:r.to,
+        scores:{
+          scroll_stop:r.s.scrollStop,no_banned_opener:r.s.noBannedOpener,
+          no_em_dash:r.s.noEmDash,em_dash_count:r.s.emDashCount,
+          l2_deepens:r.s.l2Deepens,l2_explains:r.s.l2Explains,
+          domino_early:r.s.dominoEarly,domino_any:r.s.dominoAny,
+          employee_frame:r.s.employeeFrame,hook14_used:r.s.hook14Used,
+          hook14_required:r.s.hook14Required,hook14_pass:r.s.hook14Pass,
+          no_placeholders:r.s.noPlaceholders,no_retired_frag:r.s.noRetiredFrag,
+          no_retired_time:r.s.noRetiredTime,word_count:r.s.wordCount,
+          word_count_ok:r.s.wordOk,avg_sentence_len:r.s.avgSent,
+          hook_type_id:r.s.hookType.i,hook_type_name:r.s.hookType.n,
+          second_person:r.s.secondPerson,founder_opener_ok:r.s.founderOk,
+          has_physical_detail:r.s.hasPhysical,proof_opener_ok:r.s.proofOk,
+        },
+        line1:r.post.split('\n').filter(l=>l.trim())[0]||'',
+        line2:r.post.split('\n').filter(l=>l.trim())[1]||'',
+        full_post:r.post,
+        issues:[
+          !r.s.noBannedOpener?'BANNED_OPENER:'+r.s.bannedText:null,
+          r.s.emDashCount>0?'EM_DASHES:'+r.s.emDashCount:null,
+          !r.s.scrollStop?'SCROLL_STOP_FAIL':null,
+          r.s.l2Explains?'L2_EXPLAINS':null,
+          !r.s.dominoEarly&&!r.s.dominoAny?'DOMINO_ABSENT':null,
+          !r.s.dominoEarly&&r.s.dominoAny?'DOMINO_BURIED':null,
+          !r.s.employeeFrame?'NO_EMPLOYEE_FRAME':null,
+          tc.h14&&!r.s.hook14Used?'HOOK14_MISSING':null,
+          !r.s.noRetiredFrag?'RETIRED_FRAGMENT':null,
+          !r.s.noRetiredTime?'RETIRED_TIME':null,
+          r.s.secondPerson===false?'THIRD_PERSON_DRIFT':null,
+          r.s.founderOk===false?'FOUNDER_BAD_OPENER':null,
+          r.s.hasPhysical===false?'FOUNDER_NO_PHYSICAL_DETAIL':null,
+          r.s.proofOk===false?'PROOF_BAD_OPENER':null,
+        ].filter(Boolean),
+      };
+    }),
   };
-
-  // Match pillar to a visual direction key
-  const p = pillar.toLowerCase();
-  let matchKey = 'missed calls';
-  if (p.includes('first responder')) matchKey = 'first responder';
-  else if (p.includes('math')) matchKey = 'simple business math';
-  else if (p.includes('scenario') || p.includes('vivid')) matchKey = 'real scenarios';
-  else if (p.includes('contrarian') || p.includes("don't have")) matchKey = 'contrarian';
-  else if (p.includes('ai curiosity') || p.includes('demystify')) matchKey = 'ai curiosity';
-  else if (p.includes('social proof') && !p.includes('founder')) matchKey = 'social proof';
-  else if (p.includes('unanswered reviews') || p.includes('silent revenue')) matchKey = 'unanswered reviews';
-  else if (p.includes('48-hour') || p.includes('silence')) matchKey = '48-hour';
-  else if (p.includes('after-hours') || p.includes('lost trust')) matchKey = 'after-hours';
-  else if (p.includes('text-back') || p.includes('60 seconds')) matchKey = 'text-back';
-  else if (p.includes('form gone cold') || p.includes('inquiry that disappeared')) matchKey = 'form gone cold';
-  else if (p.includes('follow-up') || p.includes('slipped away')) matchKey = 'follow-up';
-  else if (p.includes('review generation') || p.includes('count your competitor')) matchKey = 'review generation';
-  else if (p.includes('daily value') || p.includes('less than what')) matchKey = 'daily value';
-  else if (p.includes('trust recession') || p.includes('unanswered touchpoint')) matchKey = 'trust recession';
-  else if (p.includes('database reactivation') || p.includes('already in your crm')) matchKey = 'database reactivation';
-  else if (p.includes('founder story') || p.includes('personal discovery') || format === 'Founder story post') matchKey = 'founder story';
-  else if (p.includes('third-party proof') || p.includes('real data') || format === 'Proof post') matchKey = 'third-party proof';
-  else if (p.includes('identity challenge') || p.includes('what kind of business') || p.includes('reputation event')) matchKey = 'trust recession';
-
-  const d = visualDirections[matchKey];
-  return `Create a scroll-stopping LinkedIn social media graphic for ${nicheLabel}.
-
-GOAL: Make someone stop mid-scroll. Not because it's shocking — because it's visually unexpected, immediately relatable, and impossible to ignore.
-
-SCENE TO VISUALIZE:
-${d.scene}
-
-MOOD & ENERGY:
-${d.mood}
-
-COLOR DIRECTION:
-${d.color}
-
-VISUAL STYLE:
-${d.style}
-
-HEADLINE TEXT (display prominently, large, readable in feed):
-"${headline}"
-
-CTA BAR (clean bar at the bottom):
-${ctaLine}
-
-STRICT RULES:
-- No logos, no phone numbers, no URLs
-- No generic corporate handshake stock photo energy
-- Typography must be bold enough to read as a thumbnail
-- The image should make someone FEEL something before they read a word
-
-FORMAT: Portrait 4:5 ratio for LinkedIn feed.`;
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='v9-test-results-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
 }
 
-async function generateImage() {
-  const openaiKey = document.getElementById('openai-key').value.trim();
-  if (!openaiKey) { setToast('img-toast', 'Add your OpenAI API key first.', 'error'); return; }
-  if (!generatedPost) { setToast('img-toast', 'Generate a post first.', 'error'); return; }
-
-  const btn = document.getElementById('img-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating image…';
-
-  const d = PLAN[(currentPos - 1) % PLAN_SIZE];
-  const nicheKey = mode === 'auto' ? d.niche : manualNiche;
-  const currentPillar = mode === 'auto' ? d.pillar : (document.querySelector('.angle-btn.selected')?.dataset.val || '');
-  const prompt     = buildImagePrompt(generatedPost, nicheKey, currentPillar);
-  const imgQuality = document.getElementById('img-quality').value || 'medium';
-  const imgSize    = document.getElementById('img-size').value   || '1024x1536';
-
-  try {
-    const res = await fetch('https://api.openai.com/v1/images/generations', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+openaiKey},
-      body: JSON.stringify({model:'gpt-image-2', prompt, n:1, size:imgSize, quality:imgQuality, output_format:'jpeg'})
-    });
-
-    // Always parse the body first regardless of status
-    let data;
-    try { data = await res.json(); } catch(parseErr) {
-      throw new Error('OpenAI returned an unparseable response (status ' + res.status + '). Check browser console for details.');
-    }
-
-    // Explicit status check — catches access errors, verification errors, rate limits
-    if (!res.ok) {
-      const msg = data?.error?.message || data?.message || JSON.stringify(data);
-      const hint = res.status === 401 ? ' — Check your OpenAI API key.'
-                 : res.status === 403 ? ' — Organisation verification may be required. Go to platform.openai.com → Settings → Organisation → Verify.'
-                 : res.status === 429 ? ' — Rate limit hit. Wait 60 seconds and try again.'
-                 : ' (HTTP ' + res.status + ')';
-      throw new Error(msg + hint);
-    }
-
-    if (data.error) throw new Error(data.error.message);
-    if (!data.data?.[0]?.b64_json) throw new Error('OpenAI returned a success response but no image data. Check your API key permissions and organisation verification status at platform.openai.com.');
-
-    generatedImageB64 = data.data[0].b64_json;
-    generatedImageUrl = 'data:image/jpeg;base64,' + generatedImageB64;
-    document.getElementById('img-preview-box').innerHTML = '<img src="' + generatedImageUrl + '" alt="Generated social media image" />';
-    document.getElementById('download-btn').style.display = 'inline-flex'; document.getElementById('download-btn').disabled = false;
-    document.getElementById('clear-img-btn').style.display = 'inline-flex'; document.getElementById('img-toggle-wrap').style.display = 'block';
-    setToast('img-toast', '✓ Image generated — download or include in GHL draft.', 'success');
-  } catch(e) {
-    console.error('[generateImage] OpenAI error:', e);
-    setToast('img-toast', '✗ ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; btn.innerHTML = '↻ Regenerate Image';
-  }
-}
-
-function downloadImage() {
-  if (!generatedImageB64) return;
-  const a = document.createElement('a');
-  a.href = generatedImageUrl; a.download = 'linkedin-post-' + currentPos + '.jpg';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setToast('img-toast', '✓ Image downloaded — upload to GHL Social Planner when publishing.', 'info');
-}
-function clearImage() {
-  generatedImageB64 = ''; generatedImageUrl = '';
-  document.getElementById('img-preview-box').innerHTML = '<span class="img-placeholder">Generate a post first, then click Generate Image.</span>';
-  document.getElementById('download-btn').style.display = 'none';
-  document.getElementById('clear-img-btn').style.display = 'none';
-  document.getElementById('img-toggle-wrap').style.display = 'none';
-}
-
-function exportCSV() {
-  if (exportBatch.length === 0) { setToast('gen-toast','No posts to export yet.','error'); return; }
-  const headers = ['Post #','Niche','Pillar','Format','CTA Type','Caption'];
-  const rows = exportBatch.map(p => [p.pos, p.niche, p.pillar, p.format, p.cta, '"' + p.caption.replace(/"/g,'""') + '"']);
-  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'}), url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'linkedin-posts-batch.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  setToast('gen-toast', '✓ CSV exported with ' + exportBatch.length + ' posts.', 'success');
-}
+document.getElementById('cards').innerHTML=TC.map(mkCard).join('');
 </script>
 </body>
 </html>
