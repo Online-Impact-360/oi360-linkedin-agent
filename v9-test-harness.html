@@ -213,12 +213,15 @@ function score(post, tc){
   s.bannedText=banned?BANNED.find(b=>l1l.startsWith(b)):null;
   s.emDashCount=(post.match(/\u2014/g)||[]).length;
   s.noEmDash=s.emDashCount===0;
-  s.l2Explains=/^(because |that's how |here's why |not because |here's what|this is because)/.test(l2l);
+  const isFragL1=l1.trim().split(' ').length<=6&&/\d/.test(l1)&&l1.trim().endsWith('.');
+  s.l2Explains=!isFragL1&&/^(because |that's how many|that's how |here's why |not because |here's what|this is because)/.test(l2l);
   s.l2Deepens=!s.l2Explains&&l2.length>0&&!/^here's the (math|number|data)/.test(l2l);
   const first40=lines.slice(0,Math.ceil(lines.length*0.4)).join(' ').toLowerCase();
   s.dominoEarly=DOMINO.some(d=>first40.includes(d));
   s.dominoAny=DOMINO.some(d=>full.includes(d));
-  s.employeeFrame=full.includes('employee')||full.includes('new hire')||full.includes('a new hire')||full.includes('your new hire');
+  // Founder story posts don't describe the product — exempt from employee requirement
+const isFounderFormat = tc.f === 'Founder story post';
+s.employeeFrame = isFounderFormat || full.includes('employee') || full.includes('new hire') || full.includes('a new hire') || full.includes('your new hire');
   s.hook14Used=ID_HOOKS.some(h=>full.includes(h));
   s.hook14Required=tc.h14;
   s.hook14Pass=!tc.h14||s.hook14Used;
