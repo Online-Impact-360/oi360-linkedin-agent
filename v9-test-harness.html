@@ -170,7 +170,7 @@ const BANNED=['every missed call','every unanswered call','every unanswered revi
 const RETIRED_F=['3 missed calls','47 hours','86%','3 calls'];
 const RETIRED_T=['6:47pm','6:48pm','8:47am','2:17pm'];
 const DOMINO=['first to respond','responds first','whoever responds','whoever picks up','first contractor','first agency','first broker','first practice','first call back','respond first','who picked up first','first one who','first one to respond','picked up the phone first','picked up first','answered first','picks up first','answers first','who answered','who responded first','fastest response','respond fastest','first to answer','first to pick up','who picks up','who calls back first','first responder'];
-const ID_HOOKS=['deciding what kind','deciding whether your','are deciding','market is deciding','clients are deciding','patients are deciding','what kind of business','what kind of practice','what kind of contractor','what kind of agency','what kind of company','filing a verdict','verdict about your','assessing whether','assessing what kind','are forming an opinion','first impression your','the impression you','what they think of your','what kind of operator','what kind of landlord','forming a conclusion','forming an opinion','conclusion lands','what you are as a','reputation event','that conclusion is','not just a missed','building a reputation','that is the impression','what your business looks like','what your practice looks like'];
+const ID_HOOKS=['deciding what kind','deciding whether your','are deciding','market is deciding','clients are deciding','patients are deciding','what kind of business','what kind of practice','what kind of contractor','what kind of agency','what kind of company','filing a verdict','verdict about your','assessing whether','assessing what kind','are forming an opinion','first impression your','the impression you','what they think of your','what kind of operator','what kind of landlord','forming a conclusion','forming an opinion','conclusion lands','what you are as a','reputation event','that conclusion is','not just a missed','building a reputation','that is the impression','what your business looks like','what your practice looks like','making a judgment','judgment about how','judgment about your','making a decision about','they are deciding','the market decides','prospects decide','clients decide','tenants decide','patients decide'];
 const HOOK_PAT=[
   {i:1,n:'Consequence chain', t:l=>/→/.test(l)},
   {i:2,n:'Real-time scene',   t:l=>/^it'?s \d+:\d+|^\d+:\d+(am|pm)/i.test(l)},
@@ -218,7 +218,7 @@ function score(post, tc){
   const first40=lines.slice(0,Math.ceil(lines.length*0.4)).join(' ').toLowerCase();
   s.dominoEarly=DOMINO.some(d=>first40.includes(d));
   s.dominoAny=DOMINO.some(d=>full.includes(d));
-  s.employeeFrame=full.includes('employee');
+  s.employeeFrame=full.includes('employee')||full.includes('new hire')||full.includes('a new hire')||full.includes('your new hire');
   s.hook14Used=ID_HOOKS.some(h=>full.includes(h));
   s.hook14Required=tc.h14;
   s.hook14Pass=!tc.h14||s.hook14Used;
