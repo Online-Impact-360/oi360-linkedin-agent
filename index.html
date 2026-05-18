@@ -1326,7 +1326,7 @@ function showCopySuccess(btn) {
 }
 
 // ── IMAGE GENERATION ──────────────────────────────────────────
-function buildImagePrompt(post, niche, pillar) {
+function buildImagePrompt(post, niche, pillar, format) {
   const nicheLabel = NICHES[niche] ? NICHES[niche].label : 'local service businesses';
   const lines = post.split('\n').filter(l => l.trim().length > 0);
   const headline = lines[0].trim().replace(/['"]/g, '');
