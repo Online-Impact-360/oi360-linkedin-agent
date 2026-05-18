@@ -842,7 +842,7 @@ function getCtaLine(ctaType, nicheKey) {
 const LENGTH_MAP = { short:'150–250 words', medium:'300–500 words', long:'600–900 words' };
 const FORMAT_INSTRUCTIONS = {
   'Punch post':        'Short and declarative. Strong claim up front. 2–3 tight paragraphs. No fluff. Every line earns its place.',
-  'Scenario post':     'Drop the reader into a specific real moment. Lead with time, place, action. Show exactly what happens when the call goes unanswered or the text never arrives. First line must put them inside the scene.',
+  'Scenario post':     'Drop the reader into a vivid, specific situation. Use the hook type assigned in the brief — if Hook 2 (real-time scene) is assigned, open with It is [time]. You are [location]. If a different hook is assigned (fragment, stat, competitor, inversion), use that hook to open, then immediately ground the reader in a physical situation in line 2 or 3. The scenario builds from there. Do NOT default to a time-and-place opener unless Hook 2 is explicitly assigned. The reader must feel present in the moment — but the entry point is the assigned hook, not always a clock.',
   'Math breakdown':    'Walk through a simple business math scenario with dollar amounts realistic for this niche. Format each step on its own line. Make the total loss feel undeniable.',
   'Story post':        'A short grounded story about a real type of business owner in this niche. Specific moment, specific outcome. End on the one insight that reframes how they see the problem. Do NOT open with "Here is a story I hear constantly." Do NOT open with "Most [niche] don\'t know..." — this is a weak low-tension setup that tells the reader to wait for the point instead of feeling it immediately. Open with the most striking moment of the story — name the character, the situation, the gap — immediately. The reader discovers it is a story as they read it.',
   'Question post':     'Open with a direct honest question this business owner avoids asking. 2–3 lines of real context. Close with a sharper second question that makes them stop.',
@@ -1175,7 +1175,7 @@ The angle is past customers sitting unused in a CRM — people who already trust
     + '\nPost format: ' + format
     + '\nFormat instructions: ' + (FORMAT_INSTRUCTIONS[format] || FORMAT_INSTRUCTIONS['Punch post'])
     + '\nTarget audience: ' + niche
-    + (hook ? '\nHook framework: ' + hook : '')
+    + (hook ? ' ONLY use when Hook 2 is explicitly assigned in the brief — do not default to this hook just because the format is Scenario post.\nHook framework: ' + hook : '')
     + '\n\nOutput only the post body. Nothing else.';
 
   try {
