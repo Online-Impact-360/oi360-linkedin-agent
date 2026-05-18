@@ -346,6 +346,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
         <button class="btn btn-secondary" id="export-btn" onclick="exportCSV()" disabled>Export CSV</button>
       </div>
       <div class="toast" id="gen-toast"></div>
+      <div class="toast" id="warn-toast"></div>
     </div>
   </div>
 
@@ -877,8 +878,8 @@ window.onload = () => {
 
 function clearCredentials() {
   if (!confirm('Clear all saved credentials?')) return;
-  ['oi360_ak','oi360_gt','oi360_gl','oi360_ga'].forEach(k => localStorage.removeItem(k));
-  ['anthropic-key','ghl-token','ghl-location','ghl-account'].forEach(id => document.getElementById(id).value = '');
+  ['oi360_ak','oi360_gt','oi360_gl','oi360_ga','oi360_oai'].forEach(k => localStorage.removeItem(k));
+  ['anthropic-key','ghl-token','ghl-location','ghl-account','openai-key'].forEach(id => document.getElementById(id).value = '');
   checkReady();
   setToast('gen-toast','Credentials cleared.','info');
 }
@@ -974,7 +975,7 @@ function clearPost() {
   document.getElementById('copy-btn').disabled = true;
   document.getElementById('char-count').textContent = '';
   document.getElementById('post-tags').style.display = 'none';
-  clearToast('gen-toast'); clearToast('post-toast');
+  clearToast('gen-toast'); clearToast('post-toast'); clearToast('warn-toast');
 }
 function showTags(niche, pillar, format, cta) {
   const el = document.getElementById('post-tags'); el.style.display = 'flex';
@@ -992,7 +993,7 @@ function loadFromHistory(i) {
   document.getElementById('preview').textContent = generatedPost; document.getElementById('preview').style.display = 'block';
   document.getElementById('edit-area').style.display = 'none'; isEditing = false;
   document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
-  document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false; updateCharCount();
+  document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false; document.getElementById('img-btn').disabled = false; updateCharCount();
 }
 document.querySelectorAll('.angle-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1206,38 +1207,28 @@ Output only the post body. Nothing else.`;
 
     generatedPost = rawBody + ctaLine;
 
-    // Code-level employee framing check
+    // Code-level quality checks — collect all warnings, show in warn-toast after success
+    const qcWarnings = [];
     const hasEmployeeFrame = /\bemployee\b|\bnew hire\b/i.test(rawBody);
     const mentionsSolution = /smart website|answers every call|texts back|follow.?up automatically|missed call text/i.test(rawBody);
     if (mentionsSolution && !hasEmployeeFrame) {
-      setToast('gen-toast', '⚠ No employee/new hire framing detected. The solution is described without using "employee" or "new hire." Consider regenerating.', 'error');
+      qcWarnings.push('No employee/new hire framing detected.');
     }
-
-    // Code-level domino check — does "first to respond" or similar appear in first 30% of post?
     const postWords = rawBody.split(/\s+/);
     const first30pct = postWords.slice(0, Math.floor(postWords.length * 0.3)).join(' ').toLowerCase();
     const dominoPhrases = ['first to respond','responds first','whoever responds','whoever picks up','picked up first','picked up the phone first','answered first','first responder','first one to','who picks up'];
-    const dominoInFirst30 = dominoPhrases.some(p => first30pct.includes(p));
     const dominoAnywhere = dominoPhrases.some(p => rawBody.toLowerCase().includes(p));
-    if (!dominoAnywhere) {
-      // Only warn if solution is being described (otherwise it's a pure problem post which is valid)
-      if (mentionsSolution) setToast('gen-toast', '⚠ Big Domino belief not found. The response-speed belief was not explicitly stated. Consider adding "the first to respond wins" in the opening.', 'error');
+    if (!dominoAnywhere && mentionsSolution) {
+      qcWarnings.push('Big Domino belief not found — consider adding "the first to respond wins."');
     }
-
-    // Code-level banned opener detection
     const bannedOpeners = [
-      'every missed call',
-      'every unanswered',
-      'most property managers don',
-      'most dental practice',
-      'most contractors don',
-      'most insurance',
-      'most mortgage',
+      'every missed call','every unanswered','most property managers don',
+      'most dental practice','most contractors don','most insurance','most mortgage',
     ];
     const postLine1 = generatedPost.split('\n').filter(l => l.trim())[0]?.toLowerCase() || '';
     const bannedMatch = bannedOpeners.find(b => postLine1.startsWith(b));
     if (bannedMatch) {
-      setToast('gen-toast', '⚠ Retired opener detected ("' + postLine1.substring(0,40) + '..."). Consider regenerating for a stronger hook.', 'error');
+      qcWarnings.push('Retired opener: "' + postLine1.substring(0,40) + '..."');
     }
     document.getElementById('preview').textContent = generatedPost; document.getElementById('preview').style.display = 'block';
     document.getElementById('edit-area').style.display = 'none'; isEditing = false;
@@ -1248,6 +1239,11 @@ Output only the post body. Nothing else.`;
     updateCharCount(); showTags(nicheKey, pillar, format, ctaType);
     addHistory(generatedPost, currentPos, nicheKey);
     setToast('gen-toast', `✓ Post #${currentPos} generated — ${nicheData.label} · ${format}`, 'success');
+    if (qcWarnings.length > 0) {
+      setTimeout(() => setToast('warn-toast', '⚠ QC: ' + qcWarnings.join(' | '), 'error'), 100);
+    } else {
+      clearToast('warn-toast');
+    }
     setStatus(false);
   } catch(e) {
     setToast('gen-toast','✗ ' + e.message,'error'); setStatus(false);
@@ -1444,7 +1440,8 @@ async function generateImage() {
   const d = PLAN[(currentPos - 1) % PLAN_SIZE];
   const nicheKey = mode === 'auto' ? d.niche : manualNiche;
   const currentPillar = mode === 'auto' ? d.pillar : (document.querySelector('.angle-btn.selected')?.dataset.val || '');
-  const prompt     = buildImagePrompt(generatedPost, nicheKey, currentPillar);
+  const currentFormat = mode === 'auto' ? PLAN[(currentPos-1) % PLAN_SIZE].format : (document.getElementById('format-override').value || 'Punch post');
+  const prompt     = buildImagePrompt(generatedPost, nicheKey, currentPillar, currentFormat);
   const imgQuality = document.getElementById('img-quality').value || 'medium';
   const imgSize    = document.getElementById('img-size').value   || '1024x1536';
 
