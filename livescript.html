@@ -1075,7 +1075,7 @@ Required schema:
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2000,
         messages: [{ role: 'user', content: `Generate a video package for a ${niche.label} video. Format: ${format.label}. Platform: ${platform.label}. Pain point focus: ${point.pain}.` }],
         system: systemPrompt,
