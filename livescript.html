@@ -270,7 +270,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .badge {
   font-size: 11px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 100px;
   letter-spacing: .03em;
 }
@@ -472,6 +472,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   white-space: nowrap;
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── TELEPROMPTER SECTIONS — larger for on-screen reading ── */
+/* 02 Hook */
+#hook-spoken, #hook-overlay { font-size: 18px; line-height: 1.6; }
+/* 04 Bridge Line */
+#bridge-text { font-size: 18px; line-height: 1.7; }
+/* 05 Call Script */
+.script-line { font-size: 17px; line-height: 1.65; }
+.speaker-badge { font-size: 12px; padding: 4px 10px; }
+/* 06 Closing + CTA */
+#closing-text { font-size: 18px; line-height: 1.7; }
+#cta-spoken, #cta-onscreen { font-size: 16px; }
 </style>
 </head>
 <body>
@@ -492,6 +504,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div class="field">
       <label>GHL Location ID</label>
       <input type="text" id="s-ghl-loc" placeholder="m5I5xSjXdjlZdedg9bdP">
+    </div>
+    <div class="field">
+      <label>GHL LinkedIn Account ID</label>
+      <input type="text" id="s-ghl-account" placeholder="Paste LinkedIn Account ID from GHL Social Planner">
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
@@ -952,6 +968,7 @@ function openSettings() {
   document.getElementById('s-anthro').value = localStorage.getItem('vc_anthro') || '';
   document.getElementById('s-ghl-token').value = localStorage.getItem('vc_ghl_token') || '';
   document.getElementById('s-ghl-loc').value = localStorage.getItem('vc_ghl_loc') || 'm5I5xSjXdjlZdedg9bdP';
+  document.getElementById('s-ghl-account').value = localStorage.getItem('vc_ghl_account') || '';
   document.getElementById('modal').classList.add('open');
 }
 function closeSettings() { document.getElementById('modal').classList.remove('open'); }
@@ -959,6 +976,7 @@ function saveSettings() {
   localStorage.setItem('vc_anthro', document.getElementById('s-anthro').value.trim());
   localStorage.setItem('vc_ghl_token', document.getElementById('s-ghl-token').value.trim());
   localStorage.setItem('vc_ghl_loc', document.getElementById('s-ghl-loc').value.trim());
+  localStorage.setItem('vc_ghl_account', document.getElementById('s-ghl-account').value.trim());
   closeSettings();
   showToast('Settings saved ✓');
 }
@@ -980,6 +998,14 @@ async function generate() {
     : 'Primary platform is Instagram/TikTok (30-60 words). Also generate a LinkedIn version.';
 
   const systemPrompt = `You are the Smart Website 360 Video Content Tool. Generate a complete video production package.
+
+WRITING RULES — non-negotiable for all text output:
+• NO em dashes (—) anywhere. Not in captions, scripts, hooks, or descriptions. Use a period, comma, or rewrite the sentence.
+• NO hyphens used as pauses or breaks. A hyphen connects compound words (after-hours) — never used as punctuation mid-sentence.
+• Short sentences. If a sentence has two clauses joined by AND, cut after the first clause. The second clause becomes its own sentence or is dropped.
+• Captions: 2-3 short punchy sentences per paragraph. No paragraph longer than 3 lines. Line breaks between each idea.
+• No filler phrases: "I want to show you", "Let me walk you through", "In this video I", "Today I'm going to"
+• Demo number always appears as: Call 1-888-708-7367 — on its own line in captions, never buried in a sentence.
 
 PRODUCT RULES — never break these:
 • The product is always "your new digital employee" or "your employee." NEVER: AI, system, platform, SaaS, receptionist, tool, bot.
@@ -1091,6 +1117,32 @@ Required schema:
     const raw = apiData.content?.[0]?.text || '';
     const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
     const data = JSON.parse(cleaned);
+
+    // ── CODE-LEVEL OUTPUT RULES (mirrors LinkedIn agent) ──────
+    // Strip em dashes from ALL text fields — replace with comma, period, or reword
+    function stripDashes(text) {
+      if (!text) return text;
+      // Em dash (—) → replace with period+space or comma depending on context
+      return text.replace(/ — /g, '. ').replace(/—/g, '.');
+    }
+    // Apply to all readable output fields
+    data.scene_setup    = stripDashes(data.scene_setup);
+    data.hook_spoken    = stripDashes(data.hook_spoken);
+    data.hook_overlay   = stripDashes(data.hook_overlay);
+    data.bridge_line    = stripDashes(data.bridge_line);
+    data.closing_line   = stripDashes(data.closing_line);
+    data.cta_spoken     = stripDashes(data.cta_spoken);
+    data.cta_onscreen   = stripDashes(data.cta_onscreen);
+    data.caption_linkedin  = stripDashes(data.caption_linkedin);
+    data.caption_instagram = stripDashes(data.caption_instagram);
+    data.caption_tiktok    = stripDashes(data.caption_tiktok);
+    if (data.call_script) {
+      data.call_script = data.call_script.map(t => ({ ...t, line: stripDashes(t.line) }));
+    }
+    if (data.avatar && data.avatar.script) {
+      data.avatar.script = stripDashes(data.avatar.script);
+    }
+
     currentData = data;
     recordUsage(idx);
     renderOutput(data, point);
@@ -1214,15 +1266,16 @@ async function postToGHL() {
   btn.querySelector('span').textContent = 'Posting...';
 
   try {
+    const accountId = localStorage.getItem('vc_ghl_account') || '';
     const body = {
       type: 'post',
       status: 'draft',
       locationId: locId,
       summary: caption,
-      tags: ['video-content', selNiche, selFormat],
+      ...(accountId && { accountIds: [accountId] }),
     };
 
-    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/oauth/facebook/${locId}/posts`, {
+    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locId}/posts`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
