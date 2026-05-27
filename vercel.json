@@ -1,23 +1,13 @@
 {
   "rewrites": [
     {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "calculator.smartwebsite360.com"
-        }
-      ],
+      "source": "/(.*)",
+      "has": [{"type": "host", "value": "calculator.smartwebsite360.com"}],
       "destination": "/calculator.html"
     },
     {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "livescript.smartwebsite360.com"
-        }
-      ],
+      "source": "/(.*)",
+      "has": [{"type": "host", "value": "livescript.smartwebsite360.com"}],
       "destination": "/livescript.html"
     }
   ]
