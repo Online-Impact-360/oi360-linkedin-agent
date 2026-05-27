@@ -1,14 +1,26 @@
 {
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/(.*)",
-      "has": [{"type": "host", "value": "calculator.smartwebsite360.com"}],
-      "destination": "/calculator.html"
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "calculator.smartwebsite360.com"
+        }
+      ],
+      "destination": "https://oi360-linkedin-agent.vercel.app/calculator.html",
+      "permanent": true
     },
     {
-      "source": "/(.*)",
-      "has": [{"type": "host", "value": "livescript.smartwebsite360.com"}],
-      "destination": "/livescript.html"
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "livescript.smartwebsite360.com"
+        }
+      ],
+      "destination": "https://oi360-linkedin-agent.vercel.app/livescript.html",
+      "permanent": true
     }
   ]
 }
