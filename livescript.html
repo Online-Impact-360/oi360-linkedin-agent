@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LiveScript — Smart Website 360</title>
+<title>LiveScript V2 — Smart Website 360</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
@@ -498,6 +498,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <input type="password" id="s-anthro" placeholder="sk-ant-...">
     </div>
     <div class="field">
+      <label>OpenAI API Key (for cover image generation)</label>
+      <input type="password" id="s-openai" placeholder="sk-...">
+    </div>
+    <div class="field">
       <label>GHL API Token</label>
       <input type="password" id="s-ghl-token" placeholder="GHL token...">
     </div>
@@ -507,7 +511,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
     <div class="field">
       <label>GHL LinkedIn Account ID</label>
-      <input type="text" id="s-ghl-account" placeholder="Paste LinkedIn Account ID from GHL Social Planner">
+      <input type="text" id="s-ghl-account" placeholder="LinkedIn Account ID from GHL Social Planner">
+    </div>
+    <div class="field">
+      <label>GHL Instagram Account ID</label>
+      <input type="text" id="s-ghl-ig-account" placeholder="Instagram Account ID from GHL Social Planner">
+    </div>
+    <div class="field">
+      <label>GHL TikTok Account ID</label>
+      <input type="text" id="s-ghl-tt-account" placeholder="TikTok Account ID from GHL Social Planner">
+    </div>
+    <div class="field">
+      <label>GHL User ID</label>
+      <input type="text" id="s-ghl-userid" placeholder="GHL User ID (Settings → My Profile)">
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
@@ -525,10 +541,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <rect x="12" y="13" width="4" height="11" rx="1" fill="#00b4ab"/>
       <rect x="18" y="8" width="4" height="16" rx="1" fill="#f0b429"/>
     </svg>
-    <span class="logo-name">Smart Website 360 <span>· LiveScript</span></span>
+    <span class="logo-name">Smart Website 360 <span>· LiveScript V2</span></span>
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
-    <span class="header-badge">V1</span>
+    <span class="header-badge">V2</span>
     <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
   </div>
 </header>
@@ -793,6 +809,51 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       </div>
     </div>
 
+    <!-- S8: Cover Image -->
+    <div class="out-section">
+      <div class="out-section-head">
+        <h4>08 — Cover Image (ChatGPT Images 2.0)</h4>
+        <button class="copy-btn" onclick="copySection('cover-prompt-text', this)">Copy prompt</button>
+      </div>
+      <div class="out-section-body">
+        <p class="out-text" style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+          Generates a 1024 × 1536px portrait cover image via OpenAI. Use as thumbnail on Instagram, LinkedIn, and TikTok.
+        </p>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="generate-btn" id="cover-gen-btn" onclick="generateCover()" style="padding:12px 28px;font-size:14px;box-shadow:none;">
+            <div class="spinner" id="cover-spinner"></div>
+            <span id="cover-gen-label">Generate Cover Image</span>
+          </button>
+          <span style="font-size:12px;color:var(--muted);" id="cover-gen-note">Requires OpenAI API key in Settings</span>
+        </div>
+        <!-- Image output -->
+        <div id="cover-output" style="display:none;">
+          <img id="cover-img" src="" alt="Generated cover image"
+            style="width:100%;max-width:320px;border-radius:10px;display:block;margin-bottom:12px;box-shadow:var(--shadow);">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a id="cover-download" href="" download="cover.png" class="ghl-btn" style="text-decoration:none;font-size:13px;padding:9px 18px;">
+              <span>⬇ Download cover</span>
+            </a>
+            <button class="copy-btn" onclick="copyCoverPrompt()" style="font-size:12px;">View prompt</button>
+          </div>
+        </div>
+        <!-- Prompt preview (hidden, used for copy) -->
+        <textarea id="cover-prompt-text" style="display:none;"></textarea>
+        <div id="cover-err" style="display:none;font-size:12px;color:var(--red);margin-top:8px;"></div>
+        <!-- Preview fields -->
+        <div style="margin-top:12px;" class="hook-grid">
+          <div class="hook-box">
+            <label>Cover headline</label>
+            <p id="cover-headline"></p>
+          </div>
+          <div class="hook-box">
+            <label>Cover subline</label>
+            <p id="cover-subline"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Production Checklist -->
     <div class="checklist">
       <h5>Production checklist</h5>
@@ -899,6 +960,39 @@ const NICHE_STATS = {
 • $80,000 annual loss from missing just 2 qualified referrals per week`,
 };
 
+const COVER_DATA = {
+  pm: {
+    niche_label: "PROPERTY MANAGERS",
+    accent_color: "#00b4ab",
+    bg_scene: "a modern apartment building exterior at dusk with warm lit windows, slightly blurred, dark atmosphere",
+    icon_description: "a minimalist building/key icon",
+  },
+  dnt: {
+    niche_label: "DENTAL PRACTICES",
+    accent_color: "#00b4ab",
+    bg_scene: "a clean modern dental operatory with professional equipment slightly blurred in background, dark atmosphere",
+    icon_description: "a minimalist tooth icon",
+  },
+  con: {
+    niche_label: "CONTRACTORS",
+    accent_color: "#f0b429",
+    bg_scene: "a construction site with wood framing and blue sky, slightly blurred, dark moody atmosphere",
+    icon_description: "a minimalist tools/hammer icon",
+  },
+  ins: {
+    niche_label: "INSURANCE AGENCIES",
+    accent_color: "#00b4ab",
+    bg_scene: "a professional office desk with a laptop and document folder slightly blurred, dark atmosphere",
+    icon_description: "a minimalist shield icon",
+  },
+  mtg: {
+    niche_label: "MORTGAGE BROKERS",
+    accent_color: "#00b4ab",
+    bg_scene: "a suburban home exterior at golden hour slightly blurred, dark moody atmosphere",
+    icon_description: "a minimalist house/key icon",
+  },
+};
+
 const FORMAT_INSTRUCTIONS = {
   live_call: `VIDEO FORMAT: LIVE CALL DEMO
 Henry dials 1-888-708-7367 on camera. The viewer hears the AI employee answer live in real time. No editing required — this is authentic.
@@ -922,7 +1016,7 @@ const CHECKLISTS = {
   live_call: ['Set up camera facing you at desk or workspace','Place phone visible in frame — this is your dialing phone','Start recording, look at camera for 1 second, then dial','Stay on camera while AI answers — your reactions are content','Keep video under 90 seconds for LinkedIn, under 45 for short-form'],
   before_after: ['Set up camera facing you','Optional: phone on desk for visual prop','Film the "old way" narration first, then "new way"','Use gestures when describing missed calls / unanswered calls','End by dialing 1-888-708-7367 live so viewer hears the result'],
   mystery_shop: ['Prepare two phones — one for the mystery shop call, one for the demo','Film yourself dialing the real business on the first phone','Let voicemail play on camera — do not cut','React naturally to the voicemail','Pick up second phone and dial 1-888-708-7367 — viewer hears the contrast','Add on-screen text: real business name blurred or replaced with "[Local Business]"'],
-  avatar_hook: ['Generate avatar portrait in ChatGPT Images 2.0 using the exact prompt below','Upload portrait to Tavus as Image-to-Replica on Starter plan ($59/mo)','Input avatar script into Tavus with voice direction notes','Download finished Tavus video clip (5-7 seconds)','Film your bridge line and demo call on your camera','Edit: Tavus clip → your bridge → live demo call → closing + CTA'],
+  avatar_hook: ['Generate cover image in ChatGPT Images 2.0 using the Section 08 prompt','Generate avatar portrait in ChatGPT Images 2.0 using the exact prompt below','Upload portrait to Tavus as Image-to-Replica on Starter plan ($59/mo)','Input avatar script into Tavus with voice direction notes','Download finished Tavus video clip (5-7 seconds)','Film your bridge line and demo call on your camera','Edit: Tavus clip → your bridge → live demo call → closing + CTA'],
 };
 
 // ── STATE ─────────────────────────────────────────────────────────────────
@@ -966,17 +1060,25 @@ function recordUsage(idx) {
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 function openSettings() {
   document.getElementById('s-anthro').value = localStorage.getItem('vc_anthro') || '';
+  document.getElementById('s-openai').value = localStorage.getItem('vc_openai') || '';
   document.getElementById('s-ghl-token').value = localStorage.getItem('vc_ghl_token') || '';
   document.getElementById('s-ghl-loc').value = localStorage.getItem('vc_ghl_loc') || 'm5I5xSjXdjlZdedg9bdP';
   document.getElementById('s-ghl-account').value = localStorage.getItem('vc_ghl_account') || '';
+  document.getElementById('s-ghl-ig-account').value = localStorage.getItem('vc_ghl_ig_account') || '';
+  document.getElementById('s-ghl-tt-account').value = localStorage.getItem('vc_ghl_tt_account') || '';
+  document.getElementById('s-ghl-userid').value = localStorage.getItem('vc_ghl_userid') || '';
   document.getElementById('modal').classList.add('open');
 }
 function closeSettings() { document.getElementById('modal').classList.remove('open'); }
 function saveSettings() {
   localStorage.setItem('vc_anthro', document.getElementById('s-anthro').value.trim());
+  localStorage.setItem('vc_openai', document.getElementById('s-openai').value.trim());
   localStorage.setItem('vc_ghl_token', document.getElementById('s-ghl-token').value.trim());
   localStorage.setItem('vc_ghl_loc', document.getElementById('s-ghl-loc').value.trim());
   localStorage.setItem('vc_ghl_account', document.getElementById('s-ghl-account').value.trim());
+  localStorage.setItem('vc_ghl_ig_account', document.getElementById('s-ghl-ig-account').value.trim());
+  localStorage.setItem('vc_ghl_tt_account', document.getElementById('s-ghl-tt-account').value.trim());
+  localStorage.setItem('vc_ghl_userid', document.getElementById('s-ghl-userid').value.trim());
   closeSettings();
   showToast('Settings saved ✓');
 }
@@ -1034,8 +1136,9 @@ PLATFORM: ${platformInstr}
 
 CAPTION RULES:
 • LinkedIn: hook line + 2-3 line setup + demo number with framing + 3 niche-specific hashtags. 150-200 words.
-• Instagram: hook line + one setup sentence + demo number + 2 hashtags. 60-80 words.
-• TikTok: hook line only + demo number. 30 words max.
+• Instagram: hook line + one setup sentence + demo number + exactly 3 niche-specific Instagram hashtags chosen for discovery (not vanity). 60-80 words.
+  Instagram hashtags by niche: PM → #PropertyManagement #PropertyManager #LandlordLife | Dental → #DentalPractice #DentalMarketing #DentistLife | Contractor → #Contractor #HomeImprovement #TradesLife | Insurance → #InsuranceAgent #InsuranceAgency #InsuranceBroker | Mortgage → #MortgageBroker #MortgageTips #HomeBuyer
+• TikTok: hook line only + demo number + 3 short discovery hashtags. 30 words max.
 • Demo number in all captions: "Call 1-888-708-7367 — hear your new employee answer live."
 • Never state the price in any caption.
 
@@ -1229,6 +1332,33 @@ function renderOutput(data, point) {
 
   // Reset GHL status
   document.getElementById('ghl-ok').classList.remove('show');
+  activeCapPlatform = 'linkedin';
+  updateGHLBtn();
+
+  // S8: Cover Image Prompt
+  const cd = COVER_DATA[selNiche];
+  const hookLine = data.hook_overlay || data.hook_spoken || '';
+  const bridgeLine = (data.bridge_line || '').split('.')[0]; // first sentence only
+  const coverPrompt = `Create a professional vertical social media cover image at 1080 x 1920 pixels portrait orientation.
+
+BACKGROUND: ${cd.bg_scene}. Apply a dark navy overlay (#0a1628) at 75% opacity over the entire image so text is fully readable.
+
+LAYOUT (top to bottom):
+1. TOP AREA: Smart Website 360 logo text in white, small, centered. A thin teal (#00b4ab) horizontal line below it.
+2. UPPER CENTER: "${cd.niche_label}" in bold teal (#00b4ab) uppercase letters, large font, centered.
+3. CENTER: "${hookLine}" in white, bold, large font, centered. Maximum 2 lines.
+4. LOWER CENTER: "${bridgeLine}" in white, smaller font, centered, italic.
+5. BOTTOM: "Call 1-888-708-7367" in yellow (#f0b429) bold text, centered. Below it: "Hear your new employee answer live" in small white text.
+6. VERY BOTTOM: Thin teal horizontal line. "smartwebsite360.com" in small white text centered.
+
+STYLE: Clean, professional infographic style. No clutter. Dark navy dominant. Teal and yellow accents only. Photorealistic background blurred under the overlay. The text must be sharp, readable, and perfectly centered.`;
+
+  document.getElementById('cover-prompt-text').value = coverPrompt;
+  document.getElementById('cover-output').style.display = 'none';
+  document.getElementById('cover-err').style.display = 'none';
+  document.getElementById('cover-gen-note').textContent = 'Requires OpenAI API key in Settings';
+  document.getElementById('cover-headline').textContent = cd.niche_label + ' — ' + hookLine;
+  document.getElementById('cover-subline').textContent = bridgeLine;
 
   // Checklist
   const ul = document.getElementById('checklist-items');
@@ -1247,32 +1377,59 @@ function renderOutput(data, point) {
 
 // ── CAPTIONS TABS ─────────────────────────────────────────────────────────
 function showCapTab(platform, btn) {
+  activeCapPlatform = platform;
   document.querySelectorAll('.cap-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.caption-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('cap-' + platform).classList.add('active');
+  updateGHLBtn();
+  document.getElementById('ghl-ok').classList.remove('show');
 }
 
 // ── GHL POST ──────────────────────────────────────────────────────────────
+// Track which caption tab is active
+let activeCapPlatform = 'linkedin';
+
 async function postToGHL() {
   const token = localStorage.getItem('vc_ghl_token');
   const locId = localStorage.getItem('vc_ghl_loc') || 'm5I5xSjXdjlZdedg9bdP';
+  const userId = localStorage.getItem('vc_ghl_userid') || '';
   if (!token) { openSettings(); return; }
   if (!currentData) return;
 
-  const caption = currentData.caption_linkedin;
+  // Use the caption from whichever tab is active
+  const captionMap = {
+    linkedin:  currentData.caption_linkedin,
+    instagram: currentData.caption_instagram,
+    tiktok:    currentData.caption_tiktok,
+  };
+  const accountIdMap = {
+    linkedin:  localStorage.getItem('vc_ghl_account') || '',
+    instagram: localStorage.getItem('vc_ghl_ig_account') || '',
+    tiktok:    localStorage.getItem('vc_ghl_tt_account') || '',
+  };
+
+  const caption   = captionMap[activeCapPlatform] || currentData.caption_linkedin;
+  const accountId = accountIdMap[activeCapPlatform];
+
+  if (!accountId) {
+    showToast('Add your ' + activeCapPlatform.charAt(0).toUpperCase() + activeCapPlatform.slice(1) + ' Account ID in Settings first');
+    openSettings();
+    return;
+  }
+
   const btn = document.getElementById('ghl-btn');
   btn.disabled = true;
   btn.querySelector('span').textContent = 'Posting...';
 
   try {
-    const accountId = localStorage.getItem('vc_ghl_account') || '';
+    // GHL Social Planner API — locationId goes in URL only, not in body
     const body = {
       type: 'post',
       status: 'draft',
-      locationId: locId,
       summary: caption,
-      ...(accountId && { accountIds: [accountId] }),
+      accountIds: [accountId],
+      userId: userId || accountId,
     };
 
     const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locId}/posts`, {
@@ -1285,19 +1442,113 @@ async function postToGHL() {
       body: JSON.stringify(body),
     });
 
+    const resData = await res.json().catch(() => ({}));
     if (res.ok) {
       document.getElementById('ghl-ok').classList.add('show');
-      showToast('Caption posted to GHL as draft ✓');
+      const platform = activeCapPlatform.charAt(0).toUpperCase() + activeCapPlatform.slice(1);
+      showToast(platform + ' caption posted to GHL as draft ✓');
     } else {
-      const err = await res.json().catch(() => ({}));
-      showToast('GHL error: ' + (err.message || res.status));
+      const msg = Array.isArray(resData.message) ? resData.message.join(', ') : (resData.message || res.status);
+      showToast('GHL error: ' + msg);
     }
   } catch(e) {
     showToast('Copy the caption and paste into GHL manually');
   } finally {
     btn.disabled = false;
-    btn.querySelector('span').textContent = '⬆ Post LinkedIn caption to GHL';
+    updateGHLBtn();
   }
+}
+
+async function generateCover() {
+  const openaiKey = localStorage.getItem('vc_openai');
+  if (!openaiKey) {
+    document.getElementById('cover-err').textContent = 'Add your OpenAI API key in Settings first.';
+    document.getElementById('cover-err').style.display = 'block';
+    openSettings();
+    return;
+  }
+  if (!currentData) return;
+
+  const prompt = document.getElementById('cover-prompt-text').value;
+  if (!prompt) return;
+
+  const btn = document.getElementById('cover-gen-btn');
+  const spinner = document.getElementById('cover-spinner');
+  const label = document.getElementById('cover-gen-label');
+  const errEl = document.getElementById('cover-err');
+  btn.disabled = true;
+  spinner.classList.add('show');
+  label.textContent = 'Generating...';
+  errEl.style.display = 'none';
+  document.getElementById('cover-output').style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-1',
+        prompt: prompt,
+        n: 1,
+        size: '1024x1536',
+        output_format: 'png',
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error?.message || 'OpenAI API error ' + res.status);
+    }
+
+    // gpt-image-1 returns b64_json
+    const b64 = data.data?.[0]?.b64_json;
+    if (!b64) throw new Error('No image data returned');
+
+    const dataUrl = 'data:image/png;base64,' + b64;
+    document.getElementById('cover-img').src = dataUrl;
+    document.getElementById('cover-download').href = dataUrl;
+
+    // Generate filename from niche + pain point
+    const niche = NICHES[selNiche]?.label?.replace(/[^a-zA-Z]/g,'') || 'cover';
+    document.getElementById('cover-download').download = `cover-${niche.toLowerCase()}.png`;
+
+    document.getElementById('cover-output').style.display = 'block';
+    document.getElementById('cover-gen-note').textContent = 'Cover generated. Download and use as thumbnail.';
+    showToast('Cover image generated ✓');
+
+  } catch(e) {
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.style.display = 'block';
+    showToast('Cover generation failed — check OpenAI key in Settings');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('show');
+    label.textContent = 'Generate Cover Image';
+  }
+}
+
+function copyCoverPrompt() {
+  const text = document.getElementById('cover-prompt-text').value;
+  if (!text) return;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => showToast('Prompt copied ✓'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('Prompt copied ✓');
+  }
+}
+
+function updateGHLBtn() {
+  const labels = { linkedin: 'LinkedIn', instagram: 'Instagram', tiktok: 'TikTok' };
+  const icons  = { linkedin: '💼', instagram: '📸', tiktok: '🎵' };
+  const btn = document.getElementById('ghl-btn');
+  if (btn) btn.querySelector('span').textContent = icons[activeCapPlatform] + ' Post ' + labels[activeCapPlatform] + ' caption to GHL';
 }
 
 // ── COPY ──────────────────────────────────────────────────────────────────
