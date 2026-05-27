@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiveScript — Smart Website 360</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a1628;
+  --teal: #00b4ab;
+  --teal-l: #e6f9f8;
+  --yellow: #f0b429;
+  --yellow-l: #fef9ee;
+  --bg: #f3f4f6;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --border-2: #d1d5db;
+  --text: #111827;
+  --muted: #6b7280;
+  --subtle: #9ca3af;
+  --green: #059669;
+  --green-l: #d1fae5;
+  --amber: #d97706;
+  --amber-l: #fef3c7;
+  --red: #dc2626;
+  --red-l: #fee2e2;
+  --purple: #7c3aed;
+  --purple-l: #ede9fe;
+  --r: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ─────────────────────────────────── */
+.header {
+  background: var(--navy);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 28px; height: 28px; }
+.logo-name { color: white; font-size: 14px; font-weight: 600; letter-spacing: .02em; }
+.logo-name span { color: var(--teal); }
+.header-badge {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.7);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 100px;
+  letter-spacing: .04em;
+}
+.settings-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.7);
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.settings-btn:hover { background: rgba(255,255,255,.08); color: white; }
+
+/* ── SETTINGS MODAL ──────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,22,40,.6);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 28px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: var(--shadow);
+}
+.modal h3 { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; letter-spacing: .04em; text-transform: uppercase; }
+.field input {
+  width: 100%; padding: 10px 14px;
+  border: 1.5px solid var(--border-2);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--navy);
+  transition: border-color .2s;
+}
+.field input:focus { outline: none; border-color: var(--teal); }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.btn-save {
+  background: var(--teal); color: white;
+  border: none; border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-save:hover { background: #009990; }
+.btn-cancel {
+  background: none; border: 1.5px solid var(--border-2);
+  color: var(--muted); border-radius: 8px;
+  padding: 10px 18px; font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+}
+.btn-cancel:hover { border-color: var(--border-2); background: var(--bg); }
+
+/* ── MAIN ────────────────────────────────────── */
+.main { max-width: 840px; margin: 0 auto; padding: 32px 20px 80px; }
+
+/* ── STEP CARD ───────────────────────────────── */
+.card {
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.card-head {
+  padding: 18px 24px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.step-dot {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: white;
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.card-title { font-size: 14px; font-weight: 600; color: var(--navy); }
+.card-body { padding: 16px 24px 22px; }
+
+/* ── OPTION GRIDS ────────────────────────────── */
+.niche-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.format-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.opt-btn {
+  border: 1.5px solid var(--border-2);
+  background: white;
+  border-radius: 10px;
+  padding: 12px 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .18s;
+  font-family: 'DM Sans', sans-serif;
+}
+.opt-btn:hover { border-color: var(--teal); background: var(--teal-l); }
+.opt-btn.active {
+  border-color: var(--teal);
+  background: var(--teal-l);
+  box-shadow: 0 0 0 3px rgba(0,180,171,.1);
+}
+.opt-icon { font-size: 22px; display: block; margin-bottom: 5px; }
+.opt-label { font-size: 12px; font-weight: 500; color: var(--navy); line-height: 1.3; }
+.opt-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* complexity badge in format buttons */
+.complexity-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  margin-right: 3px;
+}
+.dot-easy { background: var(--green); }
+.dot-medium { background: var(--amber); }
+.dot-complex { background: var(--red); }
+
+/* ── GENERATE BUTTON ─────────────────────────── */
+.generate-wrap { text-align: center; padding: 8px 0 4px; }
+.generate-btn {
+  background: var(--teal);
+  color: white;
+  border: none;
+  border-radius: var(--r);
+  padding: 15px 48px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all .2s;
+  box-shadow: 0 4px 16px rgba(0,180,171,.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.generate-btn:hover:not(:disabled) { background: #009990; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(0,180,171,.35); }
+.generate-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: white;
+  border-radius: 50%;
+  display: none;
+  animation: spin .7s linear infinite;
+}
+.spinner.show { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── ERROR BANNER ────────────────────────────── */
+.error-banner {
+  background: var(--red-l);
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--red);
+  margin-top: 12px;
+  display: none;
+}
+.error-banner.show { display: block; }
+
+/* ── OUTPUT ──────────────────────────────────── */
+.output-wrap {
+  margin-top: 24px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .4s, transform .4s;
+  pointer-events: none;
+}
+.output-wrap.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+.output-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.output-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--navy); }
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+  letter-spacing: .03em;
+}
+.badge-easy { background: var(--green-l); color: var(--green); }
+.badge-medium { background: var(--amber-l); color: var(--amber); }
+.badge-complex { background: var(--red-l); color: var(--red); }
+.badge-pain { background: var(--purple-l); color: var(--purple); }
+
+/* ── OUTPUT SECTIONS ─────────────────────────── */
+.out-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.out-section-head {
+  background: var(--navy);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.out-section-head h4 {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,.8);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.out-section-body { padding: 16px 20px; }
+
+/* scene setup, hook, bridge, closing */
+.out-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.7;
+}
+.out-text strong { color: var(--navy); font-weight: 600; }
+
+/* hook two-col */
+.hook-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.hook-box {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.hook-box label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.hook-box p { font-size: 13px; color: var(--navy); font-weight: 500; line-height: 1.5; }
+
+/* avatar section */
+.avatar-section { display: none; }
+.avatar-section.show { display: block; }
+.avatar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.avatar-field { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+.avatar-field label { font-size: 9px; font-weight: 700; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.avatar-field p { font-size: 12px; color: var(--navy); line-height: 1.5; }
+.avatar-script-box {
+  background: var(--teal-l);
+  border: 1px solid rgba(0,180,171,.3);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.avatar-script-box label { font-size: 10px; font-weight: 700; color: var(--teal); letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.avatar-script-box p { font-size: 13px; color: var(--navy); font-weight: 500; line-height: 1.6; font-style: italic; }
+.portrait-prompt-box {
+  background: #1e1e2e;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.portrait-prompt-box label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.5); letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.portrait-prompt-box p { font-size: 12px; color: rgba(255,255,255,.85); line-height: 1.6; font-family: monospace; }
+
+/* call script */
+.call-script { display: flex; flex-direction: column; gap: 10px; }
+.script-turn { display: flex; gap: 10px; }
+.speaker-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 100px;
+  white-space: nowrap;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+.speaker-henry { background: var(--navy); color: white; }
+.speaker-ai { background: var(--teal); color: white; }
+.speaker-narrates { background: var(--purple-l); color: var(--purple); }
+.speaker-voicemail { background: var(--red-l); color: var(--red); }
+.script-line { font-size: 13px; color: var(--text); line-height: 1.6; padding-top: 1px; }
+
+/* captions tabs */
+.caption-tabs { display: flex; gap: 2px; margin-bottom: 12px; }
+.cap-tab {
+  flex: 1; padding: 8px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px; font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+}
+.cap-tab.active { background: var(--navy); color: white; border-color: var(--navy); }
+.caption-panel { display: none; }
+.caption-panel.active { display: block; }
+.caption-text {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.caption-length {
+  font-size: 10px;
+  color: var(--subtle);
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* copy buttons */
+.copy-btn {
+  background: none;
+  border: 1px solid var(--border-2);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.copy-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+/* GHL post button */
+.ghl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+}
+.ghl-btn {
+  background: var(--navy);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.ghl-btn:hover { background: #0f2040; }
+.ghl-btn:disabled { opacity: .5; cursor: not-allowed; }
+.ghl-note { font-size: 11px; color: var(--subtle); }
+.ghl-success { font-size: 12px; color: var(--green); font-weight: 500; display: none; }
+.ghl-success.show { display: block; }
+
+/* prod checklist */
+.checklist {
+  background: var(--yellow-l);
+  border: 1px solid rgba(240,180,41,.4);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-top: 4px;
+}
+.checklist h5 { font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.checklist ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.checklist li { font-size: 12px; color: #78350f; display: flex; align-items: flex-start; gap: 6px; }
+.checklist li::before { content: "□"; font-size: 13px; flex-shrink: 0; margin-top: -1px; }
+
+/* responsive */
+@media (max-width: 600px) {
+  .niche-grid { grid-template-columns: repeat(3, 1fr); }
+  .format-grid { grid-template-columns: repeat(2, 1fr); }
+  .hook-grid { grid-template-columns: 1fr; }
+  .avatar-grid { grid-template-columns: 1fr; }
+}
+
+/* toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--navy); color: white;
+  padding: 10px 22px; border-radius: 100px;
+  font-size: 13px; font-weight: 500;
+  transition: transform .3s;
+  z-index: 999;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ── SETTINGS MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Settings</h3>
+    <p>API credentials stored locally in your browser. Never shared or transmitted except to the services listed.</p>
+    <div class="field">
+      <label>Anthropic API Key</label>
+      <input type="password" id="s-anthro" placeholder="sk-ant-...">
+    </div>
+    <div class="field">
+      <label>GHL API Token</label>
+      <input type="password" id="s-ghl-token" placeholder="GHL token...">
+    </div>
+    <div class="field">
+      <label>GHL Location ID</label>
+      <input type="text" id="s-ghl-loc" placeholder="m5I5xSjXdjlZdedg9bdP">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-save" onclick="saveSettings()">Save credentials</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HEADER ──────────────────────────────────────── -->
+<header class="header">
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#0a1628"/>
+      <rect x="6" y="18" width="4" height="6" rx="1" fill="#00b4ab"/>
+      <rect x="12" y="13" width="4" height="11" rx="1" fill="#00b4ab"/>
+      <rect x="18" y="8" width="4" height="16" rx="1" fill="#f0b429"/>
+    </svg>
+    <span class="logo-name">Smart Website 360 <span>· LiveScript</span></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="header-badge">V1</span>
+    <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
+  </div>
+</header>
+
+<!-- ── MAIN ────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Step 1: Niche -->
+  <div class="card">
+    <div class="card-head">
+      <div class="step-dot">1</div>
+      <div class="card-title">Select niche</div>
+    </div>
+    <div class="card-body">
+      <div class="niche-grid">
+        <button class="opt-btn" data-niche="pm" onclick="selectNiche('pm')">
+          <span class="opt-icon">🏢</span>
+          <span class="opt-label">Property Manager</span>
+        </button>
+        <button class="opt-btn" data-niche="dnt" onclick="selectNiche('dnt')">
+          <span class="opt-icon">🦷</span>
+          <span class="opt-label">Dental Practice</span>
+        </button>
+        <button class="opt-btn" data-niche="con" onclick="selectNiche('con')">
+          <span class="opt-icon">🔨</span>
+          <span class="opt-label">Contractor / Trades</span>
+        </button>
+        <button class="opt-btn" data-niche="ins" onclick="selectNiche('ins')">
+          <span class="opt-icon">🛡️</span>
+          <span class="opt-label">Insurance Agency</span>
+        </button>
+        <button class="opt-btn" data-niche="mtg" onclick="selectNiche('mtg')">
+          <span class="opt-icon">🏠</span>
+          <span class="opt-label">Mortgage Broker</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Format -->
+  <div class="card">
+    <div class="card-head">
+      <div class="step-dot">2</div>
+      <div class="card-title">Select video format</div>
+    </div>
+    <div class="card-body">
+      <div class="format-grid">
+        <button class="opt-btn" data-format="live_call" onclick="selectFormat('live_call')">
+          <span class="opt-icon">📞</span>
+          <span class="opt-label">Live Call Demo</span>
+          <span class="opt-sub"><span class="complexity-dot dot-easy"></span>Easy · phone + camera</span>
+        </button>
+        <button class="opt-btn" data-format="before_after" onclick="selectFormat('before_after')">
+          <span class="opt-icon">↔️</span>
+          <span class="opt-label">Before / After</span>
+          <span class="opt-sub"><span class="complexity-dot dot-medium"></span>Medium · on-camera narration</span>
+        </button>
+        <button class="opt-btn" data-format="mystery_shop" onclick="selectFormat('mystery_shop')">
+          <span class="opt-icon">🔍</span>
+          <span class="opt-label">Mystery Shop Reveal</span>
+          <span class="opt-sub"><span class="complexity-dot dot-complex"></span>Complex · two phones</span>
+        </button>
+        <button class="opt-btn" data-format="avatar_hook" onclick="selectFormat('avatar_hook')">
+          <span class="opt-icon">🎭</span>
+          <span class="opt-label">Avatar Hook</span>
+          <span class="opt-sub"><span class="complexity-dot dot-complex"></span>Complex · Tavus + camera</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Platform -->
+  <div class="card">
+    <div class="card-head">
+      <div class="step-dot">3</div>
+      <div class="card-title">Select platform target</div>
+    </div>
+    <div class="card-body">
+      <div class="platform-grid">
+        <button class="opt-btn" data-platform="linkedin" onclick="selectPlatform('linkedin')">
+          <span class="opt-icon">💼</span>
+          <span class="opt-label">LinkedIn</span>
+          <span class="opt-sub">60–90 seconds</span>
+        </button>
+        <button class="opt-btn" data-platform="short" onclick="selectPlatform('short')">
+          <span class="opt-icon">📱</span>
+          <span class="opt-label">Instagram / TikTok</span>
+          <span class="opt-sub">30–45 seconds</span>
+        </button>
+        <button class="opt-btn" data-platform="both" onclick="selectPlatform('both')">
+          <span class="opt-icon">✦</span>
+          <span class="opt-label">All Platforms</span>
+          <span class="opt-sub">Two length versions</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <div class="generate-wrap">
+    <button class="generate-btn" id="gen-btn" onclick="generate()" disabled>
+      <div class="spinner" id="spinner"></div>
+      <span id="gen-label">Generate video package</span>
+    </button>
+  </div>
+  <div class="error-banner" id="err-banner"></div>
+
+  <!-- ── OUTPUT ───────────────────────────────────── -->
+  <div class="output-wrap" id="output-wrap">
+
+    <div class="output-header">
+      <div class="output-title">Video Package</div>
+      <span class="badge" id="badge-complexity"></span>
+      <span class="badge badge-pain" id="badge-pain"></span>
+    </div>
+
+    <!-- S1: Scene Setup -->
+    <div class="out-section">
+      <div class="out-section-head">
+        <h4>01 — Scene Setup</h4>
+        <button class="copy-btn" onclick="copySection('scene-text', this)">Copy</button>
+      </div>
+      <div class="out-section-body">
+        <p class="out-text" id="scene-text"></p>
+      </div>
+    </div>
+
+    <!-- S2: The Hook -->
+    <div class="out-section">
+      <div class="out-section-head">
+        <h4>02 — The Hook (first 3 seconds)</h4>
+        <button class="copy-btn" onclick="copySection('hook-spoken', this)">Copy spoken</button>
+      </div>
+      <div class="out-section-body">
+        <div class="hook-grid">
+          <div class="hook-box">
+            <label>Spoken — what Henry says</label>
+            <p id="hook-spoken"></p>
+          </div>
+          <div class="hook-box">
+            <label>On-screen text overlay</label>
+            <p id="hook-overlay"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3: Avatar Package (conditional) -->
+    <div class="out-section avatar-section" id="avatar-section">
+      <div class="out-section-head">
+        <h4>03 — Avatar Package (Tavus)</h4>
+        <button class="copy-btn" onclick="copySection('avatar-script-p', this)">Copy script</button>
+      </div>
+      <div class="out-section-body">
+        <div class="avatar-grid">
+          <div class="avatar-field">
+            <label>Character name + role</label>
+            <p id="av-name-role"></p>
+          </div>
+          <div class="avatar-field">
+            <label>Age + ethnicity + location</label>
+            <p id="av-age-eth"></p>
+          </div>
+          <div class="avatar-field">
+            <label>Visual direction</label>
+            <p id="av-visual"></p>
+          </div>
+          <div class="avatar-field">
+            <label>Voice direction (Tavus)</label>
+            <p id="av-voice"></p>
+          </div>
+        </div>
+        <div class="avatar-script-box">
+          <label>Avatar script — what they say</label>
+          <p id="avatar-script-p"></p>
+        </div>
+        <div class="avatar-field" style="margin-bottom:10px;">
+          <label>On-screen text during avatar</label>
+          <p id="av-onscreen"></p>
+        </div>
+        <div class="portrait-prompt-box">
+          <label>ChatGPT Images 2.0 portrait prompt</label>
+          <p id="av-chatgpt-prompt"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4: Henry's Bridge Line -->
+    <div class="out-section">
+      <div class="out-section-head">
+        <h4>04 — Henry's Bridge Line</h4>
+        <button class="copy-btn" onclick="copySection('bridge-text', this)">Copy</button>
+      </div>
+      <div class="out-section-body">
+        <p class="out-text" id="bridge-text"></p>
+      </div>
+    </div>
+
+    <!-- S5: Call Script -->
+    <div class="out-section">
+      <div class="out-section-head">
+        <h4>05 — Call Script</h4>
+        <button class="copy-btn" onclick="copySection('call-script-raw', this)">Copy all</button>
+      </div>
+      <div class="out-section-body">
+        <div class="call-script" id="call-script-display"></div>
+        <textarea id="call-script-raw" style="display:none;"></textarea>
+      </div>
+    </div>
+
+    <!-- S6: Closing + CTA -->
+    <div class="out-section">
+      <div class="out-section-head">
+        <h4>06 — Closing Line + CTA</h4>
+        <button class="copy-btn" onclick="copySection('closing-text', this)">Copy</button>
+      </div>
+      <div class="out-section-body">
+        <p class="out-text" id="closing-text" style="margin-bottom:10px;"></p>
+        <div class="hook-grid">
+          <div class="hook-box">
+            <label>Spoken CTA</label>
+            <p id="cta-spoken"></p>
+          </div>
+          <div class="hook-box">
+            <label>On-screen CTA text</label>
+            <p id="cta-onscreen"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S7: Captions -->
+    <div class="out-section">
+      <div class="out-section-head">
+        <h4>07 — Captions + CTA</h4>
+      </div>
+      <div class="out-section-body">
+        <div class="caption-tabs">
+          <button class="cap-tab active" onclick="showCapTab('linkedin', this)">LinkedIn</button>
+          <button class="cap-tab" onclick="showCapTab('instagram', this)">Instagram</button>
+          <button class="cap-tab" onclick="showCapTab('tiktok', this)">TikTok</button>
+        </div>
+        <div class="caption-panel active" id="cap-linkedin">
+          <div class="caption-text" id="cap-li-text"></div>
+          <div class="caption-length" id="cap-li-len"></div>
+        </div>
+        <div class="caption-panel" id="cap-instagram">
+          <div class="caption-text" id="cap-ig-text"></div>
+          <div class="caption-length" id="cap-ig-len"></div>
+        </div>
+        <div class="caption-panel" id="cap-tiktok">
+          <div class="caption-text" id="cap-tt-text"></div>
+          <div class="caption-length" id="cap-tt-len"></div>
+        </div>
+      </div>
+      <div class="ghl-row">
+        <button class="ghl-btn" id="ghl-btn" onclick="postToGHL()">
+          <span>⬆ Post LinkedIn caption to GHL</span>
+        </button>
+        <span class="ghl-note">Sent as draft · you attach video + schedule</span>
+        <span class="ghl-success" id="ghl-ok">✓ Posted to GHL Social Planner</span>
+      </div>
+    </div>
+
+    <!-- Production Checklist -->
+    <div class="checklist">
+      <h5>Production checklist</h5>
+      <ul id="checklist-items"></ul>
+    </div>
+
+  </div><!-- /output-wrap -->
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const NICHES = {
+  pm:  { label: 'Property Manager',    icon: '🏢', avatar_role: 'property manager' },
+  dnt: { label: 'Dental Practice',     icon: '🦷', avatar_role: 'dental office manager' },
+  con: { label: 'Contractor / Trades', icon: '🔨', avatar_role: 'homeowner' },
+  ins: { label: 'Insurance Agency',    icon: '🛡️', avatar_role: 'insurance agency owner' },
+  mtg: { label: 'Mortgage Broker',     icon: '🏠', avatar_role: 'home buyer' },
+};
+
+const FORMATS = {
+  live_call:     { label: 'Live Call Demo',       complexity: 'Easy',    badge: 'badge-easy' },
+  before_after:  { label: 'Before / After',       complexity: 'Medium',  badge: 'badge-medium' },
+  mystery_shop:  { label: 'Mystery Shop Reveal',  complexity: 'Complex', badge: 'badge-complex' },
+  avatar_hook:   { label: 'Avatar Hook',          complexity: 'Complex', badge: 'badge-complex' },
+};
+
+const PLATFORMS = {
+  linkedin: { label: 'LinkedIn', duration: '60-90 seconds' },
+  short:    { label: 'Instagram / TikTok', duration: '30-45 seconds' },
+  both:     { label: 'all platforms', duration: 'two length versions' },
+};
+
+const PAIN_POINTS = {
+  pm: [
+    { pain: 'after-hours tenant calls going unanswered', stat: '60-80% of voicemail callers never call back', theme: 'missed calls' },
+    { pain: 'unanswered Google reviews silently killing tenant conversions', stat: '9% conversion loss per pattern of unanswered reviews', theme: 'reviews' },
+    { pain: 'maintenance silence driving good tenants to leave', stat: '48 hours of silence is all it takes to lose a good tenant', theme: 'maintenance' },
+    { pain: 'online inquiries going cold in 5 minutes', stat: '78% of customers choose whoever responds first', theme: 'speed' },
+    { pain: 'weekend leasing calls lost with no office open', stat: '$1,000+ per vacant unit per month from preventable response gaps', theme: 'revenue' },
+  ],
+  dnt: [
+    { pain: 'new patient calls missed while staff is chairside', stat: '$224,730 annual revenue loss from 35% missed call rate', theme: 'missed calls' },
+    { pain: 'after-hours new patient requests going unanswered', stat: '47-50% of new patient requests arrive after 5pm', theme: 'after-hours' },
+    { pain: 'no text-back after a missed call losing the patient to a competitor', stat: '86% of callers who reach voicemail hang up and call a competitor', theme: 'text-back' },
+    { pain: 'unanswered Google reviews signaling neglect to prospective patients', stat: '9% drop in new patient conversions per pattern of unanswered reviews', theme: 'reviews' },
+    { pain: 'no automatic review requests leaving lifetime patient value on the table', stat: '$15,000 average lifetime patient value lost per new patient who books elsewhere', theme: 'reviews' },
+  ],
+  con: [
+    { pain: 'missed calls on the job site losing estimate opportunities', stat: '97% of callers who reach voicemail hang up and call someone else', theme: 'missed calls' },
+    { pain: 'no text-back after a missed call letting homeowners hire competitors', stat: '85% who miss first contact will never call back', theme: 'text-back' },
+    { pain: 'weekend estimate requests sitting cold until Monday', stat: '5 minutes before a weekend inquiry goes cold and books a competitor', theme: 'weekend leads' },
+    { pain: 'slow follow-up on sent estimates letting jobs walk away', stat: '60% of jobs close after the 3rd follow-up — which most contractors never send', theme: 'follow-up' },
+    { pain: 'unanswered reviews costing job opportunities before the phone rings', stat: '$120,000 annual revenue lost to unanswered calls at $8,000 average job', theme: 'revenue' },
+  ],
+  ins: [
+    { pain: 'missed calls while with clients losing quote opportunities', stat: '$204,204 annual recoverable revenue from closing the response gap', theme: 'missed calls' },
+    { pain: 'after-hours inquiries going unanswered losing policyholders to faster agencies', stat: '47% of insurance inquiries arrive outside 9-5 hours', theme: 'after-hours' },
+    { pain: 'Saturday morning calls missed when conversion rate is 23% higher', stat: '80% of insurance deals go to the first agency to respond regardless of rate', theme: 'saturday' },
+    { pain: 'slow quote response time losing deals to first responders', stat: '47-hour average response time vs first responders closing 62% vs 28% of deals', theme: 'speed' },
+    { pain: 'lapsed policyholders never reactivated sitting dormant in the CRM', stat: '$8,000-$12,000 average 7-year customer value sitting dormant per lapsed contact', theme: 'reactivation' },
+  ],
+  mtg: [
+    { pain: 'missed calls during closings losing qualified buyers to loan officers who pick up', stat: '80% of mortgage deals go to the first loan officer to respond', theme: 'missed calls' },
+    { pain: 'after-hours pre-approval requests going cold overnight', stat: '40% of mortgage pipeline arrives outside business hours', theme: 'after-hours' },
+    { pain: 'slow initial contact dropping contact rates and losing buyers permanently', stat: '80% drop in contact rate after 5 minutes — average broker responds in 47 hours', theme: 'speed' },
+    { pain: 'past borrowers never reactivated missing referral pipeline', stat: '$30,000-$80,000 annual loss from missing 2 qualified referrals per week', theme: 'reactivation' },
+    { pain: 'no review generation system as trigger lead ban drives up acquisition costs', stat: '45% increase in internet lead costs post-trigger-ban — reviews cost nothing', theme: 'reviews' },
+  ],
+};
+
+const NICHE_STATS = {
+  pm: `• 60-80% of voicemail callers never call back — they call the next listing
+• $1,000+ average monthly revenue lost per vacant unit from preventable response gaps
+• 9% of tenant conversions lost per pattern of unanswered Google reviews
+• 78% of customers choose whoever responds first — not the best
+• 48 hours of maintenance silence is all it takes to lose a good tenant
+• 5 minutes before an online inquiry goes cold`,
+  dnt: `• $224,730 annual revenue loss from a 35% missed call rate (industry average)
+• 86% of callers who reach voicemail hang up and call a competitor immediately
+• 47-50% of new patient requests arrive after your office closes
+• $15,000 average lifetime patient value lost per new patient who books elsewhere
+• 5 minutes before a new patient inquiry goes to a competitor
+• 9% drop in conversions per pattern of unanswered reviews`,
+  con: `• 97% of callers who reach voicemail hang up immediately without leaving a message
+• 62% of contractor calls go unanswered while crews are working on-site
+• $120,000 annual revenue lost at $8,000 average job value
+• 3-hour average contractor callback time — homeowners hire someone else in 5 minutes
+• 60% of jobs close after the 3rd follow-up — which most contractors never send
+• 5 minutes before a weekend estimate inquiry goes cold`,
+  ins: `• $204,204 annual recoverable revenue for the average insurance agency
+• 47% of insurance inquiries arrive outside 9-5 hours
+• Saturday morning converts 23% higher — when most agencies are closed
+• 47-hour average industry response time vs 5-minute window to engage
+• First responders close 62% of quotes — slow responders close 28%
+• 80% of deals go to the first agency to respond regardless of rate`,
+  mtg: `• 80% of mortgage deals go to the first loan officer to respond — regardless of rate
+• 40% of mortgage pipeline arrives outside business hours
+• 80% drop in contact rate after the first 5 minutes
+• Average broker responds in 47 hours — buyers make decisions in minutes
+• 45% increase in internet lead costs post-trigger-ban (March 2026)
+• $80,000 annual loss from missing just 2 qualified referrals per week`,
+};
+
+const FORMAT_INSTRUCTIONS = {
+  live_call: `VIDEO FORMAT: LIVE CALL DEMO
+Henry dials 1-888-708-7367 on camera. The viewer hears the AI employee answer live in real time. No editing required — this is authentic.
+CALL SCRIPT: Write 5-7 realistic dialogue turns showing Henry playing the role of a prospect in the target niche calling the business. The AI employee greets professionally, captures Henry's name, handles the scenario naturally, and demonstrates that it is always on.
+AVATAR: Not required for this format. Set avatar.required to false.`,
+  before_after: `VIDEO FORMAT: BEFORE / AFTER
+Henry narrates on camera showing what used to happen vs what happens now with the digital employee installed.
+CALL SCRIPT FORMAT: Use alternating "Henry Narrates" turns and action description beats. Show the OLD WAY (voicemail, missed call, tenant calling competitor) then the NEW WAY (employee answers instantly, captures lead, sends follow-up).
+AVATAR: Not required for this format. Set avatar.required to false.`,
+  mystery_shop: `VIDEO FORMAT: MYSTERY SHOP REVEAL
+Henry calls a REAL local business in the niche (they go to voicemail — shown on camera), then calls 1-888-708-7367 to contrast. The viewer sees the problem AND the solution in one video.
+CALL SCRIPT: TWO separate call sequences. Label the first section "CALL 1 — [Business Type]" showing Henry calling and getting voicemail (include [VOICEMAIL BEEP] as a beat). Label second section "CALL 2 — Smart Website 360" showing the employee answering live.
+AVATAR: Not required for this format. Set avatar.required to false.`,
+  avatar_hook: `VIDEO FORMAT: AVATAR HOOK
+An AI-generated avatar character from the target niche reacts with genuine surprise AFTER hearing the demo number — then the video cuts to Henry who bridges to a live demo call.
+AVATAR: Required (set required to true). Character must be a realistic professional from the niche. Script is 2-3 sentences of spontaneous reaction — EXPERIENCE reactions only ("I can't believe how human that sounds") — NEVER results claims.
+CALL SCRIPT: Henry's dialogue after the cut — he calls 1-888-708-7367 and the viewer hears the employee answer live.`,
+};
+
+const CHECKLISTS = {
+  live_call: ['Set up camera facing you at desk or workspace','Place phone visible in frame — this is your dialing phone','Start recording, look at camera for 1 second, then dial','Stay on camera while AI answers — your reactions are content','Keep video under 90 seconds for LinkedIn, under 45 for short-form'],
+  before_after: ['Set up camera facing you','Optional: phone on desk for visual prop','Film the "old way" narration first, then "new way"','Use gestures when describing missed calls / unanswered calls','End by dialing 1-888-708-7367 live so viewer hears the result'],
+  mystery_shop: ['Prepare two phones — one for the mystery shop call, one for the demo','Film yourself dialing the real business on the first phone','Let voicemail play on camera — do not cut','React naturally to the voicemail','Pick up second phone and dial 1-888-708-7367 — viewer hears the contrast','Add on-screen text: real business name blurred or replaced with "[Local Business]"'],
+  avatar_hook: ['Generate avatar portrait in ChatGPT Images 2.0 using the exact prompt below','Upload portrait to Tavus as Image-to-Replica on Starter plan ($59/mo)','Input avatar script into Tavus with voice direction notes','Download finished Tavus video clip (5-7 seconds)','Film your bridge line and demo call on your camera','Edit: Tavus clip → your bridge → live demo call → closing + CTA'],
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let selNiche = null, selFormat = null, selPlatform = null, currentData = null;
+
+// ── SELECTION ─────────────────────────────────────────────────────────────
+function selectNiche(n) {
+  selNiche = n;
+  document.querySelectorAll('[data-niche]').forEach(b => b.classList.toggle('active', b.dataset.niche === n));
+  checkReady();
+}
+function selectFormat(f) {
+  selFormat = f;
+  document.querySelectorAll('[data-format]').forEach(b => b.classList.toggle('active', b.dataset.format === f));
+  checkReady();
+}
+function selectPlatform(p) {
+  selPlatform = p;
+  document.querySelectorAll('[data-platform]').forEach(b => b.classList.toggle('active', b.dataset.platform === p));
+  checkReady();
+}
+function checkReady() {
+  document.getElementById('gen-btn').disabled = !(selNiche && selFormat && selPlatform);
+}
+
+// ── ROTATION ─────────────────────────────────────────────────────────────
+function getNextPainPoint() {
+  const pts = PAIN_POINTS[selNiche];
+  const hist = JSON.parse(localStorage.getItem('vc_hist') || '[]');
+  const recent = hist.filter(h => h.n === selNiche).slice(-3).map(h => h.i);
+  let idx = 0;
+  for (let i = 0; i < pts.length; i++) { if (!recent.includes(i)) { idx = i; break; } }
+  return { point: pts[idx], idx };
+}
+function recordUsage(idx) {
+  const hist = JSON.parse(localStorage.getItem('vc_hist') || '[]');
+  hist.push({ n: selNiche, f: selFormat, i: idx, t: Date.now() });
+  localStorage.setItem('vc_hist', JSON.stringify(hist.slice(-50)));
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('s-anthro').value = localStorage.getItem('vc_anthro') || '';
+  document.getElementById('s-ghl-token').value = localStorage.getItem('vc_ghl_token') || '';
+  document.getElementById('s-ghl-loc').value = localStorage.getItem('vc_ghl_loc') || 'm5I5xSjXdjlZdedg9bdP';
+  document.getElementById('modal').classList.add('open');
+}
+function closeSettings() { document.getElementById('modal').classList.remove('open'); }
+function saveSettings() {
+  localStorage.setItem('vc_anthro', document.getElementById('s-anthro').value.trim());
+  localStorage.setItem('vc_ghl_token', document.getElementById('s-ghl-token').value.trim());
+  localStorage.setItem('vc_ghl_loc', document.getElementById('s-ghl-loc').value.trim());
+  closeSettings();
+  showToast('Settings saved ✓');
+}
+
+// ── GENERATE ──────────────────────────────────────────────────────────────
+async function generate() {
+  const apiKey = localStorage.getItem('vc_anthro');
+  if (!apiKey) { openSettings(); return; }
+
+  const { point, idx } = getNextPainPoint();
+  const niche = NICHES[selNiche];
+  const format = FORMATS[selFormat];
+  const platform = PLATFORMS[selPlatform];
+
+  const platformInstr = selPlatform === 'both'
+    ? 'Generate captions for all three platforms: LinkedIn (150-200 words), Instagram (60-80 words), TikTok (30 words max).'
+    : selPlatform === 'linkedin'
+    ? 'Primary platform is LinkedIn (150-200 words). Also generate shorter Instagram and TikTok versions.'
+    : 'Primary platform is Instagram/TikTok (30-60 words). Also generate a LinkedIn version.';
+
+  const systemPrompt = `You are the Smart Website 360 Video Content Tool. Generate a complete video production package.
+
+PRODUCT RULES — never break these:
+• The product is always "your new digital employee" or "your employee." NEVER: AI, system, platform, SaaS, receptionist, tool, bot.
+• Demo number 1-888-708-7367 is always framed as "hear your new employee answer live" — not the agency's number.
+• Second person throughout. Never "businesses" or "property managers" — always "your business," "your tenants," "you."
+• Outcome language: revenue lost, tenants choosing competitors, jobs going elsewhere. Never "time saved."
+• Never state the price ($297/month) anywhere.
+
+HOOK RULES (first 3 seconds — critical):
+Use exactly ONE of:
+1. NUMBER — a specific stat stated cold with no setup. "$224,730." or "97% of callers."
+2. CONTRADICTION — something the viewer assumes is true that is wrong. "The best contractor doesn't get the job."
+3. CONSEQUENCE — what is happening right now in real time. "Right now, while you're watching this, a tenant called your office."
+NEVER start with context, setup, "I want to show you," or any form of introduction.
+
+NICHE: ${niche.label}
+PAIN POINT THIS VIDEO ADDRESSES: ${point.pain}
+THEME: ${point.theme}
+
+VERIFIED NICHE STATISTICS (use these exact numbers — never invent stats):
+${NICHE_STATS[selNiche]}
+
+${FORMAT_INSTRUCTIONS[selFormat]}
+
+PLATFORM: ${platformInstr}
+
+CAPTION RULES:
+• LinkedIn: hook line + 2-3 line setup + demo number with framing + 3 niche-specific hashtags. 150-200 words.
+• Instagram: hook line + one setup sentence + demo number + 2 hashtags. 60-80 words.
+• TikTok: hook line only + demo number. 30 words max.
+• Demo number in all captions: "Call 1-888-708-7367 — hear your new employee answer live."
+• Never state the price in any caption.
+
+AVATAR RULES (only when avatar_hook format — otherwise required = false):
+• Character is a real professional from the niche — specific title, specific city.
+• Script: 2-3 sentences of genuine surprise. Must sound spontaneous, not testimonial-like.
+• Experience reactions ONLY: "I can't believe how human it sounds" ✓. "This saved my business" ✗.
+• Include exact ChatGPT Images 2.0 prompt for creating a photorealistic portrait of this character.
+• Portrait prompt must specify: front-facing, neutral-to-slight-surprise expression, even soft lighting, blurred professional background, head and shoulders framing, photorealistic.
+
+Return ONLY valid JSON. No markdown code fences. No preamble. No text after the JSON closes.
+
+Required schema:
+{
+  "complexity": "Easy|Medium|Complex",
+  "pain_point": "brief label of the pain this video addresses",
+  "scene_setup": "2-3 sentences of exact production direction for Henry — what viewer sees, camera position, phone placement",
+  "hook_spoken": "exact words spoken in the first 3 seconds",
+  "hook_overlay": "on-screen text shown during first 3 seconds — different from spoken, shorter",
+  "avatar": {
+    "required": false,
+    "name": "",
+    "age_range": "",
+    "ethnicity": "",
+    "role": "",
+    "location": "",
+    "visual_direction": "",
+    "voice_direction": "",
+    "script": "",
+    "onscreen_text": "",
+    "chatgpt_portrait_prompt": "",
+    "tavus_notes": ""
+  },
+  "bridge_line": "one sentence Henry says immediately after hook or avatar cut",
+  "call_script": [
+    {"speaker": "Henry", "line": ""}
+  ],
+  "closing_line": "final line before the CTA",
+  "cta_spoken": "exact CTA words Henry says",
+  "cta_onscreen": "on-screen text overlay for the CTA moment",
+  "caption_linkedin": "",
+  "caption_instagram": "",
+  "caption_tiktok": ""
+}`;
+
+  // UI loading state
+  const btn = document.getElementById('gen-btn');
+  const spinner = document.getElementById('spinner');
+  const label = document.getElementById('gen-label');
+  const errBanner = document.getElementById('err-banner');
+  btn.disabled = true;
+  spinner.classList.add('show');
+  label.textContent = 'Generating your package...';
+  errBanner.classList.remove('show');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: `Generate a video package for a ${niche.label} video. Format: ${format.label}. Platform: ${platform.label}. Pain point focus: ${point.pain}.` }],
+        system: systemPrompt,
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `API error ${res.status}`);
+    }
+
+    const apiData = await res.json();
+    const raw = apiData.content?.[0]?.text || '';
+    const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+    const data = JSON.parse(cleaned);
+    currentData = data;
+    recordUsage(idx);
+    renderOutput(data, point);
+
+  } catch(e) {
+    errBanner.textContent = e.message.includes('JSON') ? 'Response could not be parsed. Try again.' : e.message;
+    errBanner.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('show');
+    label.textContent = 'Generate video package';
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function renderOutput(data, point) {
+  const format = FORMATS[selFormat];
+
+  // Header badges
+  const bc = document.getElementById('badge-complexity');
+  bc.textContent = data.complexity || format.complexity;
+  bc.className = 'badge ' + format.badge;
+  document.getElementById('badge-pain').textContent = data.pain_point || point.theme;
+
+  // S1
+  document.getElementById('scene-text').textContent = data.scene_setup || '';
+
+  // S2
+  document.getElementById('hook-spoken').textContent = data.hook_spoken || '';
+  document.getElementById('hook-overlay').textContent = data.hook_overlay || '';
+
+  // S3 Avatar
+  const avSection = document.getElementById('avatar-section');
+  const av = data.avatar;
+  if (selFormat === 'avatar_hook' && av && av.required !== false) {
+    avSection.classList.add('show');
+    document.getElementById('av-name-role').textContent = `${av.name || ''} — ${av.role || ''}`;
+    document.getElementById('av-age-eth').textContent = `${av.age_range || ''}, ${av.ethnicity || ''}, ${av.location || ''}`;
+    document.getElementById('av-visual').textContent = av.visual_direction || '';
+    document.getElementById('av-voice').textContent = av.voice_direction || '';
+    document.getElementById('avatar-script-p').textContent = av.script || '';
+    document.getElementById('av-onscreen').textContent = av.onscreen_text || '';
+    document.getElementById('av-chatgpt-prompt').textContent = av.chatgpt_portrait_prompt || '';
+  } else {
+    avSection.classList.remove('show');
+  }
+
+  // S4
+  document.getElementById('bridge-text').textContent = data.bridge_line || '';
+
+  // S5 Call Script
+  const scriptDisplay = document.getElementById('call-script-display');
+  scriptDisplay.innerHTML = '';
+  let rawScript = '';
+  (data.call_script || []).forEach(turn => {
+    const row = document.createElement('div');
+    row.className = 'script-turn';
+    const sp = turn.speaker.toLowerCase();
+    let badgeClass = 'speaker-henry';
+    if (sp === 'ai' || sp === 'ai employee') badgeClass = 'speaker-ai';
+    else if (sp.includes('narrat')) badgeClass = 'speaker-narrates';
+    else if (sp.includes('voicemail')) badgeClass = 'speaker-voicemail';
+    row.innerHTML = `<span class="speaker-badge ${badgeClass}">${turn.speaker}</span><span class="script-line">${turn.line}</span>`;
+    scriptDisplay.appendChild(row);
+    rawScript += `[${turn.speaker}]: ${turn.line}\n`;
+  });
+  document.getElementById('call-script-raw').value = rawScript;
+
+  // S6
+  document.getElementById('closing-text').textContent = data.closing_line || '';
+  document.getElementById('cta-spoken').textContent = data.cta_spoken || '';
+  document.getElementById('cta-onscreen').textContent = data.cta_onscreen || '';
+
+  // S7 Captions
+  const li = data.caption_linkedin || '';
+  const ig = data.caption_instagram || '';
+  const tt = data.caption_tiktok || '';
+  document.getElementById('cap-li-text').textContent = li;
+  document.getElementById('cap-li-len').textContent = `${li.split(/\s+/).filter(Boolean).length} words`;
+  document.getElementById('cap-ig-text').textContent = ig;
+  document.getElementById('cap-ig-len').textContent = `${ig.split(/\s+/).filter(Boolean).length} words`;
+  document.getElementById('cap-tt-text').textContent = tt;
+  document.getElementById('cap-tt-len').textContent = `${tt.split(/\s+/).filter(Boolean).length} words`;
+
+  // Reset GHL status
+  document.getElementById('ghl-ok').classList.remove('show');
+
+  // Checklist
+  const ul = document.getElementById('checklist-items');
+  ul.innerHTML = '';
+  (CHECKLISTS[selFormat] || []).forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    ul.appendChild(li);
+  });
+
+  // Show output
+  const wrap = document.getElementById('output-wrap');
+  wrap.classList.add('visible');
+  setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+// ── CAPTIONS TABS ─────────────────────────────────────────────────────────
+function showCapTab(platform, btn) {
+  document.querySelectorAll('.cap-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.caption-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cap-' + platform).classList.add('active');
+}
+
+// ── GHL POST ──────────────────────────────────────────────────────────────
+async function postToGHL() {
+  const token = localStorage.getItem('vc_ghl_token');
+  const locId = localStorage.getItem('vc_ghl_loc') || 'm5I5xSjXdjlZdedg9bdP';
+  if (!token) { openSettings(); return; }
+  if (!currentData) return;
+
+  const caption = currentData.caption_linkedin;
+  const btn = document.getElementById('ghl-btn');
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Posting...';
+
+  try {
+    const body = {
+      type: 'post',
+      status: 'draft',
+      locationId: locId,
+      summary: caption,
+      tags: ['video-content', selNiche, selFormat],
+    };
+
+    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/oauth/facebook/${locId}/posts`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      document.getElementById('ghl-ok').classList.add('show');
+      showToast('Caption posted to GHL as draft ✓');
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast('GHL error: ' + (err.message || res.status));
+    }
+  } catch(e) {
+    showToast('Copy the caption and paste into GHL manually');
+  } finally {
+    btn.disabled = false;
+    btn.querySelector('span').textContent = '⬆ Post LinkedIn caption to GHL';
+  }
+}
+
+// ── COPY ──────────────────────────────────────────────────────────────────
+function copySection(id, btn) {
+  const el = document.getElementById(id);
+  const text = el.value || el.textContent;
+  if (!text) return;
+  const copy = () => { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = id.includes('script') ? 'Copy all' : 'Copy', 1800); };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(copy);
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); copy();
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (!localStorage.getItem('vc_anthro')) {
+    setTimeout(openSettings, 600);
+  }
+});
+</script>
+</body>
+</html>

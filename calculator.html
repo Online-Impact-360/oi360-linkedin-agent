@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missed Call Calculator — Smart Website 360</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #0a1628;
+    --teal:   #00b4ab;
+    --teal-l: #e6f9f8;
+    --yellow: #f0b429;
+    --yellow-l: #fef9ee;
+    --white:  #ffffff;
+    --gray-1: #f7f8fa;
+    --gray-2: #eef0f4;
+    --gray-3: #c8cdd8;
+    --gray-4: #8892a4;
+    --gray-5: #4a5568;
+    --text:   #1a202c;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(10,22,40,0.10);
+    --shadow-lg: 0 12px 48px rgba(10,22,40,0.16);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-1);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  .header {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-2);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(10,22,40,0.06);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .logo-text {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--navy);
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  .logo-text span {
+    display: block;
+    font-weight: 300;
+    font-size: 11px;
+    color: var(--gray-4);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .header-cta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--teal);
+    color: var(--white);
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .header-cta:hover { background: #009990; transform: translateY(-1px); }
+
+  /* ── HERO ────────────────────────────────────────────────── */
+  .hero {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-2);
+    padding: 64px 32px 56px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--teal-l);
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+  .hero-badge svg { width: 14px; height: 14px; }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1.1;
+    max-width: 720px;
+    margin: 0 auto 20px;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--teal);
+  }
+  .hero p {
+    font-size: 18px;
+    color: var(--gray-5);
+    max-width: 520px;
+    margin: 0 auto;
+    font-weight: 300;
+  }
+
+  /* ── MAIN LAYOUT ─────────────────────────────────────────── */
+  .main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── CARD ───────────────────────────────────────────────── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-2);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .card-header {
+    padding: 28px 32px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .card-body { padding: 20px 32px 28px; }
+
+  /* ── NICHE SELECTOR ─────────────────────────────────────── */
+  .niche-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .niche-btn {
+    border: 2px solid var(--gray-2);
+    background: var(--white);
+    border-radius: 12px;
+    padding: 14px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.18s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .niche-btn:hover {
+    border-color: var(--teal);
+    background: var(--teal-l);
+  }
+  .niche-btn.active {
+    border-color: var(--teal);
+    background: var(--teal-l);
+    box-shadow: 0 0 0 3px rgba(0,180,171,0.12);
+  }
+  .niche-icon {
+    font-size: 26px;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .niche-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1.3;
+  }
+
+  /* ── SLIDERS ─────────────────────────────────────────────── */
+  .input-group { margin-top: 4px; }
+  .input-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-5);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .input-label strong { color: var(--navy); }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--teal) 0%, var(--teal) var(--pct, 30%), var(--gray-2) var(--pct, 30%), var(--gray-2) 100%);
+    outline: none;
+    cursor: pointer;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--teal);
+    box-shadow: 0 2px 8px rgba(0,180,171,0.25);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .slider-val {
+    min-width: 64px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--gray-1);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+
+  /* ── SELECT ──────────────────────────────────────────────── */
+  .select-wrap {
+    position: relative;
+    margin-top: 4px;
+  }
+  .select-wrap svg {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--gray-4);
+  }
+  select {
+    width: 100%;
+    padding: 14px 44px 14px 16px;
+    border: 2px solid var(--gray-2);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--navy);
+    background: var(--white);
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.18s;
+    font-weight: 500;
+  }
+  select:focus { outline: none; border-color: var(--teal); }
+
+  /* ── RESULT ──────────────────────────────────────────────── */
+  .result-card {
+    background: var(--navy);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.4s, transform 0.4s;
+    pointer-events: none;
+  }
+  .result-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .result-top {
+    padding: 36px 36px 28px;
+    text-align: center;
+  }
+  .result-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+  }
+  .result-intro {
+    font-size: 15px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+  .result-numbers {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+  .result-num-block {
+    background: rgba(10,22,40,0.6);
+    padding: 28px 20px;
+    text-align: center;
+  }
+  .result-num-block:first-child { border-radius: 0; }
+  .result-period {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+  }
+  .result-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 900;
+    color: var(--yellow);
+    line-height: 1;
+    transition: all 0.3s;
+  }
+  .result-amount.monthly { color: var(--teal); }
+  .result-sublabel {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 6px;
+  }
+  .result-message {
+    padding: 20px 32px 24px;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .result-message p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .result-message strong { color: var(--teal); font-weight: 600; }
+
+  /* ── SHARE BUTTON ────────────────────────────────────────── */
+  .share-row {
+    display: flex;
+    gap: 10px;
+    padding: 0 32px 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.18s;
+    text-decoration: none;
+  }
+  .share-btn-li {
+    background: #0077b5;
+    color: white;
+  }
+  .share-btn-li:hover { background: #005e91; transform: translateY(-1px); }
+  .share-btn-copy {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .share-btn-copy:hover { background: rgba(255,255,255,0.18); }
+
+  /* ── CTA BLOCK ───────────────────────────────────────────── */
+  .cta-block {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-2);
+    box-shadow: var(--shadow);
+    padding: 36px 32px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .cta-block h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  .cta-block p {
+    font-size: 15px;
+    color: var(--gray-5);
+    margin-bottom: 28px;
+    font-weight: 300;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 28px;
+  }
+  .cta-demo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--teal);
+    color: var(--white);
+    text-decoration: none;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: all 0.18s;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 20px rgba(0,180,171,0.3);
+  }
+  .cta-demo:hover {
+    background: #009990;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0,180,171,0.35);
+  }
+  .cta-demo svg { width: 20px; height: 20px; }
+  .cta-sub {
+    font-size: 12px;
+    color: var(--gray-4);
+    margin-top: 8px !important;
+    margin-bottom: 0 !important;
+  }
+  .cta-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--gray-3);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .cta-divider::before, .cta-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-2);
+  }
+  .cta-ebook {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid var(--navy);
+    color: var(--navy);
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.18s;
+  }
+  .cta-ebook:hover {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  /* ── FEATURES ────────────────────────────────────────────── */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--gray-2);
+  }
+  .feature {
+    text-align: center;
+    padding: 8px;
+  }
+  .feature-icon {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+  .feature-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 2px;
+  }
+  .feature-desc {
+    font-size: 11px;
+    color: var(--gray-4);
+    line-height: 1.4;
+  }
+
+  /* ── FOOTER ──────────────────────────────────────────────── */
+  .footer {
+    text-align: center;
+    padding: 32px;
+    font-size: 12px;
+    color: var(--gray-4);
+    border-top: 1px solid var(--gray-2);
+    background: var(--white);
+  }
+  .footer a { color: var(--teal); text-decoration: none; }
+
+  /* ── TOAST ───────────────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--navy);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .hero { padding: 40px 20px 36px; }
+    .card-header, .card-body { padding-left: 20px; padding-right: 20px; }
+    .result-numbers { grid-template-columns: 1fr; }
+    .result-top { padding: 28px 20px 20px; }
+    .result-message, .share-row { padding-left: 20px; padding-right: 20px; }
+    .features { grid-template-columns: 1fr; }
+    .niche-grid { grid-template-columns: repeat(3, 1fr); }
+    .header { padding: 14px 16px; }
+    .header-cta span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────── -->
+<header class="header">
+  <a href="https://smartwebsite360.com" class="logo">
+    <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="8" fill="#0a1628"/>
+      <rect x="10" y="22" width="4" height="8" rx="1" fill="#00b4ab"/>
+      <rect x="16" y="16" width="4" height="14" rx="1" fill="#00b4ab"/>
+      <rect x="22" y="10" width="4" height="20" rx="1" fill="#f0b429"/>
+    </svg>
+    <div class="logo-text">
+      Smart Website 360
+      <span>by Online Impact 360</span>
+    </div>
+  </a>
+  <a href="tel:18887087367" class="header-cta">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.67 19.79 19.79 0 01.22 4.04 2 2 0 012.2 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+    <span>1-888-708-7367</span>
+  </a>
+</header>
+
+<!-- ── HERO ────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Free Calculator
+  </div>
+  <h1>How Much Are Missed Calls<br>Costing <em>Your Business</em>?</h1>
+  <p>Enter your numbers. See your real loss — not an industry average. Takes 30 seconds.</p>
+</section>
+
+<!-- ── MAIN ────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Step 1: Niche -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">1</div>
+      <div class="card-title">What type of business are you?</div>
+    </div>
+    <div class="card-body">
+      <div class="niche-grid">
+        <button class="niche-btn" data-niche="pm" onclick="selectNiche('pm')">
+          <span class="niche-icon">🏢</span>
+          <span class="niche-label">Property Manager</span>
+        </button>
+        <button class="niche-btn" data-niche="dnt" onclick="selectNiche('dnt')">
+          <span class="niche-icon">🦷</span>
+          <span class="niche-label">Dental Practice</span>
+        </button>
+        <button class="niche-btn" data-niche="con" onclick="selectNiche('con')">
+          <span class="niche-icon">🔨</span>
+          <span class="niche-label">Contractor / Trades</span>
+        </button>
+        <button class="niche-btn" data-niche="ins" onclick="selectNiche('ins')">
+          <span class="niche-icon">🛡️</span>
+          <span class="niche-label">Insurance Agency</span>
+        </button>
+        <button class="niche-btn" data-niche="mtg" onclick="selectNiche('mtg')">
+          <span class="niche-icon">🏠</span>
+          <span class="niche-label">Mortgage Broker</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Volume -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">2</div>
+      <div class="card-title" id="label-volume">How many inbound calls do you receive per week?</div>
+    </div>
+    <div class="card-body">
+      <div class="slider-row">
+        <input type="range" class="slider" id="slider-volume" min="5" max="100" value="25" oninput="handleSlider('volume', this.value)" style="--pct: 20%">
+        <div class="slider-val" id="val-volume">25</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Job Value -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">3</div>
+      <div class="card-title" id="label-value">What is the average value of a new customer or job?</div>
+    </div>
+    <div class="card-body">
+      <div class="select-wrap">
+        <select id="select-value" onchange="calculate()">
+          <option value="">Select average job value...</option>
+        </select>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Miss Rate -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">4</div>
+      <div class="card-title">What percentage of calls go unanswered or don't get a same-day response?</div>
+    </div>
+    <div class="card-body">
+      <div class="slider-row">
+        <input type="range" class="slider" id="slider-miss" min="10" max="70" value="30" oninput="handleSlider('miss', this.value)" style="--pct: 28.6%">
+        <div class="slider-val" id="val-miss">30%</div>
+      </div>
+      <p style="font-size:12px; color:var(--gray-4); margin-top: 12px;">
+        Industry average is 30–40%. Most business owners underestimate this number.
+      </p>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="result-card">
+    <div class="result-top">
+      <div class="result-label">Your Estimated Revenue Loss</div>
+      <div class="result-intro" id="result-intro">Based on your numbers —</div>
+      <div class="result-numbers">
+        <div class="result-num-block">
+          <div class="result-period">Per Month</div>
+          <div class="result-amount monthly" id="amt-month">$0</div>
+          <div class="result-sublabel">leaving through the gap</div>
+        </div>
+        <div class="result-num-block">
+          <div class="result-period">Per Year</div>
+          <div class="result-amount" id="amt-year">$0</div>
+          <div class="result-sublabel">in missed revenue</div>
+        </div>
+        <div class="result-num-block">
+          <div class="result-period">Over 10 Years</div>
+          <div class="result-amount" id="amt-decade">$0</div>
+          <div class="result-sublabel">at current miss rate</div>
+        </div>
+      </div>
+    </div>
+    <div class="result-message">
+      <p>The average business that installs a digital employee <strong>recovers this within the first 30 days</strong>. Not the first year. The first month.</p>
+    </div>
+    <div class="share-row">
+      <button class="share-btn share-btn-li" onclick="shareLinkedIn()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+        Share on LinkedIn
+      </button>
+      <button class="share-btn share-btn-copy" onclick="copyResult()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy Results
+      </button>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block" id="cta-block" style="display:none">
+    <h2>Hear Your New Employee Answer Live</h2>
+    <p>Call the number below. It's the same employee your customers would reach. No sales pitch. Just 60 seconds.</p>
+    <a href="tel:18887087367" class="cta-demo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.67 19.79 19.79 0 01.22 4.04 2 2 0 012.2 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      Call 1-888-708-7367
+    </a>
+    <p class="cta-sub" id="cta-sub-text">Ask it how it handles a missed call from a new inquiry. It will show you.</p>
+
+    <div class="cta-divider">or</div>
+
+    <a href="https://smartwebsite360.com" class="cta-ebook" id="cta-ebook-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span id="cta-ebook-text">Get your free Revenue Leak Report</span>
+    </a>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Live in 48 hours</div>
+        <div class="feature-desc">Faster than hiring a single employee</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔗</div>
+        <div class="feature-title">No website changes</div>
+        <div class="feature-desc">Layers on top of what you have</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">✓</div>
+        <div class="feature-title">Cancel anytime</div>
+        <div class="feature-desc">No contracts. No lock-in.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <p>Built by <a href="https://onlineimpact360.com">Online Impact 360</a> &nbsp;·&nbsp; <a href="https://smartwebsite360.com">smartwebsite360.com</a> &nbsp;·&nbsp; <a href="tel:18887087367">1-888-708-7367</a></p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────
+const NICHES = {
+  pm: {
+    volumeLabel: 'How many tenant inquiries and inbound calls do you receive per week?',
+    valueLabel:  'What is the average monthly rent value of a new tenant lease?',
+    options: [
+      { label: '$500 – $1,000 / month',  mid: 750 },
+      { label: '$1,000 – $2,000 / month', mid: 1500 },
+      { label: '$2,000 – $3,500 / month', mid: 2750 },
+      { label: '$3,500+ / month',          mid: 4500 },
+    ],
+    ctaSub:   'Ask it how it handles a missed call from a prospective tenant.',
+    ebookTxt: 'Get your free Property Manager Revenue Leak Report',
+    ebookUrl: 'https://smartwebsite360.com',
+    shareIntro: 'I just calculated what missed calls are costing my property management business.',
+  },
+  dnt: {
+    volumeLabel: 'How many new patient calls does your practice receive per week?',
+    valueLabel:  'What is the average first-visit value of a new patient?',
+    options: [
+      { label: '$800 – $1,500 first visit',  mid: 1150 },
+      { label: '$1,500 – $3,000 first visit', mid: 2250 },
+      { label: '$3,000 – $5,000 first visit', mid: 4000 },
+      { label: '$5,000+ first visit',          mid: 6500 },
+    ],
+    ctaSub:   'Ask it how it handles a call from a new patient after hours.',
+    ebookTxt: 'Get your free Dental Practice Revenue Leak Report',
+    ebookUrl: 'https://smartwebsite360.com',
+    shareIntro: 'I just calculated what missed new patient calls are costing my dental practice.',
+  },
+  con: {
+    volumeLabel: 'How many estimate requests and inbound job calls do you receive per week?',
+    valueLabel:  'What is the average value of a new job or project?',
+    options: [
+      { label: '$2,000 – $5,000 avg job',   mid: 3500 },
+      { label: '$5,000 – $15,000 avg job',  mid: 10000 },
+      { label: '$15,000 – $30,000 avg job', mid: 22500 },
+      { label: '$30,000+ avg job',           mid: 40000 },
+    ],
+    ctaSub:   'Ask it how it handles a missed call from a homeowner looking for an estimate.',
+    ebookTxt: 'Get your free Contractor Revenue Leak Report',
+    ebookUrl: 'https://smartwebsite360.com',
+    shareIntro: 'I just calculated what missed estimate requests are costing my contracting business.',
+  },
+  ins: {
+    volumeLabel: 'How many quote requests and inbound calls does your agency receive per week?',
+    valueLabel:  'What is the average annual commission on a new policy?',
+    options: [
+      { label: '$500 – $1,000 commission',   mid: 750 },
+      { label: '$1,000 – $2,500 commission',  mid: 1750 },
+      { label: '$2,500 – $5,000 commission',  mid: 3750 },
+      { label: '$5,000+ commission',           mid: 7000 },
+    ],
+    ctaSub:   'Ask it how it handles a quote request from a prospect after hours.',
+    ebookTxt: 'Get your free Insurance Agency Revenue Leak Report',
+    ebookUrl: 'https://smartwebsite360.com',
+    shareIntro: 'I just calculated what missed quote requests are costing my insurance agency.',
+  },
+  mtg: {
+    volumeLabel: 'How many buyer inquiries and pre-approval requests do you receive per week?',
+    valueLabel:  'What is your average origination fee per closed loan?',
+    options: [
+      { label: '$3,000 – $5,000 per loan',   mid: 4000 },
+      { label: '$5,000 – $8,000 per loan',   mid: 6500 },
+      { label: '$8,000 – $15,000 per loan',  mid: 11500 },
+      { label: '$15,000+ per loan',           mid: 20000 },
+    ],
+    ctaSub:   'Ask it how it handles a pre-approval request from a buyer after hours.',
+    ebookTxt: 'Get your free Mortgage Broker Revenue Leak Report',
+    ebookUrl: 'https://smartwebsite360.com',
+    shareIntro: 'I just calculated what missed buyer inquiries are costing my mortgage business.',
+  },
+};
+
+// ── STATE ─────────────────────────────────────────────────────
+let currentNiche = null;
+let currentMonth = 0;
+let currentYear  = 0;
+let currentDecade = 0;
+
+// ── NICHE SELECT ──────────────────────────────────────────────
+function selectNiche(niche) {
+  currentNiche = niche;
+  document.querySelectorAll('.niche-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-niche="${niche}"]`).classList.add('active');
+
+  const data = NICHES[niche];
+  document.getElementById('label-volume').textContent = data.volumeLabel;
+  document.getElementById('label-value').textContent  = data.valueLabel;
+
+  const sel = document.getElementById('select-value');
+  sel.innerHTML = '<option value="">Select average job value...</option>';
+  data.options.forEach((opt, i) => {
+    const o = document.createElement('option');
+    o.value = opt.mid;
+    o.textContent = opt.label;
+    sel.appendChild(o);
+  });
+
+  document.getElementById('cta-sub-text').textContent  = data.ctaSub;
+  document.getElementById('cta-ebook-text').textContent = data.ebookTxt;
+  document.getElementById('cta-ebook-link').href        = data.ebookUrl;
+
+  calculate();
+}
+
+// ── SLIDER ────────────────────────────────────────────────────
+function handleSlider(type, val) {
+  if (type === 'volume') {
+    const pct = ((val - 5) / (100 - 5)) * 100;
+    document.getElementById('slider-volume').style.setProperty('--pct', pct + '%');
+    document.getElementById('val-volume').textContent = val;
+  } else {
+    const pct = ((val - 10) / (70 - 10)) * 100;
+    document.getElementById('slider-miss').style.setProperty('--pct', pct + '%');
+    document.getElementById('val-miss').textContent = val + '%';
+  }
+  calculate();
+}
+
+// ── CALCULATE ─────────────────────────────────────────────────
+function calculate() {
+  if (!currentNiche) return;
+  const jobVal  = parseFloat(document.getElementById('select-value').value);
+  if (!jobVal) return;
+
+  const volume  = parseInt(document.getElementById('slider-volume').value);
+  const missRate = parseInt(document.getElementById('slider-miss').value) / 100;
+  const weeksPerMonth = 4.33;
+
+  const missedPerMonth = volume * missRate * weeksPerMonth;
+  const monthlyLoss   = missedPerMonth * jobVal;
+  const yearlyLoss    = monthlyLoss * 12;
+  const decadeLoss    = yearlyLoss * 10;
+
+  currentMonth  = monthlyLoss;
+  currentYear   = yearlyLoss;
+  currentDecade = decadeLoss;
+
+  animateValue('amt-month',  monthlyLoss);
+  animateValue('amt-year',   yearlyLoss);
+  animateValue('amt-decade', decadeLoss);
+
+  const intro = `Your business is losing approximately <strong style="color:var(--teal)">${fmt(monthlyLoss)}</strong> every month to missed and unanswered calls.`;
+  document.getElementById('result-intro').innerHTML = intro;
+
+  document.getElementById('result-card').classList.add('visible');
+  document.getElementById('cta-block').style.display = 'block';
+
+  setTimeout(() => {
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function fmt(n) {
+  if (n >= 1000000) return '$' + (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000)    return '$' + Math.round(n / 1000) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function animateValue(id, target) {
+  const el = document.getElementById(id);
+  const start = 0;
+  const duration = 800;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = fmt(start + (target - start) * eased);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = fmt(target);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── SHARE ON LINKEDIN ─────────────────────────────────────────
+function shareLinkedIn() {
+  if (!currentNiche || currentMonth === 0) return;
+  const data = NICHES[currentNiche];
+  const text = encodeURIComponent(
+    `${data.shareIntro}\n\n` +
+    `📊 Monthly loss: ${fmt(currentMonth)}\n` +
+    `📊 Annual loss: ${fmt(currentYear)}\n` +
+    `📊 10-year loss: ${fmt(currentDecade)}\n\n` +
+    `And most business owners never even measure this gap.\n\n` +
+    `Calculated this using a free tool at smartwebsite360.com\n\n` +
+    `What does this look like for your business?`
+  );
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://smartwebsite360.com')}&summary=${text}`, '_blank', 'width=600,height=500');
+}
+
+// ── COPY ──────────────────────────────────────────────────────
+function copyResult() {
+  if (!currentNiche || currentMonth === 0) return;
+  const data = NICHES[currentNiche];
+  const text = `${data.shareIntro}\n\nMonthly loss: ${fmt(currentMonth)}\nAnnual loss: ${fmt(currentYear)}\n10-year loss: ${fmt(currentDecade)}\n\nCalculated at smartwebsite360.com`;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => showToast('Results copied to clipboard ✓'));
+  } else {
+    // Fallback for non-HTTPS (local file testing)
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Results copied to clipboard ✓');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  handleSlider('volume', 25);
+  handleSlider('miss', 30);
+});
+</script>
+</body>
+</html>
