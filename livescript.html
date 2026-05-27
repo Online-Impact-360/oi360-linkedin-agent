@@ -1356,7 +1356,7 @@ STYLE: Clean, professional infographic style. No clutter. Dark navy dominant. Te
   document.getElementById('cover-prompt-text').value = coverPrompt;
   document.getElementById('cover-output').style.display = 'none';
   document.getElementById('cover-err').style.display = 'none';
-  document.getElementById('cover-gen-note').textContent = 'Requires OpenAI API key in Settings';
+  document.getElementById('cover-gen-note').textContent = 'Requires OpenAI API key + org verification at platform.openai.com';
   document.getElementById('cover-headline').textContent = cd.niche_label + ' — ' + hookLine;
   document.getElementById('cover-subline').textContent = bridgeLine;
 
@@ -1490,7 +1490,7 @@ async function generateCover() {
         'Authorization': `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
+        model: 'gpt-image-2',
         prompt: prompt,
         n: 1,
         size: '1024x1536',
@@ -1501,7 +1501,12 @@ async function generateCover() {
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.error?.message || 'OpenAI API error ' + res.status);
+      const msg = data?.error?.message || data?.message || JSON.stringify(data);
+      const hint = res.status === 401 ? ' — Check your OpenAI API key in Settings.'
+                 : res.status === 403 ? ' — Organisation verification required. Go to platform.openai.com → Settings → Organisation → Verify.'
+                 : res.status === 429 ? ' — Rate limit hit. Wait 60 seconds and try again.'
+                 : ' (HTTP ' + res.status + ')';
+      throw new Error(msg + hint);
     }
 
     // gpt-image-1 returns b64_json
