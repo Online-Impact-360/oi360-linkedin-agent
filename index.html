@@ -424,7 +424,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       <div class="action-row">
         <button class="btn btn-primary" id="post-btn" onclick="postToGHL()" disabled>Send to GHL as Draft</button>
         <button class="btn btn-copy" id="copy-btn" onclick="copyPost()" disabled>📋 Copy Text</button>
-        <button class="btn btn-secondary" id="ig-quick-btn" onclick="scrollToIG(); generateIGVersion();" disabled style="background:linear-gradient(135deg,#e1306c,#f77737);color:white;border:none;opacity:0.5;">📸 Condense for IG</button>
+        <button class="btn btn-secondary" id="ig-quick-btn" onclick="condenseAndSendIG()" disabled style="background:linear-gradient(135deg,#e1306c,#f77737);color:white;border:none;opacity:0.5;">Condense for IG + GHL</button>
       </div>
       <div class="toast" id="post-toast"></div>
       <div class="callout callout-blue" style="margin-top:14px">
@@ -1109,8 +1109,7 @@ function clearPost() {
   document.getElementById('edit-toggle').style.display = 'none';
   document.getElementById('post-btn').disabled = true;
   document.getElementById('copy-btn').disabled = true;
-  var igQBtnC = document.getElementById('ig-quick-btn');
-  if (igQBtnC) { igQBtnC.disabled = true; igQBtnC.style.opacity = '0.5'; }
+  var iqb2 = document.getElementById('ig-quick-btn'); if(iqb2){iqb2.disabled=true;iqb2.style.opacity='0.5';}
   document.getElementById('char-count').textContent = '';
   document.getElementById('post-tags').style.display = 'none';
   clearToast('gen-toast'); clearToast('post-toast'); clearToast('warn-toast');
@@ -1132,8 +1131,7 @@ function loadFromHistory(i) {
   document.getElementById('edit-area').style.display = 'none'; isEditing = false;
   document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
   document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false;
-    var igQBtn = document.getElementById('ig-quick-btn');
-    if (igQBtn) { igQBtn.disabled = false; igQBtn.style.opacity = '1'; } document.getElementById('img-btn').disabled = false; updateCharCount();
+    var iqb = document.getElementById('ig-quick-btn'); if(iqb){iqb.disabled=false;iqb.style.opacity='1';} document.getElementById('img-btn').disabled = false; updateCharCount();
 }
 document.querySelectorAll('.angle-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1773,29 +1771,30 @@ function copyIG() {
 }
 
 async function postIGtoGHL() {
-  // Uses the same token, location, and account already configured in the tool.
-  // Once the draft lands in GHL Social Planner, switch the account to Instagram before publishing.
-  var token     = document.getElementById('ghl-token').value.trim();
-  var locId     = document.getElementById('ghl-location').value.trim();
-  var accountId = document.getElementById('ghl-account').value.trim();
-  var caption   = document.getElementById('ig-text').textContent;
+  var tokenEl = document.getElementById('ghl-token');
+  var locEl = document.getElementById('ghl-location');
+  var token = tokenEl ? tokenEl.value.trim() : '';
+  var locId = locEl ? locEl.value.trim() : 'm5I5xSjXdjlZdedg9bdP';
+  var igAccountId = localStorage.getItem('ghl_ig_account') || '';
+  var userId = localStorage.getItem('ghl_userid') || '';
+  var caption = document.getElementById('ig-text').textContent;
 
-  if (!token)     { setToast('ig-post-toast', 'Add GHL token in settings', 'error'); return; }
-  if (!accountId) { setToast('ig-post-toast', 'LinkedIn Account ID required in settings', 'error'); return; }
-  if (!caption)   return;
+  if (!token) { setToast('ig-post-toast', 'Add GHL token in settings', 'error'); return; }
+  if (!igAccountId) { setToast('ig-post-toast', 'Add Instagram Account ID in LinkedIn agent settings', 'error'); return; }
+  if (!caption) return;
 
   var btn = document.getElementById('ig-post-btn');
   btn.textContent = 'Posting...'; btn.disabled = true;
 
   try {
-    var body = { type:'post', status:'draft', summary:caption, accountIds:[accountId], userId:accountId };
+    var body = { type:'post', status:'draft', summary:caption, accountIds:[igAccountId], userId:userId||igAccountId };
     var res = await fetch('https://services.leadconnectorhq.com/social-media-posting/' + locId + '/posts', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Version': '2021-07-28' },
       body: JSON.stringify(body)
     });
     if (res.ok) {
-      setToast('ig-post-toast', 'Condensed caption sent to GHL as draft. Open Social Planner and switch account to Instagram before publishing.', 'success');
+      setToast('ig-post-toast', 'Instagram caption posted to GHL as draft', 'success');
     } else {
       var err = await res.json().catch(function(){ return {}; });
       var msg = Array.isArray(err.message) ? err.message.join(', ') : (err.message || res.status);
@@ -1809,9 +1808,70 @@ async function postIGtoGHL() {
 }
 
 
-function scrollToIG() {
-  var el = document.getElementById('ig-gen-btn');
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+// ONE-CLICK: Condense for Instagram + Send to GHL
+async function condenseAndSendIG() {
+  var anthropicKey = document.getElementById('anthropic-key').value.trim();
+  var token = document.getElementById('ghl-token').value.trim();
+  var locId = document.getElementById('ghl-location').value.trim();
+  var accountId = document.getElementById('ghl-account').value.trim();
+
+  if (!anthropicKey) { setToast('post-toast','Add Anthropic API key in settings.','error'); return; }
+  if (!generatedPost) { setToast('post-toast','Generate a LinkedIn post first.','error'); return; }
+  if (!token || !accountId) { setToast('post-toast','Add GHL token and account ID in settings.','error'); return; }
+
+  var btn = document.getElementById('ig-quick-btn');
+  btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Condensing...';
+
+  var nicheKey = currentNiche || 'pm';
+  var igHashtags = {
+    pm:'#PropertyManagement #PropertyManager #LandlordLife',
+    dnt:'#DentalPractice #DentalMarketing #DentistLife',
+    con:'#Contractor #HomeImprovement #TradesLife',
+    ins:'#InsuranceAgent #InsuranceAgency #InsuranceBroker',
+    mtg:'#MortgageBroker #MortgageTips #HomeBuyer'
+  };
+  var hashtags = igHashtags[nicheKey] || igHashtags.pm;
+  var sysPrompt = 'You condense LinkedIn posts into Instagram captions. Rules:\n'
+    + '- 60-80 words maximum. Not a word more.\n'
+    + '- Keep the single strongest hook line from the original as line 1.\n'
+    + '- One sentence of context maximum.\n'
+    + '- Demo number on its own line: Call 1-888-708-7367\n'
+    + '- Next line: Hear your new employee answer live.\n'
+    + '- End with exactly these hashtags: ' + hashtags + '\n'
+    + '- No em dashes. Short sentences. Second person.\n'
+    + '- Never state the price. Never say AI, system, or tool.\n'
+    + 'Return ONLY the caption. No preamble.';
+
+  try {
+    var r1 = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:sysPrompt,messages:[{role:'user',content:'Condense for Instagram:\n\n'+generatedPost}]})
+    });
+    if (!r1.ok) throw new Error('API error ' + r1.status);
+    var d1 = await r1.json();
+    var igText = (d1.content && d1.content[0] && d1.content[0].text) || '';
+    if (!igText) throw new Error('No condensed text returned');
+
+    btn.textContent = 'Sending to GHL...';
+    var r2 = await fetch('https://services.leadconnectorhq.com/social-media-posting/' + locId + '/posts', {
+      method:'POST',
+      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Version':'2021-07-28'},
+      body:JSON.stringify({type:'post',status:'draft',summary:igText,accountIds:[accountId],userId:accountId})
+    });
+    if (r2.ok) {
+      setToast('post-toast','Instagram caption sent to GHL as draft. Open Social Planner, switch to Instagram, attach video, publish.','success');
+    } else {
+      var e2 = await r2.json().catch(function(){return{};});
+      var msg = Array.isArray(e2.message) ? e2.message.join(', ') : (e2.message || r2.status);
+      if (navigator.clipboard) navigator.clipboard.writeText(igText);
+      setToast('post-toast','Condensed (copied to clipboard). GHL error: ' + msg,'error');
+    }
+  } catch(e) {
+    setToast('post-toast','Error: ' + e.message,'error');
+  } finally {
+    btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Condense for IG + GHL';
+  }
 }
 </script>
 </body>
