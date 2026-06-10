@@ -1811,18 +1811,18 @@ async function postIGtoGHL() {
 
 // ONE-CLICK: Condense for Instagram + Send to GHL
 async function condenseAndSendIG() {
-  var anthropicKey = document.getElementById('anthropic-key').value.trim();
   var token = document.getElementById('ghl-token').value.trim();
   var locId = document.getElementById('ghl-location').value.trim();
   var accountId = document.getElementById('ghl-account').value.trim();
 
-  if (!anthropicKey) { setToast('post-toast','Add Anthropic API key in settings.','error'); return; }
   if (!generatedPost) { setToast('post-toast','Generate a LinkedIn post first.','error'); return; }
   if (!token || !accountId) { setToast('post-toast','Add GHL token and account ID in settings.','error'); return; }
 
   var btn = document.getElementById('ig-quick-btn');
-  btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Condensing...';
+  btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Sending to GHL...';
 
+  // Condense locally — no API call needed.
+  // Structure: Hook + Big Domino + Loop Close + Demo number + Hashtags
   var nicheKey = currentNiche || 'pm';
   var igHashtags = {
     pm:'#PropertyManagement #PropertyManager #LandlordLife',
@@ -1832,44 +1832,51 @@ async function condenseAndSendIG() {
     mtg:'#MortgageBroker #MortgageTips #HomeBuyer'
   };
   var hashtags = igHashtags[nicheKey] || igHashtags.pm;
-  var sysPrompt = 'You condense LinkedIn posts into Instagram captions. Rules:\n'
-    + '- 60-80 words maximum. Not a word more.\n'
-    + '- Keep the single strongest hook line from the original as line 1.\n'
-    + '- One sentence of context maximum.\n'
-    + '- Demo number on its own line: Call 1-888-708-7367\n'
-    + '- Next line: Hear your new employee answer live.\n'
-    + '- End with exactly these hashtags: ' + hashtags + '\n'
-    + '- No em dashes. Short sentences. Second person.\n'
-    + '- Never state the price. Never say AI, system, or tool.\n'
-    + 'Return ONLY the caption. No preamble.';
+
+  // Strip hashtag lines and CTA lines from the post to get clean content lines
+  var allLines = generatedPost.split('\n')
+    .map(function(l){ return l.trim(); })
+    .filter(function(l){
+      return l.length > 0
+        && !l.startsWith('#')
+        && l.indexOf('1-888-708-7367') < 0
+        && l.indexOf('Hear your new employee') < 0
+        && l.indexOf('DM me') < 0
+        && l.indexOf('Drop') < 0
+        && l.indexOf('Want to hear') < 0;
+    });
+
+  // Hook = line 1, Big Domino = line 2, Loop Close = last line
+  var hook    = allLines[0] || '';
+  var domino  = allLines[1] || '';
+  var closing = allLines[allLines.length - 1] || '';
+  // Avoid duplicate if post is very short
+  if (closing === hook || closing === domino) { closing = ''; }
+
+  var igText = hook
+    + (domino  ? '\n\n' + domino  : '')
+    + (closing ? '\n\n' + closing : '')
+    + '\n\nCall 1-888-708-7367'
+    + '\nHear your new employee answer live.'
+    + '\n\n' + hashtags;
 
   try {
-    var r1 = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:sysPrompt,messages:[{role:'user',content:'Condense for Instagram:\n\n'+generatedPost}]})
-    });
-    if (!r1.ok) throw new Error('API error ' + r1.status);
-    var d1 = await r1.json();
-    var igText = (d1.content && d1.content[0] && d1.content[0].text) || '';
-    if (!igText) throw new Error('No condensed text returned');
-
-    btn.textContent = 'Sending to GHL...';
-    var r2 = await fetch('https://services.leadconnectorhq.com/social-media-posting/' + locId + '/posts', {
+    var res = await fetch('https://services.leadconnectorhq.com/social-media-posting/' + locId + '/posts', {
       method:'POST',
       headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Version':'2021-07-28'},
       body:JSON.stringify({type:'post',status:'draft',summary:igText,accountIds:[accountId],userId:accountId})
     });
-    if (r2.ok) {
+    if (res.ok) {
       setToast('post-toast','Instagram caption sent to GHL as draft. Open Social Planner, switch to Instagram, attach video, publish.','success');
     } else {
-      var e2 = await r2.json().catch(function(){return{};});
-      var msg = Array.isArray(e2.message) ? e2.message.join(', ') : (e2.message || r2.status);
+      var err = await res.json().catch(function(){return{};});
+      var msg = Array.isArray(err.message) ? err.message.join(', ') : (err.message || res.status);
       if (navigator.clipboard) navigator.clipboard.writeText(igText);
-      setToast('post-toast','Condensed (copied to clipboard). GHL error: ' + msg,'error');
+      setToast('post-toast','GHL error: ' + msg + ' — caption copied to clipboard.','error');
     }
   } catch(e) {
-    setToast('post-toast','Error: ' + e.message,'error');
+    if (navigator.clipboard) navigator.clipboard.writeText(igText);
+    setToast('post-toast','Network error — caption copied to clipboard.','error');
   } finally {
     btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Condense for IG + GHL';
   }
