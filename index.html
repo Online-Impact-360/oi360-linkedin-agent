@@ -1811,18 +1811,14 @@ async function postIGtoGHL() {
 
 // ONE-CLICK: Condense for Instagram + Send to GHL
 async function condenseAndSendIG() {
-  var token = document.getElementById('ghl-token').value.trim();
-  var locId = document.getElementById('ghl-location').value.trim();
-  var accountId = document.getElementById('ghl-account').value.trim();
+  const ghlToken  = document.getElementById('ghl-token').value.trim();
+  const locationId = document.getElementById('ghl-location').value.trim();
+  const accountId  = document.getElementById('ghl-account').value.trim();
 
-  if (!generatedPost) { setToast('post-toast','Generate a LinkedIn post first.','error'); return; }
-  if (!token || !accountId) { setToast('post-toast','Add GHL token and account ID in settings.','error'); return; }
+  if (!generatedPost) { setToast('post-toast','Generate a post first.','error'); return; }
+  if (!accountId)     { setToast('post-toast','LinkedIn Account ID required in settings.','error'); return; }
 
-  var btn = document.getElementById('ig-quick-btn');
-  btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Sending to GHL...';
-
-  // Condense locally — no API call needed.
-  // Structure: Hook + Big Domino + Loop Close + Demo number + Hashtags
+  // Build Instagram caption: Hook + Big Domino + Loop Close + demo number + hashtags
   var nicheKey = currentNiche || 'pm';
   var igHashtags = {
     pm:'#PropertyManagement #PropertyManager #LandlordLife',
@@ -1832,8 +1828,6 @@ async function condenseAndSendIG() {
     mtg:'#MortgageBroker #MortgageTips #HomeBuyer'
   };
   var hashtags = igHashtags[nicheKey] || igHashtags.pm;
-
-  // Strip hashtag lines and CTA lines from the post to get clean content lines
   var allLines = generatedPost.split('\n')
     .map(function(l){ return l.trim(); })
     .filter(function(l){
@@ -1845,14 +1839,10 @@ async function condenseAndSendIG() {
         && l.indexOf('Drop') < 0
         && l.indexOf('Want to hear') < 0;
     });
-
-  // Hook = line 1, Big Domino = line 2, Loop Close = last line
   var hook    = allLines[0] || '';
   var domino  = allLines[1] || '';
   var closing = allLines[allLines.length - 1] || '';
-  // Avoid duplicate if post is very short
-  if (closing === hook || closing === domino) { closing = ''; }
-
+  if (closing === hook || closing === domino) closing = '';
   var igText = hook
     + (domino  ? '\n\n' + domino  : '')
     + (closing ? '\n\n' + closing : '')
@@ -1860,27 +1850,44 @@ async function condenseAndSendIG() {
     + '\nHear your new employee answer live.'
     + '\n\n' + hashtags;
 
+  const btn = document.getElementById('ig-quick-btn');
+  btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Sending to GHL…';
+  clearToast('post-toast'); setStatus(true);
+
   try {
-    var res = await fetch('https://services.leadconnectorhq.com/social-media-posting/' + locId + '/posts', {
-      method:'POST',
-      headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json','Version':'2021-07-28'},
-      body:JSON.stringify({type:'post',status:'draft',summary:igText,accountIds:[accountId],userId:accountId})
-    });
-    if (res.ok) {
-      setToast('post-toast','Instagram caption sent to GHL as draft. Open Social Planner, switch to Instagram, attach video, publish.','success');
-    } else {
-      var err = await res.json().catch(function(){return{};});
-      var msg = Array.isArray(err.message) ? err.message.join(', ') : (err.message || res.status);
-      if (navigator.clipboard) navigator.clipboard.writeText(igText);
-      setToast('post-toast','GHL error: ' + msg + ' — caption copied to clipboard.','error');
+    // Attach the same generated image if available — same as LinkedIn post
+    let mediaArray = [];
+    const includeImg = document.getElementById('include-img');
+    if (includeImg && includeImg.checked && generatedImageB64) {
+      try {
+        const byteChars = atob(generatedImageB64), byteArr = new Uint8Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+        const formData = new FormData();
+        formData.append('file', new Blob([byteArr], {type:'image/jpeg'}), 'ig-post-' + currentPos + '.jpg');
+        formData.append('name', 'ig-post-' + currentPos);
+        const uploadRes = await fetch('https://services.leadconnectorhq.com/medias/upload-file', {
+          method:'POST', headers:{'Authorization':'Bearer '+ghlToken,'Version':'2021-07-28','location-id':locationId}, body:formData
+        });
+        const uploadData = await uploadRes.json();
+        const imgUrl = uploadData?.url || uploadData?.fileUrl || uploadData?.data?.url || uploadData?.mediaUrl;
+        if (uploadRes.ok && imgUrl) mediaArray = [{url:imgUrl, type:'image'}];
+      } catch(imgErr) { console.warn('Image upload skipped:', imgErr.message); }
     }
+    const payload = {accountIds:[accountId], summary:igText, status:'draft', type:'post', media:mediaArray, userId:accountId};
+    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locationId}/posts`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ghlToken,'Version':'2021-07-28'},
+      body:JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'GHL API error ' + res.status);
+    const imgNote = mediaArray.length > 0 ? ' with image attached' : '';
+    setToast('post-toast','✓ Instagram draft saved in GHL' + imgNote + ' — open Social Planner, switch account to Instagram, publish.','success');
   } catch(e) {
-    if (navigator.clipboard) navigator.clipboard.writeText(igText);
-    setToast('post-toast','Network error — caption copied to clipboard.','error');
+    setToast('post-toast','✗ ' + e.message + ' — Use Copy Text instead.','error');
   } finally {
-    btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Condense for IG + GHL';
+    btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Condense for IG + GHL'; setStatus(false);
   }
 }
-</script>
-</body>
-</html>
+
+
