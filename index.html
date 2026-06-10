@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinkedIn Post Agent v10 — Online Impact 360</title>
+<title>LinkedIn Post Agent v11 — Online Impact 360</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -163,7 +163,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
   <div class="logo">
     <span class="logo-accent">OI360</span>
     <span class="logo-divider">/</span>
-    <span class="logo-sub">LinkedIn Post Agent v10 — Evergreen</span>
+    <span class="logo-sub">LinkedIn Post Agent v11 — Evergreen</span>
   </div>
   <div class="status-pill" id="status-pill">
     <span class="status-dot"></span>
@@ -429,6 +429,29 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       <div class="callout callout-blue" style="margin-top:14px">
         <span class="callout-icon">💡</span>
         <span><strong>Workflow:</strong> Post saved as draft in GHL Social Planner. Open GHL → Marketing → Social Planner, add image, review copy, then publish. Add <strong>1-888-708-7367</strong> as first comment on LinkedIn after publishing — not in the post body.</span>
+      </div>
+
+      <!-- Instagram Version -->
+      <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">📸</span> Instagram Version
+            <span style="font-size:10px;font-weight:600;background:#e1306c;color:white;padding:2px 8px;border-radius:10px;">60–80 words</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sm" id="ig-gen-btn" onclick="generateIGVersion()" style="background:linear-gradient(135deg,#e1306c,#f77737);color:white;border:none;">✦ Condense for IG</button>
+            <button class="btn-sm" id="ig-copy-btn" onclick="copyIG()" style="display:none;">Copy</button>
+            <button class="btn-sm" id="ig-post-btn" onclick="postIGtoGHL()" style="display:none;background:#0a1628;color:white;border:none;">⬆ Post to GHL</button>
+          </div>
+        </div>
+        <div id="ig-output" style="display:none;">
+          <div id="ig-text" style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text-main);line-height:1.7;white-space:pre-wrap;min-height:80px;"></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:5px;text-align:right;" id="ig-word-count"></div>
+        </div>
+        <div id="ig-loading" style="display:none;font-size:12px;color:var(--text-muted);padding:8px 0;">Condensing for Instagram...</div>
+        <div id="ig-error" style="display:none;font-size:12px;color:#dc2626;padding:8px 0;"></div>
+        <div id="ig-toast"></div>
+        <div id="ig-post-toast"></div>
       </div>
     </div>
   </div>
@@ -1123,7 +1146,7 @@ async function generatePost() {
     const d = PLAN[(currentPos - 1) % PLAN_SIZE];
     nicheKey = d.niche; topic = d.topic; pillar = d.pillar;
     format = d.format; ctaType = d.cta; hook = d.hook;
-    length = 'medium'; niche = NICHES[d.niche].desc;
+    length = (d.format === 'Story post' || d.format === 'Founder story post') ? 'short' : 'medium'; niche = NICHES[d.niche].desc;
   } else {
     nicheKey = manualNiche;
     topic = document.getElementById('topic').value.trim();
@@ -1251,7 +1274,7 @@ HOOK RULES — non-negotiable:
 - Output ONLY the final post body. No title. No explanation. No preamble. Nothing extra. CRITICAL: If you are uncertain about which hook to use or feel a rule conflicts with the brief — do NOT write your reasoning into the output. Choose the closest valid hook and write the post. Internal analysis, hook mapping notes, and conflict resolutions are NEVER part of the output. The output is the post and nothing else.
 - LOOP-CLOSING RULE: The post must end with an open gap — a question the reader cannot answer without taking the CTA action. If by the end of the post the reader fully understands both the problem AND the solution, there is nothing left for them to comment about, DM about, or call about. End on the COST or the IMPLICATION — never on the mechanism or the fix. The mechanism is what they get by responding. Test: after reading the last line before the CTA, does the reader still have an unanswered question? If yes, the post works. If no, cut the last paragraph.
 - Do not write a CTA — it will be appended after.
-- Target length: ${LENGTH_MAP[length]}
+- Target length: ${(format === 'Story post') ? '200–350 words (story posts are always short — the story creates emotion, not length)' : (format === 'Founder story post') ? '150–250 words (founder story posts are always tight — authenticity degrades with length)' : LENGTH_MAP[length]}
 
 
   ${isDailyAnchor ? `
@@ -1656,6 +1679,131 @@ function exportCSV() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   setToast('gen-toast', '✓ CSV exported with ' + exportBatch.length + ' posts.', 'success');
 }
+
+// INSTAGRAM VERSION
+async function generateIGVersion() {
+  var anthropicKey = document.getElementById('anthropic-key').value.trim();
+  if (!anthropicKey) { setToast('gen-toast','Add your Anthropic API key first.','error'); return; }
+  if (!generatedPost) { setToast('gen-toast','Generate a LinkedIn post first.','error'); return; }
+
+  var igBtn = document.getElementById('ig-gen-btn');
+  var loading = document.getElementById('ig-loading');
+  var errEl = document.getElementById('ig-error');
+  igBtn.disabled = true;
+  loading.style.display = 'block';
+  errEl.style.display = 'none';
+  document.getElementById('ig-output').style.display = 'none';
+
+  var nicheKey = currentNiche || 'pm';
+  var igHashtags = {
+    pm:'#PropertyManagement #PropertyManager #LandlordLife',
+    dnt:'#DentalPractice #DentalMarketing #DentistLife',
+    con:'#Contractor #HomeImprovement #TradesLife',
+    ins:'#InsuranceAgent #InsuranceAgency #InsuranceBroker',
+    mtg:'#MortgageBroker #MortgageTips #HomeBuyer'
+  };
+  var hashtags = igHashtags[nicheKey] || igHashtags.pm;
+
+  var sysPrompt = 'You condense LinkedIn posts into Instagram captions. Rules:\n'
+    + '- 60-80 words maximum. Not a word more.\n'
+    + '- Keep the single strongest hook line from the original as line 1.\n'
+    + '- One sentence of context maximum.\n'
+    + '- Demo number on its own line: Call 1-888-708-7367\n'
+    + '- Next line: Hear your new employee answer live.\n'
+    + '- End with exactly these hashtags on the final line: ' + hashtags + '\n'
+    + '- No em dashes. Short sentences only. Second person throughout.\n'
+    + '- Never state the price. Never use the word AI, system, or tool.\n'
+    + 'Return ONLY the Instagram caption. No preamble. No explanation.';
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 400,
+        system: sysPrompt,
+        messages: [{ role: 'user', content: 'Condense this LinkedIn post for Instagram:\n\n' + generatedPost }]
+      })
+    });
+
+    if (!res.ok) throw new Error('API error ' + res.status);
+    var data = await res.json();
+    var igText = (data.content && data.content[0] && data.content[0].text) || '';
+    igText = igText.replace(/ — /g, '. ').replace(/—/g, '.');
+
+    document.getElementById('ig-text').textContent = igText;
+    var words = igText.trim().split(' ').filter(function(w){ return w.length > 0; });
+    document.getElementById('ig-word-count').textContent = words.length + ' words';
+    document.getElementById('ig-output').style.display = 'block';
+    document.getElementById('ig-copy-btn').style.display = 'inline-flex';
+    document.getElementById('ig-post-btn').style.display = 'inline-flex';
+
+  } catch(e) {
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    igBtn.disabled = false;
+    loading.style.display = 'none';
+  }
+}
+
+function copyIG() {
+  var text = document.getElementById('ig-text').textContent;
+  if (!text) return;
+  function onCopied() { setToast('ig-toast', 'Instagram caption copied', 'success'); }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(onCopied);
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); onCopied();
+  }
+}
+
+async function postIGtoGHL() {
+  var tokenEl = document.getElementById('ghl-token');
+  var locEl = document.getElementById('ghl-location');
+  var token = tokenEl ? tokenEl.value.trim() : '';
+  var locId = locEl ? locEl.value.trim() : 'm5I5xSjXdjlZdedg9bdP';
+  var igAccountId = localStorage.getItem('ghl_ig_account') || '';
+  var userId = localStorage.getItem('ghl_userid') || '';
+  var caption = document.getElementById('ig-text').textContent;
+
+  if (!token) { setToast('ig-post-toast', 'Add GHL token in settings', 'error'); return; }
+  if (!igAccountId) { setToast('ig-post-toast', 'Add Instagram Account ID in LinkedIn agent settings', 'error'); return; }
+  if (!caption) return;
+
+  var btn = document.getElementById('ig-post-btn');
+  btn.textContent = 'Posting...'; btn.disabled = true;
+
+  try {
+    var body = { type:'post', status:'draft', summary:caption, accountIds:[igAccountId], userId:userId||igAccountId };
+    var res = await fetch('https://services.leadconnectorhq.com/social-media-posting/' + locId + '/posts', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Version': '2021-07-28' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      setToast('ig-post-toast', 'Instagram caption posted to GHL as draft', 'success');
+    } else {
+      var err = await res.json().catch(function(){ return {}; });
+      var msg = Array.isArray(err.message) ? err.message.join(', ') : (err.message || res.status);
+      setToast('ig-post-toast', 'GHL error: ' + msg, 'error');
+    }
+  } catch(e) {
+    setToast('ig-post-toast', 'Copy manually', 'error');
+  } finally {
+    btn.textContent = 'Post to GHL'; btn.disabled = false;
+  }
+}
+
 </script>
 </body>
 </html>
