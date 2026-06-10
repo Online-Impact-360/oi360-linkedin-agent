@@ -178,7 +178,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="field">
       <label>Anthropic API Key</label>
       <div class="key-row">
-        <input type="password" id="anthropic-key" placeholder="sk-ant-api03-…" oninput="checkReady()" autocomplete="off"/>
+        <input type="password" id="anthropic-key" placeholder="sk-ant-api03-…" oninput="checkReady()" onchange="checkReady()" onblur="checkReady()" onpaste="setTimeout(checkReady,10)" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('anthropic-key',this)">Show</button>
       </div>
       <div class="field-hint">console.anthropic.com → API Keys → Create Key</div>
@@ -194,7 +194,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="field">
       <label>GHL Private Integration Token</label>
       <div class="key-row">
-        <input type="password" id="ghl-token" placeholder="pit-…" oninput="checkReady()" autocomplete="off"/>
+        <input type="password" id="ghl-token" placeholder="pit-…" oninput="checkReady()" onchange="checkReady()" onblur="checkReady()" onpaste="setTimeout(checkReady,10)" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('ghl-token',this)">Show</button>
       </div>
       <div class="field-hint">GHL → Settings → Integrations → Private Integrations. Scope: <strong>socialplanner/post.write</strong></div>
@@ -202,7 +202,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="field">
       <label>GHL Location ID</label>
       <div class="key-row">
-        <input type="text" id="ghl-location" placeholder="Paste Location ID…" oninput="checkReady()" autocomplete="off"/>
+        <input type="text" id="ghl-location" placeholder="Paste Location ID…" oninput="checkReady()" onchange="checkReady()" onblur="checkReady()" onpaste="setTimeout(checkReady,10)" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('ghl-location',this)">Show</button>
       </div>
       <div class="field-hint">GHL → Settings → Business Info → scroll to bottom</div>
@@ -210,7 +210,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="field">
       <label>GHL LinkedIn Account ID</label>
       <div class="key-row">
-        <input type="text" id="ghl-account" placeholder="Paste LinkedIn Account ID…" oninput="checkReady()" autocomplete="off"/>
+        <input type="text" id="ghl-account" placeholder="Paste LinkedIn Account ID…" oninput="checkReady()" onchange="checkReady()" onblur="checkReady()" onpaste="setTimeout(checkReady,10)" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('ghl-account',this)">Show</button>
       </div>
       <div class="field-hint">GHL → Marketing → Social Planner → Settings → Connected Accounts → LinkedIn. If the ID is not visible, request it from GHL support.</div>
@@ -1010,6 +1010,8 @@ window.onload = () => {
   ];
   fields.forEach(([key,id]) => { const v = localStorage.getItem(key); if (v) document.getElementById(id).value = v; });
   checkReady();
+  // Delay to let browser autofill / password managers settle
+  setTimeout(checkReady, 300);
 };
 
 function clearCredentials() {
