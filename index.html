@@ -1768,30 +1768,29 @@ function copyIG() {
 }
 
 async function postIGtoGHL() {
-  var tokenEl = document.getElementById('ghl-token');
-  var locEl = document.getElementById('ghl-location');
-  var token = tokenEl ? tokenEl.value.trim() : '';
-  var locId = locEl ? locEl.value.trim() : 'm5I5xSjXdjlZdedg9bdP';
-  var igAccountId = localStorage.getItem('ghl_ig_account') || '';
-  var userId = localStorage.getItem('ghl_userid') || '';
-  var caption = document.getElementById('ig-text').textContent;
+  // Uses the same token, location, and account already configured in the tool.
+  // Once the draft lands in GHL Social Planner, switch the account to Instagram before publishing.
+  var token     = document.getElementById('ghl-token').value.trim();
+  var locId     = document.getElementById('ghl-location').value.trim();
+  var accountId = document.getElementById('ghl-account').value.trim();
+  var caption   = document.getElementById('ig-text').textContent;
 
-  if (!token) { setToast('ig-post-toast', 'Add GHL token in settings', 'error'); return; }
-  if (!igAccountId) { setToast('ig-post-toast', 'Add Instagram Account ID in LinkedIn agent settings', 'error'); return; }
-  if (!caption) return;
+  if (!token)     { setToast('ig-post-toast', 'Add GHL token in settings', 'error'); return; }
+  if (!accountId) { setToast('ig-post-toast', 'LinkedIn Account ID required in settings', 'error'); return; }
+  if (!caption)   return;
 
   var btn = document.getElementById('ig-post-btn');
   btn.textContent = 'Posting...'; btn.disabled = true;
 
   try {
-    var body = { type:'post', status:'draft', summary:caption, accountIds:[igAccountId], userId:userId||igAccountId };
+    var body = { type:'post', status:'draft', summary:caption, accountIds:[accountId], userId:accountId };
     var res = await fetch('https://services.leadconnectorhq.com/social-media-posting/' + locId + '/posts', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Version': '2021-07-28' },
       body: JSON.stringify(body)
     });
     if (res.ok) {
-      setToast('ig-post-toast', 'Instagram caption posted to GHL as draft', 'success');
+      setToast('ig-post-toast', 'Condensed caption sent to GHL as draft. Open Social Planner and switch account to Instagram before publishing.', 'success');
     } else {
       var err = await res.json().catch(function(){ return {}; });
       var msg = Array.isArray(err.message) ? err.message.join(', ') : (err.message || res.status);
