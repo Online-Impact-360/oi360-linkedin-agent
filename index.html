@@ -1038,6 +1038,17 @@ function renderCycleInfo() {
 
 function prevPost() { if (currentPos > 1) { currentPos--; renderCycleInfo(); } }
 function nextPost() { currentPos++; renderCycleInfo(); }
+function jumpToPos() {
+  var inp = document.getElementById('pos-jump');
+  var val = parseInt(inp.value);
+  if (!isNaN(val) && val >= 1) {
+    currentPos = val;
+    renderCycleInfo();
+    inp.value = '';
+    inp.placeholder = '#' + val;
+    setTimeout(function(){ inp.placeholder = '#'; }, 2000);
+  }
+}
 
 function setMode(m) {
   mode = m;
