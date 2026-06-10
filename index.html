@@ -424,6 +424,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       <div class="action-row">
         <button class="btn btn-primary" id="post-btn" onclick="postToGHL()" disabled>Send to GHL as Draft</button>
         <button class="btn btn-copy" id="copy-btn" onclick="copyPost()" disabled>📋 Copy Text</button>
+        <button class="btn btn-secondary" id="ig-quick-btn" onclick="scrollToIG(); generateIGVersion();" disabled style="background:linear-gradient(135deg,#e1306c,#f77737);color:white;border:none;opacity:0.5;">📸 Condense for IG</button>
       </div>
       <div class="toast" id="post-toast"></div>
       <div class="callout callout-blue" style="margin-top:14px">
@@ -1108,6 +1109,8 @@ function clearPost() {
   document.getElementById('edit-toggle').style.display = 'none';
   document.getElementById('post-btn').disabled = true;
   document.getElementById('copy-btn').disabled = true;
+  var igQBtnC = document.getElementById('ig-quick-btn');
+  if (igQBtnC) { igQBtnC.disabled = true; igQBtnC.style.opacity = '0.5'; }
   document.getElementById('char-count').textContent = '';
   document.getElementById('post-tags').style.display = 'none';
   clearToast('gen-toast'); clearToast('post-toast'); clearToast('warn-toast');
@@ -1128,7 +1131,9 @@ function loadFromHistory(i) {
   document.getElementById('preview').textContent = generatedPost; document.getElementById('preview').style.display = 'block';
   document.getElementById('edit-area').style.display = 'none'; isEditing = false;
   document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
-  document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false; document.getElementById('img-btn').disabled = false; updateCharCount();
+  document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false;
+    var igQBtn = document.getElementById('ig-quick-btn');
+    if (igQBtn) { igQBtn.disabled = false; igQBtn.style.opacity = '1'; } document.getElementById('img-btn').disabled = false; updateCharCount();
 }
 document.querySelectorAll('.angle-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1385,7 +1390,7 @@ The angle is past customers sitting unused in a CRM — people who already trust
     }
     const postWords = rawBody.split(/\s+/);
     const first30pct = postWords.slice(0, Math.floor(postWords.length * 0.3)).join(' ').toLowerCase();
-    const dominoPhrases = ['first to respond','responds first','whoever responds','whoever picks up','picked up first','picked up the phone first','answered first','first responder','first one to','who picks up'];
+    const dominoPhrases = ['first to respond','first agency to respond','first dentist to answer','first contractor to','first broker to','first loan officer','first property manager','first practice to','responds first','whoever responds','whoever picks up','picked up first','picked up the phone','answered first','first responder','first one to','who picks up','who answered','who picked up'];
     const dominoAnywhere = dominoPhrases.some(p => rawBody.toLowerCase().includes(p));
     if (!dominoAnywhere && mentionsSolution) {
       qcWarnings.push('Big Domino belief not found — consider adding "the first to respond wins."');
@@ -1803,6 +1808,11 @@ async function postIGtoGHL() {
   }
 }
 
+
+function scrollToIG() {
+  var el = document.getElementById('ig-gen-btn');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 </script>
 </body>
 </html>
