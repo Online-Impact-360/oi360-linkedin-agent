@@ -1406,6 +1406,7 @@ The angle is past customers sitting unused in a CRM — people who already trust
     document.getElementById('edit-area').style.display = 'none'; isEditing = false;
     document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
     document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false;
+    var iqb = document.getElementById('ig-quick-btn'); if(iqb){iqb.disabled=false;iqb.style.opacity='1';}
     document.getElementById('img-btn').disabled = false; document.getElementById('export-btn').disabled = false;
     exportBatch.push({pos:currentPos, niche:nicheKey, pillar, format, cta:ctaType, caption:generatedPost});
     updateCharCount(); showTags(nicheKey, pillar, format, ctaType);
