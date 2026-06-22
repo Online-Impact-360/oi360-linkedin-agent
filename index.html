@@ -997,6 +997,7 @@ let manualNiche    = 'pm';
 let generatedImageB64 = '';
 let generatedImageUrl = '';
 let exportBatch    = [];
+let lastNiche      = 'pm';
 
 window.onload = () => {
   // Update library display once PLAN is ready
@@ -1409,7 +1410,8 @@ The angle is past customers sitting unused in a CRM — people who already trust
     document.getElementById('img-btn').disabled = false; document.getElementById('export-btn').disabled = false;
     exportBatch.push({pos:currentPos, niche:nicheKey, pillar, format, cta:ctaType, caption:generatedPost});
     updateCharCount(); showTags(nicheKey, pillar, format, ctaType);
-    addHistory(generatedPost, currentPos, nicheKey);
+    lastNiche = nicheKey;
+  addHistory(generatedPost, currentPos, nicheKey);
     setToast('gen-toast', `✓ Post #${currentPos} generated — ${nicheData.label} · ${format}`, 'success');
     if (qcWarnings.length > 0) {
       setTimeout(() => setToast('warn-toast', '⚠ QC: ' + qcWarnings.join(' | '), 'error'), 100);
@@ -1822,7 +1824,7 @@ async function condenseAndSendIG() {
   clearToast('post-toast'); setStatus(true);
 
   // Build caption: first line (hook) + second line (domino) + last line (close) + CTA + hashtags
-  var nicheKey = (typeof currentNiche !== 'undefined' && currentNiche) ? currentNiche : 'pm';
+  var nicheKey = (typeof lastNiche !== 'undefined' && lastNiche) ? lastNiche : 'pm';
   var igHashtags = {
     pm:  '#PropertyManagement #PropertyManager #LandlordLife',
     dnt: '#DentalPractice #DentalMarketing #DentistLife',
