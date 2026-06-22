@@ -178,7 +178,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="field">
       <label>Anthropic API Key</label>
       <div class="key-row">
-        <input type="password" id="anthropic-key" placeholder="sk-ant-api03-…" oninput="checkReady()" onchange="checkReady()" onblur="checkReady()" onpaste="setTimeout(checkReady,10)" autocomplete="off"/>
+        <input type="password" id="anthropic-key" placeholder="sk-ant-api03-…" oninput="checkReady()" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('anthropic-key',this)">Show</button>
       </div>
       <div class="field-hint">console.anthropic.com → API Keys → Create Key</div>
@@ -194,7 +194,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="field">
       <label>GHL Private Integration Token</label>
       <div class="key-row">
-        <input type="password" id="ghl-token" placeholder="pit-…" oninput="checkReady()" onchange="checkReady()" onblur="checkReady()" onpaste="setTimeout(checkReady,10)" autocomplete="off"/>
+        <input type="password" id="ghl-token" placeholder="pit-…" oninput="checkReady()" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('ghl-token',this)">Show</button>
       </div>
       <div class="field-hint">GHL → Settings → Integrations → Private Integrations. Scope: <strong>socialplanner/post.write</strong></div>
@@ -202,7 +202,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="field">
       <label>GHL Location ID</label>
       <div class="key-row">
-        <input type="text" id="ghl-location" placeholder="Paste Location ID…" oninput="checkReady()" onchange="checkReady()" onblur="checkReady()" onpaste="setTimeout(checkReady,10)" autocomplete="off"/>
+        <input type="text" id="ghl-location" placeholder="Paste Location ID…" oninput="checkReady()" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('ghl-location',this)">Show</button>
       </div>
       <div class="field-hint">GHL → Settings → Business Info → scroll to bottom</div>
@@ -210,7 +210,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
     <div class="field">
       <label>GHL LinkedIn Account ID</label>
       <div class="key-row">
-        <input type="text" id="ghl-account" placeholder="Paste LinkedIn Account ID…" oninput="checkReady()" onchange="checkReady()" onblur="checkReady()" onpaste="setTimeout(checkReady,10)" autocomplete="off"/>
+        <input type="text" id="ghl-account" placeholder="Paste LinkedIn Account ID…" oninput="checkReady()" autocomplete="off"/>
         <button class="eye-btn" onclick="toggleVis('ghl-account',this)">Show</button>
       </div>
       <div class="field-hint">GHL → Marketing → Social Planner → Settings → Connected Accounts → LinkedIn. If the ID is not visible, request it from GHL support.</div>
@@ -424,7 +424,7 @@ select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
       <div class="action-row">
         <button class="btn btn-primary" id="post-btn" onclick="postToGHL()" disabled>Send to GHL as Draft</button>
         <button class="btn btn-copy" id="copy-btn" onclick="copyPost()" disabled>📋 Copy Text</button>
-        <button class="btn btn-secondary" id="ig-quick-btn" onclick="condenseAndSendIG()" disabled style="background:linear-gradient(135deg,#e1306c,#f77737);color:white;border:none;opacity:0.5;">Condense for IG + GHL</button>
+        <button class="btn btn-secondary" id="ig-quick-btn" onclick="condenseAndSendIG()" disabled style="background:linear-gradient(135deg,#e1306c,#f77737);color:white;border:none;opacity:0.5;font-size:12px;">Condense for IG + GHL</button>
       </div>
       <div class="toast" id="post-toast"></div>
       <div class="callout callout-blue" style="margin-top:14px">
@@ -1010,8 +1010,6 @@ window.onload = () => {
   ];
   fields.forEach(([key,id]) => { const v = localStorage.getItem(key); if (v) document.getElementById(id).value = v; });
   checkReady();
-  // Delay to let browser autofill / password managers settle
-  setTimeout(checkReady, 300);
 };
 
 function clearCredentials() {
@@ -1040,17 +1038,6 @@ function renderCycleInfo() {
 
 function prevPost() { if (currentPos > 1) { currentPos--; renderCycleInfo(); } }
 function nextPost() { currentPos++; renderCycleInfo(); }
-function jumpToPos() {
-  var inp = document.getElementById('pos-jump');
-  var val = parseInt(inp.value);
-  if (!isNaN(val) && val >= 1) {
-    currentPos = val;
-    renderCycleInfo();
-    inp.value = '';
-    inp.placeholder = '#' + val;
-    setTimeout(function(){ inp.placeholder = '#'; }, 2000);
-  }
-}
 
 function setMode(m) {
   mode = m;
@@ -1122,7 +1109,7 @@ function clearPost() {
   document.getElementById('edit-toggle').style.display = 'none';
   document.getElementById('post-btn').disabled = true;
   document.getElementById('copy-btn').disabled = true;
-  var iqb2 = document.getElementById('ig-quick-btn'); if(iqb2){iqb2.disabled=true;iqb2.style.opacity='0.5';}
+  var _iqb2 = document.getElementById('ig-quick-btn'); if(_iqb2){_iqb2.disabled=true;_iqb2.style.opacity='0.5';}
   document.getElementById('char-count').textContent = '';
   document.getElementById('post-tags').style.display = 'none';
   clearToast('gen-toast'); clearToast('post-toast'); clearToast('warn-toast');
@@ -1143,8 +1130,7 @@ function loadFromHistory(i) {
   document.getElementById('preview').textContent = generatedPost; document.getElementById('preview').style.display = 'block';
   document.getElementById('edit-area').style.display = 'none'; isEditing = false;
   document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
-  document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false;
-    var iqb = document.getElementById('ig-quick-btn'); if(iqb){iqb.disabled=false;iqb.style.opacity='1';} document.getElementById('img-btn').disabled = false; updateCharCount();
+  document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false; document.getElementById('img-btn').disabled = false; updateCharCount();
 }
 document.querySelectorAll('.angle-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1401,7 +1387,7 @@ The angle is past customers sitting unused in a CRM — people who already trust
     }
     const postWords = rawBody.split(/\s+/);
     const first30pct = postWords.slice(0, Math.floor(postWords.length * 0.3)).join(' ').toLowerCase();
-    const dominoPhrases = ['first to respond','first agency to respond','first dentist to answer','first contractor to','first broker to','first loan officer','first property manager','first practice to','responds first','whoever responds','whoever picks up','picked up first','picked up the phone','answered first','first responder','first one to','who picks up','who answered','who picked up'];
+    const dominoPhrases = ['first to respond','first agency to respond','first dentist to answer','first contractor to','first broker to','first loan officer','first practice to','responds first','whoever responds','whoever picks up','picked up first','picked up the phone','answered first','first responder','first one to','who picks up','who answered','who picked up'];
     const dominoAnywhere = dominoPhrases.some(p => rawBody.toLowerCase().includes(p));
     if (!dominoAnywhere && mentionsSolution) {
       qcWarnings.push('Big Domino belief not found — consider adding "the first to respond wins."');
@@ -1419,7 +1405,7 @@ The angle is past customers sitting unused in a CRM — people who already trust
     document.getElementById('edit-area').style.display = 'none'; isEditing = false;
     document.getElementById('edit-toggle').style.display = 'inline'; document.getElementById('edit-toggle').textContent = 'Edit post';
     document.getElementById('post-btn').disabled = false; document.getElementById('copy-btn').disabled = false;
-    var iqb = document.getElementById('ig-quick-btn'); if(iqb){iqb.disabled=false;iqb.style.opacity='1';}
+    var _iqb = document.getElementById('ig-quick-btn'); if(_iqb){_iqb.disabled=false;_iqb.style.opacity='1';}
     document.getElementById('img-btn').disabled = false; document.getElementById('export-btn').disabled = false;
     exportBatch.push({pos:currentPos, niche:nicheKey, pillar, format, cta:ctaType, caption:generatedPost});
     updateCharCount(); showTags(nicheKey, pillar, format, ctaType);
@@ -1822,88 +1808,51 @@ async function postIGtoGHL() {
 }
 
 
-// ONE-CLICK: Condense for Instagram + Send to GHL
+// ── CONDENSE FOR IG + SEND TO GHL ─────────────────────────────
 async function condenseAndSendIG() {
-  const ghlToken  = document.getElementById('ghl-token').value.trim();
-  const locationId = document.getElementById('ghl-location').value.trim();
-  const accountId  = document.getElementById('ghl-account').value.trim();
+  var ghlToken  = document.getElementById('ghl-token').value.trim();
+  var locationId = document.getElementById('ghl-location').value.trim();
+  var accountId  = document.getElementById('ghl-account').value.trim();
 
-  if (!generatedPost) { setToast('post-toast','Generate a post first.','error'); return; }
-  if (!accountId)     { setToast('post-toast','LinkedIn Account ID required in settings.','error'); return; }
+  if (!generatedPost) { setToast('post-toast', 'Generate a post first.', 'error'); return; }
+  if (!accountId)     { setToast('post-toast', 'LinkedIn Account ID required.', 'error'); return; }
 
-  // Build Instagram caption: Hook + Big Domino + Loop Close + demo number + hashtags
-  var nicheKey = currentNiche || 'pm';
-  var igHashtags = {
-    pm:'#PropertyManagement #PropertyManager #LandlordLife',
-    dnt:'#DentalPractice #DentalMarketing #DentistLife',
-    con:'#Contractor #HomeImprovement #TradesLife',
-    ins:'#InsuranceAgent #InsuranceAgency #InsuranceBroker',
-    mtg:'#MortgageBroker #MortgageTips #HomeBuyer'
-  };
-  var hashtags = igHashtags[nicheKey] || igHashtags.pm;
-  var allLines = generatedPost.split('\n')
-    .map(function(l){ return l.trim(); })
-    .filter(function(l){
-      return l.length > 0
-        && !l.startsWith('#')
-        && l.indexOf('1-888-708-7367') < 0
-        && l.indexOf('Hear your new employee') < 0
-        && l.indexOf('DM me') < 0
-        && l.indexOf('Drop') < 0
-        && l.indexOf('Want to hear') < 0;
-    });
-  var hook    = allLines[0] || '';
-  var domino  = allLines[1] || '';
-  var closing = allLines[allLines.length - 1] || '';
-  if (closing === hook || closing === domino) closing = '';
-  var igText = hook
-    + (domino  ? '\n\n' + domino  : '')
-    + (closing ? '\n\n' + closing : '')
-    + '\n\nCall 1-888-708-7367'
-    + '\nHear your new employee answer live.'
-    + '\n\n' + hashtags;
-
-  const btn = document.getElementById('ig-quick-btn');
-  btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Sending to GHL…';
+  var btn = document.getElementById('ig-quick-btn');
+  btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Sending...';
   clearToast('post-toast'); setStatus(true);
 
+  // Build caption: first line (hook) + second line (domino) + last line (close) + CTA + hashtags
+  var nicheKey = (typeof currentNiche !== 'undefined' && currentNiche) ? currentNiche : 'pm';
+  var igHashtags = {
+    pm:  '#PropertyManagement #PropertyManager #LandlordLife',
+    dnt: '#DentalPractice #DentalMarketing #DentistLife',
+    con: '#Contractor #HomeImprovement #TradesLife',
+    ins: '#InsuranceAgent #InsuranceAgency #InsuranceBroker',
+    mtg: '#MortgageBroker #MortgageTips #HomeBuyer'
+  };
+  var hashtags = igHashtags[nicheKey] || igHashtags['pm'];
+  var lines = generatedPost.split('\n').map(function(l){ return l.trim(); }).filter(function(l){
+    return l.length > 0 && l[0] !== '#' && l.indexOf('1-888-708-7367') < 0 && l.indexOf('Hear your new') < 0 && l.indexOf('DM me') < 0 && l.indexOf('Drop') < 0 && l.indexOf('Want to hear') < 0;
+  });
+  var h = lines[0] || '', d = lines[1] || '', c = (lines[lines.length-1] !== h && lines[lines.length-1] !== d) ? lines[lines.length-1] : '';
+  var igText = h + (d ? '\n\n' + d : '') + (c ? '\n\n' + c : '') + '\n\nCall 1-888-708-7367\nHear your new employee answer live.\n\n' + hashtags;
+
   try {
-    // Attach the same generated image if available — same as LinkedIn post
-    let mediaArray = [];
-    const includeImg = document.getElementById('include-img');
-    if (includeImg && includeImg.checked && generatedImageB64) {
-      try {
-        const byteChars = atob(generatedImageB64), byteArr = new Uint8Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
-        const formData = new FormData();
-        formData.append('file', new Blob([byteArr], {type:'image/jpeg'}), 'ig-post-' + currentPos + '.jpg');
-        formData.append('name', 'ig-post-' + currentPos);
-        const uploadRes = await fetch('https://services.leadconnectorhq.com/medias/upload-file', {
-          method:'POST', headers:{'Authorization':'Bearer '+ghlToken,'Version':'2021-07-28','location-id':locationId}, body:formData
-        });
-        const uploadData = await uploadRes.json();
-        const imgUrl = uploadData?.url || uploadData?.fileUrl || uploadData?.data?.url || uploadData?.mediaUrl;
-        if (uploadRes.ok && imgUrl) mediaArray = [{url:imgUrl, type:'image'}];
-      } catch(imgErr) { console.warn('Image upload skipped:', imgErr.message); }
-    }
-    const payload = {accountIds:[accountId], summary:igText, status:'draft', type:'post', media:mediaArray, userId:accountId};
-    const res = await fetch(`https://services.leadconnectorhq.com/social-media-posting/${locationId}/posts`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ghlToken,'Version':'2021-07-28'},
-      body:JSON.stringify(payload)
+    var payload = { accountIds: [accountId], summary: igText, status: 'draft', type: 'post', media: [], userId: accountId };
+    var res = await fetch('https://services.leadconnectorhq.com/social-media-posting/' + locationId + '/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ghlToken, 'Version': '2021-07-28' },
+      body: JSON.stringify(payload)
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'GHL API error ' + res.status);
-    const imgNote = mediaArray.length > 0 ? ' with image attached' : '';
-    setToast('post-toast','✓ Instagram draft saved in GHL' + imgNote + ' — open Social Planner, switch account to Instagram, publish.','success');
+    var data = await res.json();
+    if (!res.ok) throw new Error(Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'GHL error ' + res.status));
+    setToast('post-toast', 'Instagram draft sent to GHL. Open Social Planner, switch to Instagram, publish.', 'success');
   } catch(e) {
-    setToast('post-toast','✗ ' + e.message + ' — Use Copy Text instead.','error');
+    setToast('post-toast', 'Error: ' + e.message, 'error');
   } finally {
     btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Condense for IG + GHL'; setStatus(false);
   }
 }
-
-
-
-
-  
+</script>
+</body>
+</html>
